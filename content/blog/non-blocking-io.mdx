@@ -1,0 +1,219 @@
+---
+title: Non-Blocking I/O
+title_vi: Non-Blocking I/O - Nghệ thuật không chờ đợi
+title_en: Non-Blocking I/O - The Art of Not Waiting
+excerpt_vi: Hiểu sâu về Event Loop và Non-Blocking I/O thông qua câu chuyện quán coffee. Từ Blocking đến Async, từ Concurrency đến Parallelism.
+excerpt_en: Deep dive into Event Loop and Non-Blocking I/O through a coffee shop story. From Blocking to Async, from Concurrency to Parallelism.
+date: 2024-01-25
+tags:
+  - Non-Blocking
+  - Event Loop
+  - Concurrency
+  - Backend
+thumbnail: https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800
+---
+
+# Non-Blocking I/O - Nghệ thuật không chờ đợi
+
+## Vấn đề với Blocking Code
+
+Trong lập trình truyền thống, chúng ta thường viết **blocking code**. Khi gặp vấn đề về performance, giải pháp thông thường là cho phép một số tác vụ thực thi song song. Tuy nhiên, điều này đòi hỏi thêm tài nguyên và đồng thời phải đối mặt với các **concurrency problems**:
+
+![Blocking vs Non-blocking](https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800)
+
+### Các vấn đề thường gặp:
+
+- **Race Condition** - Khi nhiều thread truy cập cùng một resource
+- **Critical Sections** - Vùng code cần được bảo vệ
+- **Deadlock** - Các thread chờ đợi lẫn nhau vô thời hạn
+
+> **Vấn đề:** Khi có sự cố dẫn tới độ trễ cao (ví dụ DB hay network), những thread đó sẽ bị blocking cho tới khi hoàn thành, dẫn tới resource bị cạn kiệt.
+
+---
+
+## Hiểu về Concurrency qua ví dụ Quán Coffee
+
+Để hiểu rõ các khái niệm, hãy tưởng tượng **anh Hiếu** mở một cửa hàng coffee với một nhân viên pha chế.
+
+![Coffee Shop Analogy](https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800)
+
+### Quy trình phục vụ khách hàng:
+
+| Bước | Công việc | Thời gian |
+|------|-----------|-----------|
+| 1 | Nhận order | 500ms |
+| 2 | Pha chế | 500ms |
+| 3 | Thu tiền | 500ms |
+| 4 | Giao nước | 500ms |
+
+**Scenario:** Hôm nay có 100 khách hàng trong vòng một phút.
+
+### Concurrency là gì?
+
+Khi ứng dụng thực hiện nhiều request cùng một lúc, CPU sẽ thực hiện các request nhanh đến mức chúng ta có thể xem như là **đồng thời**.
+
+![Concurrency Diagram](https://images.unsplash.com/photo-1518770660439-4636190af475?w=800)
+
+**Context Switching:** CPU với một core duy nhất hỗ trợ sự đồng thời thông qua việc switch liên tục giữa các thread để xử lý request.
+
+---
+
+## Parallelism - Thêm Nhân Viên
+
+Để nâng hiệu suất, anh Hiếu thuê thêm nhân viên **Lưu**. Công việc giờ được thực hiện **song song**.
+
+![Parallelism](https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800)
+
+### So sánh Concurrency vs Parallelism
+
+| Concurrency | Parallelism |
+|-------------|-------------|
+| Xử lý nhiều task "cùng lúc" | Thực sự chạy song song |
+| 1 CPU core, context switching | Nhiều CPU cores |
+| Giống như 1 người làm nhiều việc | Nhiều người làm nhiều việc |
+
+> **Parallelism** là việc thực thi đồng thời các request trên CPU multi-core.
+
+---
+
+## Multi-thread - Tối ưu hóa Quy trình
+
+Nhận thấy việc thu tiền có thể tự động hóa, anh Hiếu để mã **QR Code** tại quầy để khách hàng tự thanh toán.
+
+![Automation](https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800)
+
+### Multi-thread đạt được:
+- Sử dụng đồng thời nhiều thread trên nhiều CPU
+- Tối đa hóa hiệu suất của một CPU
+- Giảm thời gian chờ đợi của khách hàng
+
+---
+
+## Synchronous vs Asynchronous Programming
+
+### Synchronous (Đồng bộ)
+
+Với cách vận hành hiện tại, nhân viên phải thực hiện công việc **tuần tự**:
+
+```
+Nhận order → Pha chế → Giao nước → Khách tiếp theo
+```
+
+![Synchronous Flow](https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800)
+
+**Vấn đề:** Task sau phải chờ task trước hoàn thành.
+
+### Asynchronous (Bất đồng bộ)
+
+Anh Hiếu và anh Lưu tạo quy trình mới với sự giúp đỡ của **anh Long**:
+
+![Asynchronous Flow](https://images.unsplash.com/photo-1552664730-d307ca884978?w=800)
+
+| Người | Vai trò | Tương đương trong code |
+|-------|---------|------------------------|
+| Anh Long | Nhận order, giao số thứ tự | **Event Loop** |
+| Số thứ tự | Tracking order | **Event Queue** |
+| Anh Hiếu | Pha chế | **Handler 1** |
+| Anh Lưu | Giao nước | **Handler 2** |
+| QR Code | Thanh toán tự động | **Async Handler** |
+
+---
+
+## Event Loop - Trái tim của Non-Blocking
+
+**Event Loop** là một vòng lặp vô tận, lắng nghe event và phân phối đến các handler xử lý.
+
+![Event Loop Architecture](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+### Đặc điểm quan trọng của Event Loop:
+
+1. **Không bao giờ bị block** - Thiết kế để luôn sẵn sàng nhận event
+2. **Xử lý lượng lớn event** - Vì không bị block
+3. **Chạy trên một core** - Tại một thời điểm
+4. **Multicore deployment** - Cần khởi tạo nhiều process
+
+> Đây chính là **Reactor Pattern** - nền tảng của Non-blocking I/O.
+
+---
+
+## Vert.x và Multi-Reactor Pattern
+
+**Vert.x** là một toolkit (không phải framework hay application server) để xây dựng Reactive Applications.
+
+![Vert.x Architecture](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800)
+
+### Multi-Reactor Pattern trong Vert.x
+
+```
+┌─────────────────────────────────────────┐
+│            Vert.x Instance              │
+├─────────────────────────────────────────┤
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │ Event   │ │ Event   │ │ Event   │   │
+│  │ Loop 1  │ │ Loop 2  │ │ Loop 3  │   │
+│  │ (Core1) │ │ (Core2) │ │ (Core3) │   │
+│  └─────────┘ └─────────┘ └─────────┘   │
+└─────────────────────────────────────────┘
+```
+
+**Vert.x instance** có thể quản lý nhiều Event Loop, số lượng thường phụ thuộc vào số core CPU.
+
+---
+
+## Golden Rule: Don't Block Event Loop!
+
+![Warning](https://images.unsplash.com/photo-1606606767399-01e271823a2e?w=800)
+
+### Tại sao quan trọng?
+
+> **Nếu bạn block tất cả Event Loop trong ứng dụng Vert.x, ứng dụng sẽ DỪNG LẠI!**
+
+### Handler nên xử lý trong bao lâu?
+
+Tùy thuộc vào traffic và số lượng Event Loop:
+
+| Event Loops | Traffic | Thời gian xử lý tối đa |
+|-------------|---------|------------------------|
+| 1 | 1000 rps | **1ms** |
+| 2 | 1000 rps | **2ms** |
+| 4 | 1000 rps | **4ms** |
+
+---
+
+## Reactive Programming là gì?
+
+### Mục đích:
+
+1. **Kiến trúc rõ ràng** - Dễ dàng mở rộng và phát triển
+2. **Xử lý traffic phù hợp** - Đáp ứng business requirements
+3. **Tuân theo The Reactive Manifesto** - Best practices đã được chứng minh
+
+![Reactive Manifesto](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
+
+### Cách xây dựng Reactive Application:
+
+| Approach | Công cụ | Độ phức tạp |
+|----------|---------|-------------|
+| Dùng toolkit | Vert.x, Netty | Cao |
+| Code từ Java core | NIO, CompletableFuture | Rất cao |
+| Dùng Framework | Spring WebFlux, Quarkus, Mutiny | Trung bình |
+
+---
+
+## Key Takeaways
+
+![Summary](https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800)
+
+1. **Concurrency ≠ Parallelism** - Hiểu rõ sự khác biệt
+2. **Event Loop** là trái tim của Non-Blocking I/O
+3. **Never block the Event Loop!** - Golden rule
+4. **Multi-Reactor Pattern** cho phép tận dụng tối đa server resources
+5. **Vert.x** là toolkit mạnh mẽ để xây dựng Reactive Applications
+
+---
+
+## Tài liệu tham khảo
+
+- [Vert.x Documentation](https://vertx.io/docs/)
+- [The Reactive Manifesto](https://www.reactivemanifesto.org/)
+- [Reactive Programming with Java](https://www.baeldung.com/java-reactive-programming)

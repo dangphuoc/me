@@ -6,46 +6,33 @@ import { ArrowRight, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// Sample featured posts - will be replaced with actual data
-const samplePosts = [
+// Featured blog posts - ordered by learning sequence
+const featuredPosts = [
   {
-    slug: 'building-high-performance-teams',
+    slug: 'non-blocking-io',
     title: {
-      vi: 'Xây dựng đội ngũ kỹ thuật hiệu suất cao',
-      en: 'Building High-Performance Engineering Teams',
+      vi: 'Non-Blocking I/O - Nghệ thuật không chờ đợi',
+      en: 'Non-Blocking I/O - The Art of Not Waiting',
     },
     excerpt: {
-      vi: 'Chia sẻ kinh nghiệm về cách xây dựng và phát triển một đội ngũ kỹ thuật xuất sắc...',
-      en: 'Sharing experiences on how to build and develop an excellent engineering team...',
+      vi: 'Hiểu sâu về Event Loop và Non-Blocking I/O thông qua câu chuyện quán coffee. Từ Blocking đến Async, từ Concurrency đến Parallelism.',
+      en: 'Deep dive into Event Loop and Non-Blocking I/O through a coffee shop story. From Blocking to Async, from Concurrency to Parallelism.',
     },
-    date: '2024-01-15',
-    readTime: 8,
+    date: '2024-01-25',
+    readTime: 15,
   },
   {
-    slug: 'microservices-best-practices',
+    slug: 'building-reactive-systems',
     title: {
-      vi: 'Best Practices cho Microservices Architecture',
-      en: 'Microservices Architecture Best Practices',
+      vi: 'Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn',
+      en: 'Building Reactive Systems - From Manifesto to Practice',
     },
     excerpt: {
-      vi: 'Những bài học quý giá từ việc triển khai microservices trong production...',
-      en: 'Valuable lessons from deploying microservices in production...',
+      vi: 'Tìm hiểu The Reactive Manifesto với 4 trụ cột - Responsive, Resilient, Elastic, Message Driven và các Resilience Patterns.',
+      en: 'Explore The Reactive Manifesto with 4 pillars - Responsive, Resilient, Elastic, Message Driven and Resilience Patterns.',
     },
-    date: '2024-01-10',
-    readTime: 12,
-  },
-  {
-    slug: 'engineering-manager-guide',
-    title: {
-      vi: 'Hướng dẫn cho Engineering Manager mới',
-      en: 'A Guide for New Engineering Managers',
-    },
-    excerpt: {
-      vi: 'Những điều tôi ước mình biết khi mới trở thành Engineering Manager...',
-      en: 'Things I wish I knew when I first became an Engineering Manager...',
-    },
-    date: '2024-01-05',
-    readTime: 10,
+    date: '2024-01-20',
+    readTime: 18,
   },
 ];
 
@@ -104,7 +91,7 @@ export default function FeaturedPosts() {
           viewport={{ once: true }}
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {samplePosts.map((post) => (
+          {featuredPosts.map((post) => (
             <motion.article
               key={post.slug}
               variants={item}

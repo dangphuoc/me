@@ -1,0 +1,360 @@
+---
+title: Building Reactive Systems
+title_vi: Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn
+title_en: Building Reactive Systems - From Manifesto to Practice
+excerpt_vi: Tìm hiểu The Reactive Manifesto với 4 trụ cột - Responsive, Resilient, Elastic, Message Driven. Các Resilience Patterns như Circuit Breaker, Bulkhead, Rate Limiter.
+excerpt_en: Explore The Reactive Manifesto with 4 pillars - Responsive, Resilient, Elastic, Message Driven. Resilience Patterns like Circuit Breaker, Bulkhead, Rate Limiter.
+date: 2024-01-20
+tags:
+  - Reactive
+  - Architecture
+  - Resilience
+  - System Design
+thumbnail: https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800
+---
+
+# Xây dựng Reactive Systems
+
+## The Reactive Manifesto
+
+Ngày **16 tháng 9 năm 2014**, Jonas Bonér cùng các đồng nghiệp công bố **The Reactive Manifesto** - tài liệu định nghĩa những đặc tính cốt lõi của một hệ thống Reactive.
+
+![The Reactive Manifesto](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800)
+
+> Reactive Systems là những hệ thống có khả năng **đáp ứng cao**, **co giãn linh hoạt**, **chịu lỗi tốt**, và được xây dựng dựa trên **kiến trúc hướng thông điệp**.
+
+---
+
+## 4 Trụ cột của Reactive Systems
+
+### Reactive Systems Architecture
+
+```
+                    ┌─────────────────┐
+                    │   RESPONSIVE    │
+                    │  (Đáp ứng nhanh) │
+                    └────────┬────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+     ┌────────▼───────┐     │     ┌────────▼────────┐
+     │   RESILIENT    │     │     │    ELASTIC      │
+     │ (Khả năng      │     │     │  (Co giãn       │
+     │  phục hồi)     │     │     │   linh hoạt)    │
+     └────────┬───────┘     │     └────────┬────────┘
+              │             │              │
+              └──────────────┼──────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ MESSAGE DRIVEN  │
+                    │ (Hướng thông    │
+                    │      điệp)      │
+                    └─────────────────┘
+```
+
+---
+
+## 1. Responsive (Đáp ứng nhanh)
+
+Hệ thống phải **phản hồi kịp thời** nếu có thể. Tính đáp ứng là nền tảng của khả năng sử dụng.
+
+![Responsive System](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
+
+### Đặc điểm của hệ thống Responsive:
+
+| Đặc điểm | Mô tả |
+|----------|-------|
+| **Consistent response time** | Thời gian phản hồi nhất quán |
+| **Simplified error handling** | Đơn giản hóa xử lý lỗi |
+| **User confidence** | Xây dựng niềm tin cho người dùng |
+| **Encourage interaction** | Khuyến khích tương tác và phát triển |
+
+> **Key insight:** Responsive là kết quả của việc áp dụng tốt Resilient và Elastic.
+
+---
+
+## 2. Resilient (Khả năng phục hồi)
+
+Hệ thống vẫn phải **responsive khi xảy ra failure**. Bất kỳ hệ thống không resilient sẽ unresponsive sau failure.
+
+![Resilient System](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+### Resilience đạt được thông qua:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    RESILIENCE                        │
+├─────────────┬─────────────┬─────────────┬───────────┤
+│ Replication │ Containment │  Isolation  │ Delegation│
+│  (Nhân bản) │  (Cô lập)   │ (Tách biệt) │ (Ủy quyền)│
+└─────────────┴─────────────┴─────────────┴───────────┘
+```
+
+- **Replication:** Nhân bản dữ liệu/service để failover
+- **Containment:** Cô lập failures, không lan truyền
+- **Isolation:** Tách biệt components, giảm coupling
+- **Delegation:** Ủy quyền xử lý recovery cho component khác
+
+---
+
+## 3. Elastic (Co giãn linh hoạt)
+
+Hệ thống vẫn phải responsive dưới **workload thay đổi**. Có thể tăng hoặc giảm resources theo nhu cầu.
+
+![Elastic System](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+### Yêu cầu cho Elasticity:
+
+| Yêu cầu | Giải thích |
+|---------|------------|
+| No central bottlenecks | Không có điểm nghẽn trung tâm |
+| No contention points | Không có điểm tranh chấp |
+| Shard/Replicate components | Khả năng phân mảnh và nhân bản |
+| Distribute inputs | Phân phối input qua các components |
+
+---
+
+## 4. Message Driven (Hướng thông điệp)
+
+Reactive Systems dựa vào **asynchronous message-passing** để thiết lập ranh giới giữa các components.
+
+![Message Driven](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+
+### Lợi ích của Message-Driven:
+
+- **Loose coupling** - Các component không phụ thuộc trực tiếp
+- **Isolation** - Ranh giới rõ ràng giữa components
+- **Location transparency** - Không cần biết vị trí vật lý
+- **Error delegation** - Lỗi được truyền như messages
+- **Back-pressure** - Kiểm soát flow khi overload
+
+### Commands vs Events
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    COMMANDS                          │
+├─────────────────────────────────────────────────────┤
+│  • Unicast (1 target)                                │
+│  • Yêu cầu action cụ thể                            │
+│  • Expect response                                   │
+│  • VD: "Transfer $100 to User X"                    │
+└─────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────┐
+│                     EVENTS                           │
+├─────────────────────────────────────────────────────┤
+│  • Broadcast/Multicast                               │
+│  • Thông báo điều đã xảy ra                         │
+│  • Không expect response                             │
+│  • VD: "Transaction ABC completed"                  │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Non-Blocking I/O với Netty
+
+### Vấn đề với Blocking I/O
+
+![Blocking IO Problem](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+| Blocking I/O | Non-Blocking I/O |
+|--------------|------------------|
+| 1 thread = 1 connection | Few threads = thousands connections |
+| Thread bị block khi chờ I/O | Không bị block |
+| 10K connections = 10K threads | 10K connections = vài threads |
+| High memory cost | Low memory cost |
+| Context switching overhead | Minimal switching |
+
+### Netty Architecture
+
+```
+┌───────────────────────────────────────────────────┐
+│                    NETTY                           │
+├───────────────────────────────────────────────────┤
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐       │
+│  │ Channel │    │ Channel │    │ Channel │       │
+│  │ (conn1) │    │ (conn2) │    │ (conn3) │       │
+│  └────┬────┘    └────┬────┘    └────┬────┘       │
+│       │              │              │             │
+│       └──────────────┼──────────────┘             │
+│                      │                            │
+│              ┌───────▼───────┐                    │
+│              │   Selector    │  (Multiplexing)   │
+│              └───────┬───────┘                    │
+│                      │                            │
+│              ┌───────▼───────┐                    │
+│              │  Event Loop   │                    │
+│              │   (1 Thread)  │                    │
+│              └───────────────┘                    │
+└───────────────────────────────────────────────────┘
+```
+
+---
+
+## Resilience Patterns
+
+Khi xây dựng hệ thống thanh toán tại MoMo, chúng tôi áp dụng các patterns sau:
+
+![Resilience Patterns](https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800)
+
+### 1. Retry Pattern
+
+**Mục đích:** Thực hiện lại operation khi gặp transient failure.
+
+```
+Request → Fail → Wait → Retry → Fail → Wait (longer) → Retry → Success
+                 ↑                      ↑
+           Exponential Backoff
+```
+
+**Best Practices:**
+- Sử dụng **exponential backoff** (1s → 2s → 4s → 8s)
+- Giới hạn số lần retry (max 3-5)
+- Phân biệt lỗi có thể retry và không thể
+
+### 2. Circuit Breaker Pattern
+
+**Mục đích:** Ngăn chặn gọi liên tục đến service đang failed.
+
+![Circuit Breaker](https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=800)
+
+```
+┌─────────────────────────────────────────────────────┐
+│                 CIRCUIT BREAKER                      │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│   ┌────────┐  failures  ┌────────┐  timeout  ┌────────┐
+│   │ CLOSED │ ─────────► │  OPEN  │ ────────► │ HALF   │
+│   │        │            │        │           │ OPEN   │
+│   └────┬───┘            └────────┘           └───┬────┘
+│        │                     ▲                   │
+│        │                     │ failure           │ success
+│        │                     └───────────────────┘
+│        │                                         │
+│        └─────────────────────────────────────────┘
+│                         success
+└─────────────────────────────────────────────────────┘
+```
+
+| State | Behavior |
+|-------|----------|
+| **Closed** | Hoạt động bình thường, đếm failures |
+| **Open** | Reject requests ngay, không gọi downstream |
+| **Half-Open** | Cho phép test requests để check recovery |
+
+### 3. Rate Limiter Pattern
+
+**Mục đích:** Kiểm soát số lượng requests trong một khoảng thời gian.
+
+![Rate Limiter](https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800)
+
+**Các thuật toán:**
+
+| Algorithm | Mô tả | Use case |
+|-----------|-------|----------|
+| Token Bucket | Mỗi request consume 1 token | API rate limiting |
+| Leaky Bucket | Process với tốc độ cố định | Traffic shaping |
+| Fixed Window | Đếm trong khoảng thời gian cố định | Simple counting |
+| Sliding Window | Kết hợp ưu điểm các phương pháp | Smooth limiting |
+
+### 4. Bulkhead Pattern
+
+**Mục đích:** Cô lập các phần của system để failure không lan truyền.
+
+![Bulkhead](https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=800)
+
+**Giống như khoang tàu thủy:**
+- Các khoang (bulkhead) được ngăn cách
+- Nước vào một khoang không làm chìm cả tàu
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    APPLICATION                       │
+├─────────────────────────────────────────────────────┤
+│  ┌───────────┐   ┌───────────┐   ┌───────────┐     │
+│  │ Thread    │   │ Thread    │   │ Thread    │     │
+│  │ Pool A    │   │ Pool B    │   │ Pool C    │     │
+│  │ (Bank)    │   │ (Payment) │   │ (User)    │     │
+│  └───────────┘   └───────────┘   └───────────┘     │
+│       ║              ║              ║               │
+│  ═════╬══════════════╬══════════════╬═════         │
+│       ║  ISOLATION   ║   WALLS      ║               │
+└─────────────────────────────────────────────────────┘
+```
+
+### 5. Fallback Pattern
+
+**Mục đích:** Cung cấp giá trị thay thế khi primary operation failed.
+
+**Ví dụ:**
+- Trả về cached data khi database không available
+- Sử dụng default values khi external service down
+- Redirect sang backup service
+
+### 6. Timeout Pattern
+
+**Mục đích:** Đặt giới hạn thời gian để tránh waiting vô thời hạn.
+
+| Timeout | Vấn đề |
+|---------|--------|
+| Quá ngắn | False positives, request bị cancel sớm |
+| Quá dài | Resources bị giữ lâu, cascade failures |
+| Phù hợp | Dựa trên SLA và historical data |
+
+---
+
+## Kinh nghiệm thực tế tại MoMo
+
+![MoMo Experience](https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800)
+
+### Architecture áp dụng:
+
+**1. Message-Driven Architecture:**
+- Apache Kafka làm message broker
+- Event Sourcing cho transaction history
+- CQRS để tách read/write operations
+
+**2. Resilience Patterns:**
+- Circuit Breaker cho bank integrations (30+ banks)
+- Retry với exponential backoff
+- Bulkhead để isolate critical payment flows
+
+**3. Non-Blocking I/O:**
+- Vert.x cho core services
+- Reactive streams với back-pressure
+- Connection pooling với non-blocking drivers
+
+### Kết quả đạt được:
+
+| Metric | Trước | Sau |
+|--------|-------|-----|
+| Throughput | 10K TPS | 100K+ TPS |
+| Latency P99 | 500ms | 50ms |
+| Availability | 99.9% | 99.99% |
+| Resource usage | High | Optimized |
+
+---
+
+## Key Takeaways
+
+![Summary](https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800)
+
+1. **Reactive không chỉ là technical choice** - Nó là architecture decision ảnh hưởng toàn bộ system design
+
+2. **4 trụ cột phải áp dụng đồng bộ** - Thiếu một trong bốn sẽ làm giảm hiệu quả tổng thể
+
+3. **Resilience patterns là bắt buộc** - Trong distributed systems, failure là bình thường, không phải exception
+
+4. **Message-driven là nền tảng** - Cho phép loose coupling và location transparency
+
+5. **Non-blocking I/O** là technical enabler cho high throughput
+
+---
+
+## Tài liệu tham khảo
+
+- [The Reactive Manifesto](https://www.reactivemanifesto.org/)
+- [Release It! - Michael Nygard](https://pragprog.com/titles/mnee2/release-it-second-edition/)
+- [Designing Data-Intensive Applications](https://dataintensive.net/)
+- [Vert.x Documentation](https://vertx.io/docs/)

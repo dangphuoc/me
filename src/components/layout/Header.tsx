@@ -13,7 +13,7 @@ const navItems = [
   { href: '/', key: 'home' },
   { href: '/about', key: 'about' },
   { href: '/blog', key: 'blog' },
-  { href: '/moments', key: 'moments' },
+  // { href: '/moments', key: 'moments' }, // Temporarily hidden
   { href: '/contact', key: 'contact' },
 ];
 

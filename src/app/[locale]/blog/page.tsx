@@ -7,63 +7,37 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Calendar, Clock, Tag } from 'lucide-react';
 
-// Sample posts for demo - will be replaced with MDX posts
+// Blog posts - ordered by learning sequence (Non-Blocking I/O first, then Reactive Systems)
 const samplePosts = [
   {
-    slug: 'building-high-performance-teams',
+    slug: 'non-blocking-io',
     title: {
-      vi: 'Xây dựng đội ngũ kỹ thuật hiệu suất cao',
-      en: 'Building High-Performance Engineering Teams',
+      vi: 'Non-Blocking I/O - Nghệ thuật không chờ đợi',
+      en: 'Non-Blocking I/O - The Art of Not Waiting',
     },
     excerpt: {
-      vi: 'Chia sẻ kinh nghiệm về cách xây dựng và phát triển một đội ngũ kỹ thuật xuất sắc, từ tuyển dụng đến đào tạo và giữ chân nhân tài.',
-      en: 'Sharing experiences on how to build and develop an excellent engineering team, from recruitment to training and talent retention.',
+      vi: 'Hiểu sâu về Event Loop và Non-Blocking I/O thông qua câu chuyện quán coffee. Từ Blocking đến Async, từ Concurrency đến Parallelism.',
+      en: 'Deep dive into Event Loop and Non-Blocking I/O through a coffee shop story. From Blocking to Async, from Concurrency to Parallelism.',
     },
-    date: '2024-01-15',
-    readTime: 8,
-    tags: ['Leadership', 'Management', 'Team Building'],
-  },
-  {
-    slug: 'microservices-best-practices',
-    title: {
-      vi: 'Best Practices cho Microservices Architecture',
-      en: 'Microservices Architecture Best Practices',
-    },
-    excerpt: {
-      vi: 'Những bài học quý giá từ việc triển khai microservices trong production, bao gồm service discovery, circuit breaker, và observability.',
-      en: 'Valuable lessons from deploying microservices in production, including service discovery, circuit breaker, and observability.',
-    },
-    date: '2024-01-10',
-    readTime: 12,
-    tags: ['Architecture', 'Microservices', 'Backend'],
-  },
-  {
-    slug: 'engineering-manager-guide',
-    title: {
-      vi: 'Hướng dẫn cho Engineering Manager mới',
-      en: 'A Guide for New Engineering Managers',
-    },
-    excerpt: {
-      vi: 'Những điều tôi ước mình biết khi mới trở thành Engineering Manager - từ 1-on-1 meetings đến performance reviews.',
-      en: 'Things I wish I knew when I first became an Engineering Manager - from 1-on-1 meetings to performance reviews.',
-    },
-    date: '2024-01-05',
-    readTime: 10,
-    tags: ['Leadership', 'Career', 'Management'],
-  },
-  {
-    slug: 'system-design-interview',
-    title: {
-      vi: 'Chuẩn bị cho System Design Interview',
-      en: 'Preparing for System Design Interviews',
-    },
-    excerpt: {
-      vi: 'Hướng dẫn chi tiết cách chuẩn bị và approach một system design interview, kèm theo các ví dụ thực tế.',
-      en: 'A detailed guide on how to prepare and approach a system design interview, with real-world examples.',
-    },
-    date: '2024-01-01',
+    date: '2024-01-25',
     readTime: 15,
-    tags: ['Interview', 'System Design', 'Career'],
+    tags: ['Non-Blocking', 'Event Loop', 'Concurrency', 'Backend'],
+    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800',
+  },
+  {
+    slug: 'building-reactive-systems',
+    title: {
+      vi: 'Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn',
+      en: 'Building Reactive Systems - From Manifesto to Practice',
+    },
+    excerpt: {
+      vi: 'Tìm hiểu The Reactive Manifesto với 4 trụ cột: Responsive, Resilient, Elastic, Message Driven. Các Resilience Patterns như Circuit Breaker, Retry, Bulkhead và kinh nghiệm áp dụng thực tế.',
+      en: 'Explore The Reactive Manifesto with 4 pillars: Responsive, Resilient, Elastic, Message Driven. Resilience Patterns like Circuit Breaker, Retry, Bulkhead and real-world application experience.',
+    },
+    date: '2024-01-20',
+    readTime: 18,
+    tags: ['Reactive', 'Architecture', 'Resilience', 'System Design'],
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800',
   },
 ];
 
