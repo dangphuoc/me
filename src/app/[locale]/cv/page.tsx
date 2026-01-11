@@ -9,8 +9,6 @@ import {
   Github,
   Calendar,
   Printer,
-  Download,
-  ExternalLink,
 } from 'lucide-react';
 
 const personalInfo = {
