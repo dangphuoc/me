@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "about": "Về tôi",
+    "blog": "Blog",
+    "moments": "Khoảnh khắc",
+    "contact": "Liên hệ"
+  },
+  "home": {
+    "greeting": "Xin chào, tôi là",
+    "role": "Software Engineering Manager",
+    "intro": "Đam mê xây dựng sản phẩm và phát triển đội ngũ kỹ thuật xuất sắc",
+    "viewBlog": "Xem Blog",
+    "aboutMe": "Về tôi",
+    "featuredPosts": "Bài viết nổi bật",
+    "viewAll": "Xem tất cả",
+    "techStack": "Công nghệ sử dụng"
+  },
+  "about": {
+    "title": "Về tôi",
+    "bio": "Giới thiệu",
+    "experience": "Kinh nghiệm",
+    "skills": "Kỹ năng",
+    "education": "Học vấn"
+  },
+  "blog": {
+    "title": "Tech Blog",
+    "subtitle": "Chia sẻ kiến thức và kinh nghiệm trong lĩnh vực công nghệ",
+    "readMore": "Đọc thêm",
+    "minRead": "phút đọc",
+    "search": "Tìm kiếm bài viết...",
+    "noResults": "Không tìm thấy bài viết nào",
+    "tableOfContents": "Mục lục",
+    "relatedPosts": "Bài viết liên quan",
+    "share": "Chia sẻ"
+  },
+  "moments": {
+    "title": "Khoảnh khắc",
+    "subtitle": "Những khoảnh khắc đáng nhớ trong cuộc sống"
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "subtitle": "Hãy kết nối với tôi",
+    "name": "Họ tên",
+    "email": "Email",
+    "message": "Tin nhắn",
+    "send": "Gửi tin nhắn",
+    "success": "Tin nhắn đã được gửi thành công!",
+    "error": "Có lỗi xảy ra, vui lòng thử lại."
+  },
+  "footer": {
+    "rights": "Bản quyền",
+    "madeWith": "Được tạo với"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra",
+    "back": "Quay lại"
+  }
+}

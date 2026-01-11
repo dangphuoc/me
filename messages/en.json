@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "blog": "Blog",
+    "moments": "Moments",
+    "contact": "Contact"
+  },
+  "home": {
+    "greeting": "Hello, I'm",
+    "role": "Software Engineering Manager",
+    "intro": "Passionate about building products and developing excellent engineering teams",
+    "viewBlog": "View Blog",
+    "aboutMe": "About Me",
+    "featuredPosts": "Featured Posts",
+    "viewAll": "View All",
+    "techStack": "Tech Stack"
+  },
+  "about": {
+    "title": "About Me",
+    "bio": "Bio",
+    "experience": "Experience",
+    "skills": "Skills",
+    "education": "Education"
+  },
+  "blog": {
+    "title": "Tech Blog",
+    "subtitle": "Sharing knowledge and experience in technology",
+    "readMore": "Read More",
+    "minRead": "min read",
+    "search": "Search posts...",
+    "noResults": "No posts found",
+    "tableOfContents": "Table of Contents",
+    "relatedPosts": "Related Posts",
+    "share": "Share"
+  },
+  "moments": {
+    "title": "Moments",
+    "subtitle": "Memorable moments in life"
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Let's connect",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send Message",
+    "success": "Message sent successfully!",
+    "error": "An error occurred, please try again."
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "madeWith": "Made with"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "back": "Back"
+  }
+}
