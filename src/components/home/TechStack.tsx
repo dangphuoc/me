@@ -4,18 +4,22 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 
 const technologies = [
-  { name: 'TypeScript', color: 'bg-blue-500' },
-  { name: 'React', color: 'bg-cyan-500' },
-  { name: 'Next.js', color: 'bg-gray-900 dark:bg-white' },
-  { name: 'Node.js', color: 'bg-green-500' },
-  { name: 'Python', color: 'bg-yellow-500' },
-  { name: 'Go', color: 'bg-cyan-600' },
-  { name: 'PostgreSQL', color: 'bg-blue-600' },
-  { name: 'MongoDB', color: 'bg-green-600' },
-  { name: 'Redis', color: 'bg-red-500' },
+  { name: 'Java', color: 'bg-red-500' },
+  { name: 'Spring Boot', color: 'bg-green-500' },
+  { name: 'Vert.x', color: 'bg-purple-500' },
+  { name: 'Quarkus LangChain', color: 'bg-pink-500' },
+  { name: 'AI Agent', color: 'bg-indigo-500' },
+  { name: 'Kafka', color: 'bg-gray-900 dark:bg-white' },
+  { name: 'RabbitMQ', color: 'bg-orange-500' },
+  { name: 'MySQL', color: 'bg-blue-500' },
+  { name: 'Redis', color: 'bg-red-600' },
+  { name: 'Cassandra', color: 'bg-cyan-600' },
   { name: 'Docker', color: 'bg-blue-400' },
   { name: 'Kubernetes', color: 'bg-blue-700' },
-  { name: 'AWS', color: 'bg-orange-500' },
+  { name: 'ArgoCD', color: 'bg-orange-600' },
+  { name: 'Prometheus', color: 'bg-orange-400' },
+  { name: 'Grafana', color: 'bg-yellow-500' },
+  { name: 'Jenkins', color: 'bg-red-400' },
 ];
 
 const container = {

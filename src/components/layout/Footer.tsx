@@ -1,14 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Github, Linkedin, Twitter, Mail, Heart } from 'lucide-react';
+import { Github, Linkedin, Mail, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const socialLinks = [
-  { icon: Github, href: 'https://github.com', label: 'GitHub' },
-  { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
-  { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
-  { icon: Mail, href: 'mailto:contact@example.com', label: 'Email' },
+  { icon: Github, href: 'https://github.com/dangphuoc', label: 'GitHub' },
+  { icon: Linkedin, href: 'https://www.linkedin.com/in/phuoc-nguyen-dang-016129159/', label: 'LinkedIn' },
+  { icon: Mail, href: 'mailto:dangphuocbk.93@gmail.com', label: 'Email' },
 ];
 
 export default function Footer() {

@@ -11,56 +11,58 @@ import {
   Target,
   Award,
   MapPin,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 
 const experiences = [
   {
-    title: { vi: 'Software Engineering Manager', en: 'Software Engineering Manager' },
-    company: 'Tech Company',
+    title: { vi: 'Engineering Manager', en: 'Engineering Manager' },
+    company: 'M_Service JSC (MoMo)',
     location: 'Ho Chi Minh City',
-    period: '2022 - Present',
+    period: '2017 - Present',
     description: {
-      vi: 'Lãnh đạo đội ngũ 15+ engineers, định hướng kỹ thuật và phát triển sản phẩm',
-      en: 'Leading 15+ engineers team, technical direction and product development',
+      vi: 'Xây dựng và quản lý hệ thống Bank Linkage, Bank Transfer 247, eKYC. Thiết lập CI/CD, monitoring tools. Deploy hệ thống trên cloud on-premise. Quản lý team 20 thành viên (Mobile, Backend, QC).',
+      en: 'Build and manage Bank Linkage, Bank Transfer 247, eKYC systems. Setup CI/CD, monitoring tools. Deploy systems on cloud on-premise. Manage team of 20 members (Mobile, Backend, QC).',
     },
   },
   {
-    title: { vi: 'Senior Software Engineer', en: 'Senior Software Engineer' },
-    company: 'Startup Inc',
+    title: { vi: 'Estimator', en: 'Estimator' },
+    company: 'Platinum Global Co.,Ltd',
     location: 'Ho Chi Minh City',
-    period: '2019 - 2022',
+    period: 'Mar 2016 - Dec 2016',
     description: {
-      vi: 'Thiết kế và phát triển hệ thống backend microservices',
-      en: 'Designing and developing backend microservices system',
+      vi: 'Làm việc với đối tác nước ngoài, phát triển kỹ năng làm việc chuyên nghiệp và tinh thần trách nhiệm trong công việc.',
+      en: 'Working with foreign partners, developing professional working skills and responsibility for work.',
     },
   },
   {
-    title: { vi: 'Software Engineer', en: 'Software Engineer' },
-    company: 'Software House',
+    title: { vi: 'Database Intern', en: 'Database Intern' },
+    company: 'Viet An Software Co.,Ltd',
     location: 'Ho Chi Minh City',
-    period: '2016 - 2019',
+    period: 'Jun 2015 - Sep 2015',
     description: {
-      vi: 'Phát triển ứng dụng web full-stack với React và Node.js',
-      en: 'Developing full-stack web applications with React and Node.js',
+      vi: 'Phân tích và thiết kế cơ sở dữ liệu GIS.',
+      en: 'Analyze and design GIS database.',
     },
   },
 ];
 
 const skills = {
   technical: [
-    { name: 'System Design', level: 95 },
-    { name: 'Backend Development', level: 90 },
-    { name: 'Frontend Development', level: 85 },
-    { name: 'DevOps / Cloud', level: 80 },
-    { name: 'Data Engineering', level: 75 },
+    { name: 'Java / Spring Boot / Vert.x', level: 95 },
+    { name: 'Microservices / Reactive', level: 90 },
+    { name: 'Kafka / RabbitMQ', level: 88 },
+    { name: 'Docker / Kubernetes / ArgoCD', level: 85 },
+    { name: 'AI Agent / Quarkus LangChain', level: 80 },
+    { name: 'MySQL / Oracle / Cassandra / Redis', level: 90 },
   ],
   leadership: [
-    { name: 'Team Management', level: 90 },
-    { name: 'Technical Mentoring', level: 95 },
-    { name: 'Project Planning', level: 85 },
-    { name: 'Stakeholder Communication', level: 88 },
-    { name: 'Agile / Scrum', level: 90 },
+    { name: 'Team Management (20+ members)', level: 92 },
+    { name: 'System Architecture', level: 90 },
+    { name: 'CI/CD & DevOps', level: 88 },
+    { name: 'Monitoring (Prometheus/Grafana)', level: 85 },
+    { name: 'Agile / Scrum', level: 88 },
   ],
 };
 
@@ -79,12 +81,21 @@ export default function AboutPage() {
           className="text-center mb-16"
         >
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('title')}</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-6">
             {locale === 'vi'
               ? 'Đam mê công nghệ và phát triển con người'
               : 'Passionate about technology and people development'
             }
           </p>
+          <motion.a
+            href={`/${locale}/cv`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/25"
+          >
+            <Download size={20} />
+            {locale === 'vi' ? 'Xem CV' : 'View CV'}
+          </motion.a>
         </motion.div>
 
         {/* Bio Section */}
@@ -105,22 +116,23 @@ export default function AboutPage() {
               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 {locale === 'vi' ? (
                   <>
-                    Xin chào! Tôi là một Software Engineering Manager với hơn 8 năm kinh nghiệm
-                    trong ngành công nghệ. Tôi đam mê xây dựng các sản phẩm có tác động lớn và
-                    phát triển đội ngũ kỹ thuật xuất sắc.
+                    Xin chào! Tôi là Engineering Manager tại MoMo với hơn 8 năm kinh nghiệm
+                    trong ngành Fintech. Tôi đam mê xây dựng các hệ thống thanh toán có quy mô lớn
+                    và phát triển đội ngũ kỹ thuật xuất sắc.
                     <br /><br />
-                    Hiện tại, tôi đang lãnh đạo một đội ngũ engineers tài năng, tập trung vào
-                    việc xây dựng các hệ thống backend có khả năng mở rộng cao và tạo ra trải
-                    nghiệm người dùng tuyệt vời.
+                    Hiện tại, tôi đang quản lý team 20 thành viên, phụ trách các hệ thống
+                    Bank Linkage, Bank Transfer 247, và eKYC. Gần đây tôi đang nghiên cứu
+                    về AI Agent và Quarkus LangChain để áp dụng vào các sản phẩm.
                   </>
                 ) : (
                   <>
-                    Hello! I&apos;m a Software Engineering Manager with over 8 years of experience
-                    in the tech industry. I&apos;m passionate about building impactful products and
-                    developing excellent engineering teams.
+                    Hello! I&apos;m an Engineering Manager at MoMo with over 8 years of experience
+                    in the Fintech industry. I&apos;m passionate about building large-scale payment
+                    systems and developing excellent engineering teams.
                     <br /><br />
-                    Currently, I lead a talented team of engineers, focusing on building highly
-                    scalable backend systems and creating amazing user experiences.
+                    Currently, I manage a team of 20 members, responsible for Bank Linkage,
+                    Bank Transfer 247, and eKYC systems. Recently, I&apos;ve been exploring
+                    AI Agent and Quarkus LangChain to apply in our products.
                   </>
                 )}
               </p>
@@ -290,24 +302,53 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold">{t('education')}</h2>
           </div>
 
-          <div className="glass-card p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                <Award className="text-gray-600 dark:text-gray-400" size={24} />
+          <div className="space-y-4">
+            <div className="glass-card p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                  <Award className="text-gray-600 dark:text-gray-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {locale === 'vi'
+                      ? 'Kỹ sư Trắc địa - Bản đồ'
+                      : 'Geomatic Engineer'
+                    }
+                  </h3>
+                  <p className="text-blue-600 dark:text-blue-400 font-medium">
+                    {locale === 'vi'
+                      ? 'Đại học Bách Khoa TP.HCM'
+                      : 'Ho Chi Minh University of Technology (Bach Khoa)'
+                    }
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    2011 - 2016 • GPA: 7.32/10
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {locale === 'vi'
-                    ? 'Cử nhân Khoa học Máy tính'
-                    : 'Bachelor of Computer Science'
-                  }
-                </h3>
-                <p className="text-blue-600 dark:text-blue-400 font-medium">
-                  University of Technology
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  2012 - 2016
-                </p>
+            </div>
+            <div className="glass-card p-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                  <Award className="text-gray-600 dark:text-gray-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                    {locale === 'vi'
+                      ? 'Chứng chỉ Lập trình Java Web'
+                      : 'Java Web Programming Certificate'
+                    }
+                  </h3>
+                  <p className="text-blue-600 dark:text-blue-400 font-medium">
+                    {locale === 'vi'
+                      ? 'Trung tâm CNTT - ĐH Khoa học Tự nhiên'
+                      : 'IT Center - HCM University of Science'
+                    }
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    2016
+                  </p>
+                </div>
               </div>
             </div>
           </div>
