@@ -183,12 +183,12 @@ export default function MomentsPage() {
 
   // Get unique years and tags
   const years = useMemo(() => {
-    const uniqueYears = [...new Set(sampleMoments.map(m => new Date(m.date).getFullYear()))];
+    const uniqueYears = Array.from(new Set(sampleMoments.map(m => new Date(m.date).getFullYear())));
     return uniqueYears.sort((a, b) => b - a);
   }, []);
 
   const allTags = useMemo(() => {
-    return [...new Set(sampleMoments.flatMap(m => m.tags))];
+    return Array.from(new Set(sampleMoments.flatMap(m => m.tags)));
   }, []);
 
   const tagLabels: Record<string, { vi: string; en: string }> = {
