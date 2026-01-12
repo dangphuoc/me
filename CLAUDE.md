@@ -364,3 +364,128 @@ npm run lint             # Run ESLint
 | `non-blocking-io` | Non-Blocking I/O - Nghệ thuật không chờ đợi | Non-Blocking, Event Loop, Concurrency |
 | `building-reactive-systems` | Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn | Reactive, Architecture, Resilience |
 | `api-contract-openapi` | API Contract - Khi code biết nói chuyện | OpenAPI, Vert.x, API Design, Microservices |
+| `connection-was-closed` | Connection Was Closed - Khi một dòng code phá vỡ cả hệ thống | HTTP, Connection Pool, Keep-Alive, Debugging |
+
+---
+
+## Blog Writing Style Guide
+
+**QUAN TRỌNG:** Khi viết blog cho project này, luôn tuân theo phong cách **Storytelling Technical** - không viết kiểu tutorial khô khan.
+
+### Nguyên tắc cốt lõi
+
+1. **Technical content là trọng tâm** - Người đọc phải học được kiến thức kỹ thuật thực sự
+2. **Storytelling là cách dẫn dắt** - Giải thích kỹ thuật như kể một câu chuyện hấp dẫn
+3. **Bilingual** - Mỗi bài viết cần 2 file: `slug.vi.mdx` và `slug.en.mdx`
+
+### Kỹ thuật Storytelling
+
+#### 1. Mở đầu bằng bối cảnh thực tế
+```markdown
+# KHÔNG NÊN (khô khan)
+HTTP Keep-Alive là một tính năng của HTTP/1.1 cho phép...
+
+# NÊN (storytelling)
+Sáu giờ tối ngày 24 tháng 12. Thay vì chuẩn bị tiệc Giáng sinh,
+team chúng tôi đang nhìn chằm chằm vào màn hình monitoring...
+```
+
+#### 2. Dùng analogy để giải thích kỹ thuật
+```markdown
+# KHÔNG NÊN
+TCP handshake gồm 3 bước: SYN, SYN-ACK, ACK...
+
+# NÊN
+Hãy tưởng tượng bạn gọi điện cho ai đó. Trước khi nói chuyện,
+bạn phải chờ họ nhấc máy, nói "Alô", rồi bạn đáp lại.
+Đó là **bắt tay** - TCP connection cũng hoạt động như vậy...
+```
+
+#### 3. Xây dựng suspense trước khi reveal
+```markdown
+# KHÔNG NÊN
+Lỗi do response.close() gây ra.
+
+# NÊN
+Câu hỏi này ám ảnh tôi. Tại sao UAT không phát hiện?
+**Thứ nhất, request đầu luôn thành công...**
+**Thứ hai, traffic thấp giúp che giấu lỗi...**
+[Xây dựng mystery, rồi mới reveal root cause]
+```
+
+#### 4. Đặt câu hỏi để tạo tò mò
+```markdown
+Điều gì xảy ra nếu ai đó lén đập vỡ cái bát rồi cất lại tủ?
+Người tiếp theo lấy ra... bùm.
+```
+
+#### 5. Kết nối kỹ thuật với trải nghiệm thực
+```markdown
+Anh Hiếu diễn đạt chính xác: "Request A xử lý xong rồi close.
+Client ngây thơ không biết mình bị 'đá'..."
+```
+
+### Cấu trúc bài viết
+
+1. **Hook** - Bối cảnh hấp dẫn (vấn đề thực tế)
+2. **Manh mối** - Xây dựng mystery
+3. **Kiến thức nền** - Giải thích kỹ thuật qua analogy
+4. **Root cause** - Reveal vấn đề (climax)
+5. **Solution** - Code fix + giải thích
+6. **Lessons** - Bài học rút ra
+7. **Kết** - Wrap up câu chuyện
+
+### Quy tắc ngôn ngữ
+
+**KHÔNG dùng:**
+- Từ ngữ thô tục, slang quá mức (méo, vl, dm...)
+- Giọng văn quá formal như documentation
+
+**NÊN dùng:**
+- Ngôn ngữ vui nhộn, gần gũi nhưng lịch sự
+- Ví dụ: "ngây thơ", "bùm", "ầy gù", "chốt hạ"
+- Câu ngắn, dễ đọc
+- Emoji tiết chế (chỉ ở kết bài nếu cần)
+
+### Diagram và hình ảnh
+
+**Sequence diagram:** Dùng Mermaid.ink để generate image
+```markdown
+![Diagram](https://mermaid.ink/img/base64code?type=png)
+```
+
+**KHÔNG dùng:**
+- ASCII art phức tạp (dễ vỡ khi render)
+- Table để vẽ sequence (xấu)
+
+**NÊN dùng:**
+- Mermaid.ink cho sequence/flow diagrams
+- Table cho so sánh, liệt kê
+- Unsplash images cho illustration
+
+### Code blocks
+
+```markdown
+# Có context trước code
+Developer viết code đó có lẽ nghĩ: "Xong việc thì dọn dẹp cho sạch".
+Logic có vẻ đúng. Nhưng...
+
+```java
+response.end(result);
+response.close();  // ← THỦ PHẠM!
+```
+
+# Giải thích sau code
+Với HTTP Keep-Alive, `end()` đã là "dọn dẹp" rồi.
+Gọi thêm `close()` là **phá hoại**.
+```
+
+### Checklist trước khi publish
+
+- [ ] Có hook hấp dẫn ở đầu bài?
+- [ ] Kiến thức kỹ thuật được giải thích qua analogy?
+- [ ] Có suspense/mystery trước khi reveal?
+- [ ] Code có context và giải thích?
+- [ ] Ngôn ngữ vui nhộn nhưng lịch sự?
+- [ ] Diagram dùng Mermaid.ink (không ASCII)?
+- [ ] Có cả 2 file .vi.mdx và .en.mdx?
