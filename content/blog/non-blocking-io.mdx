@@ -144,17 +144,15 @@ Anh Hiếu và anh Lưu tạo quy trình mới với sự giúp đỡ của **an
 
 ### Multi-Reactor Pattern trong Vert.x
 
-```
-┌─────────────────────────────────────────┐
-│            Vert.x Instance              │
-├─────────────────────────────────────────┤
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │ Event   │ │ Event   │ │ Event   │   │
-│  │ Loop 1  │ │ Loop 2  │ │ Loop 3  │   │
-│  │ (Core1) │ │ (Core2) │ │ (Core3) │   │
-│  └─────────┘ └─────────┘ └─────────┘   │
-└─────────────────────────────────────────┘
-```
+**Vert.x Instance với Multi-Reactor:**
+
+| Event Loop | CPU Core | Vai trò |
+|------------|----------|---------|
+| **Event Loop 1** | Core 1 | Xử lý events độc lập |
+| **Event Loop 2** | Core 2 | Xử lý events độc lập |
+| **Event Loop 3** | Core 3 | Xử lý events độc lập |
+
+> Mỗi Event Loop chạy trên 1 CPU core, cho phép tận dụng tối đa tài nguyên của server multi-core.
 
 **Vert.x instance** có thể quản lý nhiều Event Loop, số lượng thường phụ thuộc vào số core CPU.
 

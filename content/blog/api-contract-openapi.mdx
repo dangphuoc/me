@@ -1,0 +1,325 @@
+---
+title: API Contract with OpenAPI
+title_vi: API Contract - Khi code biết nói chuyện
+title_en: API Contract - When Code Learns to Communicate
+excerpt_vi: Câu chuyện về những API "câm lặng" và hành trình tìm lại tiếng nói thông qua OpenAPI. Contract-First Development với Vert.x và nghệ thuật viết API biết tự giải thích.
+excerpt_en: The story of "silent" APIs and the journey to find their voice through OpenAPI. Contract-First Development with Vert.x and the art of writing self-explaining APIs.
+date: 2024-01-15
+tags:
+  - OpenAPI
+  - Vert.x
+  - API Design
+  - Microservices
+thumbnail: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800
+---
+
+# Câu chuyện về những API "im lặng"
+
+Có một điều thú vị mà tôi nhận ra sau nhiều năm làm việc với microservices: **API không biết nói chuyện**.
+
+Nghe có vẻ kỳ lạ, nhưng hãy nghĩ về điều này. Bạn viết một API, frontend gọi vào, mọi thứ hoạt động. Rồi một ngày, bạn thay đổi một field từ `userId` thành `user_id`. Không ai biết. Không ai được thông báo. Cho đến khi production "nổ".
+
+> *"If you're building microservices, you are building a distributed system."* — Jez Humble
+
+---
+
+## Khi sự im lặng trở thành kẻ thù
+
+![API Chaos](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+Hãy tưởng tượng một công ty với 50 microservices. Mỗi service có 10-20 APIs. Đó là hàng trăm endpoints cần được quản lý, cập nhật, và... giao tiếp.
+
+**Confluence?** Outdate sau 2 tuần. **Slack?** Tin nhắn chìm trong hàng nghìn messages khác. **Email?** Ai đọc email nữa?
+
+Kết quả là gì? Các team làm việc trong bóng tối. Frontend đoán API. Backend đoán frontend cần gì. Và QA? QA đoán cả hai.
+
+> *"The biggest problem in communication is the illusion that it has taken place."* — George Bernard Shaw
+
+---
+
+## Contract-First: Khi API học cách nói
+
+![Contract](https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800)
+
+Có một cách tiếp cận khác - **Contract-First Development**. Ý tưởng rất đơn giản:
+
+*Trước khi viết một dòng code, hãy định nghĩa API của bạn.*
+
+Giống như việc ký hợp đồng trước khi xây nhà. Bạn biết chính xác mình sẽ nhận được gì. Không có bất ngờ. Không có "tôi tưởng là...".
+
+**Lợi ích?**
+
+- Frontend và Backend có thể làm việc **song song** - không ai chờ ai
+- Mọi thay đổi đều được **ghi nhận** và **thông báo**
+- Security team có thể **scan API** trước khi deploy
+- Onboarding developer mới? Đưa họ file spec, xong.
+
+---
+
+## OpenAPI - Ngôn ngữ chung của API
+
+**OpenAPI** (trước đây là Swagger) là chuẩn công nghiệp để mô tả RESTful APIs. Nó như một "hợp đồng" được viết bằng YAML hoặc JSON mà cả người và máy đều hiểu.
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Transfer Service API
+  version: 1.0.0
+  description: API cho dịch vụ chuyển tiền
+
+paths:
+  /api/v1/transfer:
+    post:
+      operationId: createTransfer
+      summary: Tạo giao dịch chuyển tiền
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          description: Request không hợp lệ
+
+components:
+  schemas:
+    TransferRequest:
+      type: object
+      required:
+        - fromAccount
+        - toAccount
+        - amount
+      properties:
+        fromAccount:
+          type: string
+          example: "1234567890"
+        toAccount:
+          type: string
+          example: "0987654321"
+        amount:
+          type: number
+          minimum: 1000
+          example: 50000
+```
+
+Nhìn vào file này, bạn biết ngay:
+- Endpoint nào có sẵn
+- Request body cần những gì
+- Response trả về format gì
+- Validation rules là gì
+
+---
+
+## Vert.x + OpenAPI = Magic
+
+![Vert.x](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+Đây là phần thú vị. Với **Vert.x Web OpenAPI**, bạn có thể tạo router trực tiếp từ OpenAPI spec. Không cần viết validation code. Không cần parse request manually.
+
+### Setup dependency
+
+```xml
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-web-openapi</artifactId>
+  <version>4.5.12</version>
+</dependency>
+```
+
+### Tạo Router từ OpenAPI spec
+
+```java
+RouterBuilder.create(vertx, "openapi/transfer-api.yaml")
+  .onSuccess(routerBuilder -> {
+    // Map operation với handler
+    routerBuilder.operation("createTransfer")
+      .handler(this::handleCreateTransfer);
+
+    routerBuilder.operation("getTransferStatus")
+      .handler(this::handleGetStatus);
+
+    // Tạo router
+    Router router = routerBuilder.createRouter();
+
+    // Start server
+    vertx.createHttpServer()
+      .requestHandler(router)
+      .listen(8080)
+      .onSuccess(server ->
+        logger.info("Server started on port 8080"));
+  })
+  .onFailure(err ->
+    logger.error("Failed to load OpenAPI spec", err));
+```
+
+**Điều kỳ diệu ở đây là gì?**
+
+Khi request đến, Vert.x **tự động validate** dựa trên OpenAPI spec:
+- Type checking (string, number, boolean)
+- Required fields
+- Format validation (email, date, uuid)
+- Min/max values
+- Pattern matching (regex)
+
+Bạn không cần viết một dòng validation code nào!
+
+---
+
+## Validation tự động - Ví dụ thực tế
+
+Giả sử client gửi request thiếu field `amount`:
+
+```json
+{
+  "fromAccount": "1234567890",
+  "toAccount": "0987654321"
+}
+```
+
+Vert.x sẽ tự động trả về:
+
+```json
+{
+  "code": 400,
+  "message": "Validation error",
+  "errors": [
+    {
+      "field": "amount",
+      "message": "required field is missing"
+    }
+  ]
+}
+```
+
+Hoặc nếu `amount` nhỏ hơn minimum:
+
+```json
+{
+  "fromAccount": "1234567890",
+  "toAccount": "0987654321",
+  "amount": 500
+}
+```
+
+Response:
+
+```json
+{
+  "code": 400,
+  "message": "Validation error",
+  "errors": [
+    {
+      "field": "amount",
+      "message": "value 500 is less than minimum 1000"
+    }
+  ]
+}
+```
+
+---
+
+## Swagger UI - Documentation sống
+
+![Swagger UI](https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800)
+
+Một trong những điều tuyệt vời của OpenAPI là bạn có thể tự động generate **interactive documentation**.
+
+```java
+// Serve Swagger UI
+router.route("/docs/*").handler(
+  StaticHandler.create("swagger-ui")
+);
+
+// Serve OpenAPI spec
+router.route("/api-docs").handler(ctx -> {
+  ctx.response()
+    .putHeader("Content-Type", "application/yaml")
+    .sendFile("openapi/transfer-api.yaml");
+});
+```
+
+Giờ đây, bất kỳ ai cũng có thể:
+- Xem tất cả API endpoints
+- Hiểu request/response format
+- **Try it out** - test API trực tiếp từ browser
+
+---
+
+## Chia nhỏ spec với $ref
+
+Khi API lớn lên, một file YAML có thể trở nên khổng lồ. Giải pháp? **Chia nhỏ với $ref**.
+
+```
+openapi/
+├── main.yaml           # File chính
+├── paths/
+│   ├── transfer.yaml   # Transfer endpoints
+│   └── account.yaml    # Account endpoints
+└── schemas/
+    ├── transfer.yaml   # Transfer schemas
+    └── common.yaml     # Shared schemas
+```
+
+Trong `main.yaml`:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Banking API
+  version: 1.0.0
+
+paths:
+  /api/v1/transfer:
+    $ref: './paths/transfer.yaml#/createTransfer'
+  /api/v1/account/{id}:
+    $ref: './paths/account.yaml#/getAccount'
+```
+
+Clean, organized, maintainable.
+
+---
+
+## Bài học rút ra
+
+Sau nhiều dự án với OpenAPI, đây là những gì tôi học được:
+
+### 1. Contract trước, code sau
+Dành thời gian design API spec. Review với team. Khi mọi người đồng ý, mới bắt đầu code.
+
+### 2. Validation là miễn phí
+Với OpenAPI + Vert.x, bạn có validation "free". Tận dụng nó. Đừng duplicate logic trong code.
+
+### 3. Documentation = Living document
+OpenAPI spec không phải viết một lần rồi quên. Nó phải được cập nhật cùng với code. Đặt nó trong source control.
+
+### 4. Đừng cố gồng
+Không phải mọi thứ đều cần OpenAPI. Internal tools nhỏ? Có thể không cần. Nhưng với public API hoặc microservices lớn? Chắc chắn nên dùng.
+
+---
+
+## Kết luận
+
+API không nhất thiết phải "câm lặng". Với **OpenAPI** và **Contract-First Development**, bạn có thể:
+
+- Tạo ngôn ngữ chung giữa các team
+- Tự động hóa validation
+- Generate documentation sống
+- Giảm thiểu hiểu lầm và bugs
+
+> *"Good communication is the bridge between confusion and clarity."* — Nat Turner
+
+Lần tới khi bạn bắt đầu một dự án mới, hãy thử viết OpenAPI spec trước. Bạn sẽ ngạc nhiên về việc nó thay đổi cách team làm việc như thế nào.
+
+---
+
+**Resources:**
+- [OpenAPI Specification](https://swagger.io/specification/)
+- [Vert.x Web OpenAPI](https://vertx.io/docs/vertx-web-openapi/java/)
+- [Swagger Editor](https://editor.swagger.io/)

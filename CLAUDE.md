@@ -17,7 +17,7 @@ Personal website cho Software Engineering Manager với 3 mục đích:
 | Animation | Framer Motion |
 | i18n | next-intl (VI/EN) |
 | Theme | next-themes (dark/light/system) |
-| Blog | MDX + gray-matter |
+| Blog | MDX + gray-matter + reading-time |
 | Icons | lucide-react |
 
 ## Project Structure
@@ -30,12 +30,13 @@ personal_page/
 │   │   ├── globals.css                # Global styles + Tailwind
 │   │   └── [locale]/                  # i18n dynamic route
 │   │       ├── layout.tsx             # Locale layout (Header, Footer, Providers)
-│   │       ├── page.tsx               # Homepage
+│   │       ├── page.tsx               # Homepage (Server Component)
 │   │       ├── about/page.tsx         # About page
 │   │       ├── blog/
-│   │       │   ├── page.tsx           # Blog listing
-│   │       │   └── [slug]/page.tsx    # Blog post detail
+│   │       │   ├── page.tsx           # Blog listing (Server Component)
+│   │       │   └── [slug]/page.tsx    # Blog post detail (Server Component)
 │   │       ├── moments/page.tsx       # Photo gallery
+│   │       ├── cv/page.tsx            # CV/Resume page
 │   │       └── contact/page.tsx       # Contact form
 │   │
 │   ├── components/
@@ -44,10 +45,13 @@ personal_page/
 │   │   │   ├── Footer.tsx             # Footer with social links
 │   │   │   ├── ThemeToggle.tsx        # Dark/Light/System toggle
 │   │   │   └── LanguageSwitcher.tsx   # VI/EN switcher
-│   │   └── home/
-│   │       ├── Hero.tsx               # Hero section with animations
-│   │       ├── TechStack.tsx          # Technology badges
-│   │       └── FeaturedPosts.tsx      # Featured blog posts
+│   │   ├── home/
+│   │   │   ├── Hero.tsx               # Hero section with animations
+│   │   │   ├── TechStack.tsx          # Technology badges
+│   │   │   └── FeaturedPosts.tsx      # Featured blog posts (Client Component)
+│   │   └── blog/
+│   │       ├── BlogPostClient.tsx     # Blog detail renderer (Client Component)
+│   │       └── BlogListClient.tsx     # Blog listing renderer (Client Component)
 │   │
 │   ├── i18n/
 │   │   ├── config.ts                  # Locales config (vi, en)
@@ -63,10 +67,10 @@ personal_page/
 │   └── en.json                        # English translations
 │
 ├── content/
-│   ├── blog/                          # MDX blog posts
-│   │   └── *.mdx
-│   └── moments/
-│       └── moments.json               # Gallery metadata
+│   └── blog/                          # MDX blog posts
+│       ├── non-blocking-io.mdx
+│       ├── building-reactive-systems.mdx
+│       └── api-contract-openapi.mdx
 │
 ├── public/images/
 │   ├── profile/                       # Profile photos
@@ -75,6 +79,52 @@ personal_page/
 ├── next.config.mjs                    # Next.js + next-intl config
 ├── tailwind.config.ts                 # Tailwind config
 └── package.json
+```
+
+## Blog System Architecture
+
+Blog system sử dụng **Server Components** để load data và **Client Components** để render với animations.
+
+### Data Flow
+
+```
+content/blog/*.mdx
+       ↓
+  lib/mdx.ts (getPostBySlug, getAllPosts)
+       ↓
+  Server Components (pages)
+       ↓
+  Client Components (rendering)
+```
+
+### Key Files
+
+| File | Type | Purpose |
+|------|------|---------|
+| `lib/mdx.ts` | Utility | Đọc và parse MDX files từ `content/blog/` |
+| `app/[locale]/blog/page.tsx` | Server | Fetch all posts, pass to BlogListClient |
+| `app/[locale]/blog/[slug]/page.tsx` | Server | Fetch single post, pass to BlogPostClient |
+| `components/blog/BlogListClient.tsx` | Client | Render blog listing với search/filter |
+| `components/blog/BlogPostClient.tsx` | Client | Render blog content với markdown parsing |
+| `components/home/FeaturedPosts.tsx` | Client | Render featured posts on homepage |
+
+### MDX Utilities (`lib/mdx.ts`)
+
+```typescript
+// Get all post slugs
+getPostSlugs(): string[]
+
+// Get single post by slug and locale
+getPostBySlug(slug: string, locale: string): Post | null
+
+// Get all posts sorted by date (newest first)
+getAllPosts(locale: string): PostMeta[]
+
+// Get posts by tag
+getPostsByTag(tag: string, locale: string): PostMeta[]
+
+// Get all unique tags
+getAllTags(locale: string): string[]
 ```
 
 ## Key Files Reference
@@ -89,26 +139,29 @@ personal_page/
 
 ### Pages
 
-| Route | File | Description |
-|-------|------|-------------|
-| `/[locale]` | `src/app/[locale]/page.tsx` | Homepage with Hero, FeaturedPosts, TechStack |
-| `/[locale]/about` | `src/app/[locale]/about/page.tsx` | Bio, Experience timeline, Skills |
-| `/[locale]/blog` | `src/app/[locale]/blog/page.tsx` | Blog listing with search & tag filter |
-| `/[locale]/blog/[slug]` | `src/app/[locale]/blog/[slug]/page.tsx` | Blog post detail |
-| `/[locale]/moments` | `src/app/[locale]/moments/page.tsx` | Photo gallery with lightbox |
-| `/[locale]/contact` | `src/app/[locale]/contact/page.tsx` | Contact form + social links |
+| Route | File | Type | Description |
+|-------|------|------|-------------|
+| `/[locale]` | `src/app/[locale]/page.tsx` | Server | Homepage - fetches posts for FeaturedPosts |
+| `/[locale]/about` | `src/app/[locale]/about/page.tsx` | Client | Bio, Experience timeline, Skills |
+| `/[locale]/blog` | `src/app/[locale]/blog/page.tsx` | Server | Blog listing - fetches all posts |
+| `/[locale]/blog/[slug]` | `src/app/[locale]/blog/[slug]/page.tsx` | Server | Blog detail - fetches single post |
+| `/[locale]/cv` | `src/app/[locale]/cv/page.tsx` | Client | CV/Resume page |
+| `/[locale]/moments` | `src/app/[locale]/moments/page.tsx` | Client | Photo gallery with lightbox |
+| `/[locale]/contact` | `src/app/[locale]/contact/page.tsx` | Client | Contact form + social links |
 
 ### Components
 
-| Component | File | Props/Usage |
-|-----------|------|-------------|
-| Header | `src/components/layout/Header.tsx` | Navigation, mobile menu, includes ThemeToggle & LanguageSwitcher |
-| Footer | `src/components/layout/Footer.tsx` | Social links, copyright |
-| ThemeToggle | `src/components/layout/ThemeToggle.tsx` | Cycles: light → dark → system |
-| LanguageSwitcher | `src/components/layout/LanguageSwitcher.tsx` | VI/EN toggle buttons |
-| Hero | `src/components/home/Hero.tsx` | Animated hero section |
-| TechStack | `src/components/home/TechStack.tsx` | Technology badges grid |
-| FeaturedPosts | `src/components/home/FeaturedPosts.tsx` | 3 latest blog posts |
+| Component | File | Props |
+|-----------|------|-------|
+| Header | `src/components/layout/Header.tsx` | - |
+| Footer | `src/components/layout/Footer.tsx` | - |
+| ThemeToggle | `src/components/layout/ThemeToggle.tsx` | - |
+| LanguageSwitcher | `src/components/layout/LanguageSwitcher.tsx` | - |
+| Hero | `src/components/home/Hero.tsx` | - |
+| TechStack | `src/components/home/TechStack.tsx` | - |
+| FeaturedPosts | `src/components/home/FeaturedPosts.tsx` | `posts: Post[]` |
+| BlogListClient | `src/components/blog/BlogListClient.tsx` | `posts: Post[], locale: string` |
+| BlogPostClient | `src/components/blog/BlogPostClient.tsx` | `post: Post, locale: string, author?: string` |
 
 ### i18n
 
@@ -123,11 +176,11 @@ personal_page/
 ```json
 {
   "nav": { "home", "about", "blog", "moments", "contact" },
-  "home": { "greeting", "role", "intro", "viewBlog", "aboutMe", ... },
+  "home": { "greeting", "role", "intro", "viewBlog", "aboutMe", "featuredPosts", "viewAll" },
   "about": { "title", "bio", "experience", "skills", "education" },
-  "blog": { "title", "subtitle", "readMore", "minRead", "search", ... },
+  "blog": { "title", "subtitle", "readMore", "minRead", "search", "noResults", "share" },
   "moments": { "title", "subtitle" },
-  "contact": { "title", "subtitle", "name", "email", "message", "send", ... },
+  "contact": { "title", "subtitle", "name", "email", "message", "send" },
   "footer": { "rights", "madeWith" },
   "common": { "loading", "error", "back" }
 }
@@ -137,7 +190,7 @@ personal_page/
 
 | File | Purpose |
 |------|---------|
-| `src/app/globals.css` | Tailwind base, custom utilities (`.gradient-text`, `.glass-card`, `.gradient-bg`) |
+| `src/app/globals.css` | Tailwind base, custom utilities |
 | `tailwind.config.ts` | Dark mode, custom fonts, animations |
 
 **Custom CSS classes:**
@@ -152,23 +205,83 @@ personal_page/
 ### Add new blog post
 
 1. Create `content/blog/[slug].mdx`:
+
 ```mdx
 ---
-title: Post Title
+title: Post Title (fallback)
 title_vi: Tiêu đề tiếng Việt
 title_en: English Title
-excerpt_vi: Mô tả ngắn
-excerpt_en: Short description
+excerpt_vi: Mô tả ngắn bằng tiếng Việt
+excerpt_en: Short description in English
 date: 2024-01-20
 tags:
   - Tag1
   - Tag2
+  - Tag3
+thumbnail: https://images.unsplash.com/photo-xxx?w=800
 ---
 
-# Content here...
+# Tiêu đề bài viết
+
+Nội dung viết bằng Markdown...
+
+## Heading 2
+
+Paragraph text với **bold** và *italic*.
+
+> Blockquote sẽ được render đẹp
+
+### Code blocks
+
+\`\`\`java
+public class Example {
+    public static void main(String[] args) {
+        System.out.println("Hello");
+    }
+}
+\`\`\`
+
+### Tables
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Data 1   | Data 2   |
+
+### Images
+
+![Alt text](https://images.unsplash.com/photo-xxx?w=800)
+
+### Lists
+
+- Item 1
+- Item 2
+- Item 3
+
+### Links
+
+[Link text](https://example.com)
 ```
 
-2. Blog will auto-appear in listing
+2. **Done!** Blog will auto-appear in:
+   - Blog listing page (`/vi/blog`, `/en/blog`)
+   - Homepage featured posts (if in top 3 by date)
+   - Static paths generated at build time
+
+### Supported Markdown Features
+
+| Feature | Syntax | Rendered |
+|---------|--------|----------|
+| Headings | `# H1`, `## H2`, `### H3` | Styled headings with borders |
+| Bold | `**text**` | Strong text |
+| Italic | `*text*` | Emphasized text |
+| Code inline | `` `code` `` | Highlighted code |
+| Code block | ` ```lang ` | Syntax highlighted block |
+| Blockquote | `> quote` | Styled quote card |
+| Image | `![alt](url)` | Responsive image with caption |
+| Link | `[text](url)` | Blue link |
+| Table | `\| col \|` | Styled table |
+| List | `- item` or `1. item` | Bullet/numbered list |
+| HR | `---` | Divider line |
 
 ### Add moment/photo
 
@@ -184,28 +297,12 @@ tags:
   },
   date: '2024-01-20',
   location: 'Location Name',
-  tags: ['travel', 'nature'], // Available: travel, work, food, nature, lifestyle, tech, team, culture
+  tags: ['travel', 'nature'],
   likes: 0,
 }
 ```
 
-**Available tags with colors:**
-| Tag | Icon | Color |
-|-----|------|-------|
-| travel | ✈️ | Blue |
-| work | 💼 | Purple |
-| food | 🍜 | Orange |
-| nature | 🌿 | Green |
-| lifestyle | ✨ | Pink |
-| tech | 💻 | Cyan |
-| team | 👥 | Amber |
-| culture | 🏛️ | Red |
-
-**Filter features:**
-- Sort by: Newest / Oldest / Popular (by likes)
-- Filter by Year
-- Filter by Month
-- Filter by Tags (multi-select)
+**Available tags:** travel, work, food, nature, lifestyle, tech, team, culture
 
 ### Add translation
 
@@ -227,7 +324,8 @@ tags:
 ## Commands
 
 ```bash
-npm run dev -- -p 3001   # Development server (port 3001)
+npm run dev              # Development server (default port 3000)
+npm run dev -- -p 3001   # Development server on port 3001
 npm run build            # Production build
 npm run start            # Start production server
 npm run lint             # Run ESLint
@@ -241,7 +339,7 @@ npm run lint             # Run ESLint
 - next-themes (dark mode)
 - framer-motion (animations)
 - lucide-react (icons)
-- gray-matter, reading-time (blog)
+- gray-matter, reading-time (blog MDX parsing)
 - clsx (classnames)
 
 **Dev:**
@@ -252,8 +350,17 @@ npm run lint             # Run ESLint
 ## Notes for AI Agents
 
 1. **All pages are under `[locale]`** - Always include locale in paths
-2. **Sample data is hardcoded** - Blog posts in pages use sample arrays, not MDX files yet
-3. **Images use Unsplash URLs** - Replace with actual images in production
-4. **Contact form is demo** - No actual backend, just simulates success
-5. **Translations required** - Add both vi.json and en.json when adding new text
-6. **Use `'use client'`** - Most components use client-side features (framer-motion, hooks)
+2. **Blog uses MDX files** - Content stored in `content/blog/*.mdx`, loaded via `lib/mdx.ts`
+3. **Server/Client separation** - Pages are Server Components, rendering is Client Components
+4. **Images use Unsplash URLs** - Replace with actual images in production
+5. **Contact form is demo** - No actual backend, just simulates success
+6. **Translations required** - Add both vi.json and en.json when adding new text
+7. **Bilingual blog posts** - Use `title_vi`/`title_en` and `excerpt_vi`/`excerpt_en` in frontmatter
+
+## Current Blog Posts
+
+| Slug | Title (VI) | Tags |
+|------|------------|------|
+| `non-blocking-io` | Non-Blocking I/O - Nghệ thuật không chờ đợi | Non-Blocking, Event Loop, Concurrency |
+| `building-reactive-systems` | Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn | Reactive, Architecture, Resilience |
+| `api-contract-openapi` | API Contract - Khi code biết nói chuyện | OpenAPI, Vert.x, API Design, Microservices |

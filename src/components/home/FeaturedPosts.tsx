@@ -6,35 +6,17 @@ import { ArrowRight, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// Featured blog posts - ordered by learning sequence
-const featuredPosts = [
-  {
-    slug: 'non-blocking-io',
-    title: {
-      vi: 'Non-Blocking I/O - Nghệ thuật không chờ đợi',
-      en: 'Non-Blocking I/O - The Art of Not Waiting',
-    },
-    excerpt: {
-      vi: 'Hiểu sâu về Event Loop và Non-Blocking I/O thông qua câu chuyện quán coffee. Từ Blocking đến Async, từ Concurrency đến Parallelism.',
-      en: 'Deep dive into Event Loop and Non-Blocking I/O through a coffee shop story. From Blocking to Async, from Concurrency to Parallelism.',
-    },
-    date: '2024-01-25',
-    readTime: 15,
-  },
-  {
-    slug: 'building-reactive-systems',
-    title: {
-      vi: 'Xây dựng Reactive Systems - Từ Manifesto đến Thực tiễn',
-      en: 'Building Reactive Systems - From Manifesto to Practice',
-    },
-    excerpt: {
-      vi: 'Tìm hiểu The Reactive Manifesto với 4 trụ cột - Responsive, Resilient, Elastic, Message Driven và các Resilience Patterns.',
-      en: 'Explore The Reactive Manifesto with 4 pillars - Responsive, Resilient, Elastic, Message Driven and Resilience Patterns.',
-    },
-    date: '2024-01-20',
-    readTime: 18,
-  },
-];
+interface Post {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  readingTime: string;
+}
+
+interface FeaturedPostsProps {
+  posts: Post[];
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -51,9 +33,8 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-export default function FeaturedPosts() {
+export default function FeaturedPosts({ posts }: FeaturedPostsProps) {
   const t = useTranslations('home');
-  const tBlog = useTranslations('blog');
   const pathname = usePathname();
   const locale = (pathname.split('/')[1] || 'vi') as 'vi' | 'en';
 
@@ -91,7 +72,7 @@ export default function FeaturedPosts() {
           viewport={{ once: true }}
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {featuredPosts.map((post) => (
+          {posts.map((post) => (
             <motion.article
               key={post.slug}
               variants={item}
@@ -101,10 +82,10 @@ export default function FeaturedPosts() {
               <Link href={`/${locale}/blog/${post.slug}`}>
                 <div className="h-full p-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors shadow-sm hover:shadow-md">
                   <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                    {post.title[locale]}
+                    {post.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                    {post.excerpt[locale]}
+                    {post.excerpt}
                   </p>
                   <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
                     <span className="flex items-center gap-1">
@@ -117,7 +98,7 @@ export default function FeaturedPosts() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock size={14} />
-                      {post.readTime} {tBlog('minRead')}
+                      {post.readingTime}
                     </span>
                   </div>
                 </div>

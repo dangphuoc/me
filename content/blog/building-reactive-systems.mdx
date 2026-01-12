@@ -27,30 +27,16 @@ Ngày **16 tháng 9 năm 2014**, Jonas Bonér cùng các đồng nghiệp công 
 
 ## 4 Trụ cột của Reactive Systems
 
-### Reactive Systems Architecture
+![Reactive Manifesto](https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800)
 
-```
-                    ┌─────────────────┐
-                    │   RESPONSIVE    │
-                    │  (Đáp ứng nhanh) │
-                    └────────┬────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-     ┌────────▼───────┐     │     ┌────────▼────────┐
-     │   RESILIENT    │     │     │    ELASTIC      │
-     │ (Khả năng      │     │     │  (Co giãn       │
-     │  phục hồi)     │     │     │   linh hoạt)    │
-     └────────┬───────┘     │     └────────┬────────┘
-              │             │              │
-              └──────────────┼──────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │ MESSAGE DRIVEN  │
-                    │ (Hướng thông    │
-                    │      điệp)      │
-                    └─────────────────┘
-```
+| Trụ cột | Ý nghĩa | Vai trò |
+|---------|---------|---------|
+| **RESPONSIVE** | Đáp ứng nhanh | Mục tiêu cuối cùng - UX tốt |
+| **RESILIENT** | Khả năng phục hồi | Duy trì responsive khi có lỗi |
+| **ELASTIC** | Co giãn linh hoạt | Duy trì responsive khi load thay đổi |
+| **MESSAGE DRIVEN** | Hướng thông điệp | Nền tảng kỹ thuật cho tất cả |
+
+**Mối quan hệ:** Message Driven → (Resilient + Elastic) → Responsive
 
 ---
 
@@ -81,19 +67,12 @@ Hệ thống vẫn phải **responsive khi xảy ra failure**. Bất kỳ hệ t
 
 ### Resilience đạt được thông qua:
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    RESILIENCE                        │
-├─────────────┬─────────────┬─────────────┬───────────┤
-│ Replication │ Containment │  Isolation  │ Delegation│
-│  (Nhân bản) │  (Cô lập)   │ (Tách biệt) │ (Ủy quyền)│
-└─────────────┴─────────────┴─────────────┴───────────┘
-```
-
-- **Replication:** Nhân bản dữ liệu/service để failover
-- **Containment:** Cô lập failures, không lan truyền
-- **Isolation:** Tách biệt components, giảm coupling
-- **Delegation:** Ủy quyền xử lý recovery cho component khác
+| Kỹ thuật | Tiếng Việt | Mô tả |
+|----------|------------|-------|
+| **Replication** | Nhân bản | Nhân bản dữ liệu/service để failover |
+| **Containment** | Cô lập | Cô lập failures, không lan truyền |
+| **Isolation** | Tách biệt | Tách biệt components, giảm coupling |
+| **Delegation** | Ủy quyền | Ủy quyền xử lý recovery cho component khác |
 
 ---
 
@@ -130,25 +109,12 @@ Reactive Systems dựa vào **asynchronous message-passing** để thiết lập
 
 ### Commands vs Events
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    COMMANDS                          │
-├─────────────────────────────────────────────────────┤
-│  • Unicast (1 target)                                │
-│  • Yêu cầu action cụ thể                            │
-│  • Expect response                                   │
-│  • VD: "Transfer $100 to User X"                    │
-└─────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────┐
-│                     EVENTS                           │
-├─────────────────────────────────────────────────────┤
-│  • Broadcast/Multicast                               │
-│  • Thông báo điều đã xảy ra                         │
-│  • Không expect response                             │
-│  • VD: "Transaction ABC completed"                  │
-└─────────────────────────────────────────────────────┘
-```
+| Đặc điểm | Commands | Events |
+|----------|----------|--------|
+| **Gửi đến** | Unicast (1 target) | Broadcast/Multicast |
+| **Mục đích** | Yêu cầu action cụ thể | Thông báo điều đã xảy ra |
+| **Response** | Expect response | Không expect response |
+| **Ví dụ** | "Transfer $100 to User X" | "Transaction ABC completed" |
 
 ---
 
@@ -168,27 +134,13 @@ Reactive Systems dựa vào **asynchronous message-passing** để thiết lập
 
 ### Netty Architecture
 
-```
-┌───────────────────────────────────────────────────┐
-│                    NETTY                           │
-├───────────────────────────────────────────────────┤
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐       │
-│  │ Channel │    │ Channel │    │ Channel │       │
-│  │ (conn1) │    │ (conn2) │    │ (conn3) │       │
-│  └────┬────┘    └────┬────┘    └────┬────┘       │
-│       │              │              │             │
-│       └──────────────┼──────────────┘             │
-│                      │                            │
-│              ┌───────▼───────┐                    │
-│              │   Selector    │  (Multiplexing)   │
-│              └───────┬───────┘                    │
-│                      │                            │
-│              ┌───────▼───────┐                    │
-│              │  Event Loop   │                    │
-│              │   (1 Thread)  │                    │
-│              └───────────────┘                    │
-└───────────────────────────────────────────────────┘
-```
+**Kiến trúc Netty theo tầng:**
+
+1. **Channels** - Đại diện cho các connections (conn1, conn2, conn3...)
+2. **Selector** - Multiplexing - theo dõi nhiều channels cùng lúc
+3. **Event Loop** - 1 Thread xử lý tất cả events
+
+> **Key insight:** Với Netty, 1 Event Loop thread có thể quản lý hàng nghìn connections nhờ non-blocking I/O và multiplexing.
 
 ---
 
@@ -202,11 +154,17 @@ Khi xây dựng hệ thống thanh toán tại MoMo, chúng tôi áp dụng các
 
 **Mục đích:** Thực hiện lại operation khi gặp transient failure.
 
-```
-Request → Fail → Wait → Retry → Fail → Wait (longer) → Retry → Success
-                 ↑                      ↑
-           Exponential Backoff
-```
+| Bước | Trạng thái | Thời gian chờ |
+|------|------------|---------------|
+| 1 | Request → Fail | - |
+| 2 | Wait | 1s |
+| 3 | Retry → Fail | - |
+| 4 | Wait (longer) | 2s |
+| 5 | Retry → Fail | - |
+| 6 | Wait (even longer) | 4s |
+| 7 | Retry → **Success** | - |
+
+> **Exponential Backoff**: Thời gian chờ tăng gấp đôi sau mỗi lần thất bại
 
 **Best Practices:**
 - Sử dụng **exponential backoff** (1s → 2s → 4s → 8s)
@@ -219,23 +177,14 @@ Request → Fail → Wait → Retry → Fail → Wait (longer) → Retry → Suc
 
 ![Circuit Breaker](https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=800)
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 CIRCUIT BREAKER                      │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│   ┌────────┐  failures  ┌────────┐  timeout  ┌────────┐
-│   │ CLOSED │ ─────────► │  OPEN  │ ────────► │ HALF   │
-│   │        │            │        │           │ OPEN   │
-│   └────┬───┘            └────────┘           └───┬────┘
-│        │                     ▲                   │
-│        │                     │ failure           │ success
-│        │                     └───────────────────┘
-│        │                                         │
-│        └─────────────────────────────────────────┘
-│                         success
-└─────────────────────────────────────────────────────┘
-```
+**Circuit Breaker State Flow:**
+
+| Từ State | Điều kiện | Đến State |
+|----------|-----------|-----------|
+| **CLOSED** | Nhiều failures liên tiếp | **OPEN** |
+| **OPEN** | Sau timeout | **HALF-OPEN** |
+| **HALF-OPEN** | Test request thành công | **CLOSED** |
+| **HALF-OPEN** | Test request thất bại | **OPEN** |
 
 | State | Behavior |
 |-------|----------|
@@ -268,20 +217,15 @@ Request → Fail → Wait → Retry → Fail → Wait (longer) → Retry → Suc
 - Các khoang (bulkhead) được ngăn cách
 - Nước vào một khoang không làm chìm cả tàu
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    APPLICATION                       │
-├─────────────────────────────────────────────────────┤
-│  ┌───────────┐   ┌───────────┐   ┌───────────┐     │
-│  │ Thread    │   │ Thread    │   │ Thread    │     │
-│  │ Pool A    │   │ Pool B    │   │ Pool C    │     │
-│  │ (Bank)    │   │ (Payment) │   │ (User)    │     │
-│  └───────────┘   └───────────┘   └───────────┘     │
-│       ║              ║              ║               │
-│  ═════╬══════════════╬══════════════╬═════         │
-│       ║  ISOLATION   ║   WALLS      ║               │
-└─────────────────────────────────────────────────────┘
-```
+**Application với Bulkhead Pattern:**
+
+| Thread Pool | Chức năng | Isolation |
+|-------------|-----------|-----------|
+| **Pool A** | Bank Integration | Riêng biệt |
+| **Pool B** | Payment Processing | Riêng biệt |
+| **Pool C** | User Service | Riêng biệt |
+
+> Mỗi pool được cách ly hoàn toàn - nếu Bank Integration bị quá tải, Payment và User vẫn hoạt động bình thường.
 
 ### 5. Fallback Pattern
 
