@@ -1,0 +1,214 @@
+---
+title: Non-Blocking I/O - The Art of Not Waiting
+excerpt: Deep dive into Event Loop and Non-Blocking I/O through a coffee shop story. From Blocking to Async, from Concurrency to Parallelism.
+date: 2024-01-25
+tags:
+  - Non-Blocking
+  - Event Loop
+  - Concurrency
+  - Backend
+thumbnail: https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800
+---
+
+# Non-Blocking I/O - The Art of Not Waiting
+
+## The Problem with Blocking Code
+
+In traditional programming, we often write **blocking code**. When facing performance issues, the common solution is to allow some tasks to execute in parallel. However, this requires more resources and simultaneously dealing with **concurrency problems**:
+
+![Blocking vs Non-blocking](https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800)
+
+### Common problems:
+
+- **Race Condition** - When multiple threads access the same resource
+- **Critical Sections** - Code regions that need protection
+- **Deadlock** - Threads waiting for each other indefinitely
+
+> **Problem:** When incidents cause high latency (e.g., DB or network), those threads will be blocked until completion, leading to resource exhaustion.
+
+---
+
+## Understanding Concurrency through a Coffee Shop Example
+
+To understand the concepts clearly, imagine **Hieu** opens a coffee shop with one barista.
+
+![Coffee Shop Analogy](https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800)
+
+### Customer Service Process:
+
+| Step | Task | Time |
+|------|------|------|
+| 1 | Take order | 500ms |
+| 2 | Make coffee | 500ms |
+| 3 | Collect payment | 500ms |
+| 4 | Serve drink | 500ms |
+
+**Scenario:** Today there are 100 customers within one minute.
+
+### What is Concurrency?
+
+When an application handles multiple requests at once, the CPU executes requests so fast that we can consider them as **simultaneous**.
+
+![Concurrency Diagram](https://images.unsplash.com/photo-1518770660439-4636190af475?w=800)
+
+**Context Switching:** A CPU with a single core supports concurrency through continuously switching between threads to handle requests.
+
+---
+
+## Parallelism - Adding Staff
+
+To increase efficiency, Hieu hires another employee **Luu**. Work is now done **in parallel**.
+
+![Parallelism](https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800)
+
+### Comparing Concurrency vs Parallelism
+
+| Concurrency | Parallelism |
+|-------------|-------------|
+| Handle many tasks "at once" | Actually run in parallel |
+| 1 CPU core, context switching | Multiple CPU cores |
+| Like 1 person doing many things | Many people doing many things |
+
+> **Parallelism** is simultaneous execution of requests on a multi-core CPU.
+
+---
+
+## Multi-thread - Optimizing the Process
+
+Realizing payment collection can be automated, Hieu places a **QR Code** at the counter for customers to self-pay.
+
+![Automation](https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800)
+
+### Multi-threading achieves:
+- Simultaneous use of multiple threads across multiple CPUs
+- Maximizing CPU performance
+- Reducing customer wait time
+
+---
+
+## Synchronous vs Asynchronous Programming
+
+### Synchronous
+
+With the current operation, staff must perform work **sequentially**:
+
+```
+Take order → Make coffee → Serve drink → Next customer
+```
+
+![Synchronous Flow](https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800)
+
+**Problem:** Next task must wait for previous task to complete.
+
+### Asynchronous
+
+Hieu and Luu create a new process with help from **Long**:
+
+![Asynchronous Flow](https://images.unsplash.com/photo-1552664730-d307ca884978?w=800)
+
+| Person | Role | Equivalent in Code |
+|--------|------|-------------------|
+| Long | Take orders, give queue numbers | **Event Loop** |
+| Queue number | Order tracking | **Event Queue** |
+| Hieu | Make coffee | **Handler 1** |
+| Luu | Serve drinks | **Handler 2** |
+| QR Code | Automatic payment | **Async Handler** |
+
+---
+
+## Event Loop - The Heart of Non-Blocking
+
+**Event Loop** is an infinite loop, listening for events and distributing them to handlers for processing.
+
+![Event Loop Architecture](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+### Important Characteristics of Event Loop:
+
+1. **Never blocked** - Designed to always be ready to receive events
+2. **Handle large volumes of events** - Because it's not blocked
+3. **Runs on one core** - At any given time
+4. **Multicore deployment** - Requires starting multiple processes
+
+> This is the **Reactor Pattern** - the foundation of Non-blocking I/O.
+
+---
+
+## Vert.x and Multi-Reactor Pattern
+
+**Vert.x** is a toolkit (not a framework or application server) for building Reactive Applications.
+
+![Vert.x Architecture](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800)
+
+### Multi-Reactor Pattern in Vert.x
+
+**Vert.x Instance with Multi-Reactor:**
+
+| Event Loop | CPU Core | Role |
+|------------|----------|------|
+| **Event Loop 1** | Core 1 | Process events independently |
+| **Event Loop 2** | Core 2 | Process events independently |
+| **Event Loop 3** | Core 3 | Process events independently |
+
+> Each Event Loop runs on 1 CPU core, allowing maximum utilization of multi-core server resources.
+
+**Vert.x instance** can manage multiple Event Loops, the number typically depends on CPU core count.
+
+---
+
+## Golden Rule: Don't Block the Event Loop!
+
+![Warning](https://images.unsplash.com/photo-1606606767399-01e271823a2e?w=800)
+
+### Why is it important?
+
+> **If you block all Event Loops in a Vert.x application, the application will STOP!**
+
+### How long should a handler take?
+
+Depends on traffic and number of Event Loops:
+
+| Event Loops | Traffic | Max Processing Time |
+|-------------|---------|---------------------|
+| 1 | 1000 rps | **1ms** |
+| 2 | 1000 rps | **2ms** |
+| 4 | 1000 rps | **4ms** |
+
+---
+
+## What is Reactive Programming?
+
+### Purpose:
+
+1. **Clear architecture** - Easy to scale and develop
+2. **Handle appropriate traffic** - Meet business requirements
+3. **Follow The Reactive Manifesto** - Proven best practices
+
+![Reactive Manifesto](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
+
+### How to build a Reactive Application:
+
+| Approach | Tools | Complexity |
+|----------|-------|------------|
+| Use toolkit | Vert.x, Netty | High |
+| Code from Java core | NIO, CompletableFuture | Very high |
+| Use Framework | Spring WebFlux, Quarkus, Mutiny | Medium |
+
+---
+
+## Key Takeaways
+
+![Summary](https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800)
+
+1. **Concurrency ≠ Parallelism** - Understand the difference clearly
+2. **Event Loop** is the heart of Non-Blocking I/O
+3. **Never block the Event Loop!** - Golden rule
+4. **Multi-Reactor Pattern** allows maximum utilization of server resources
+5. **Vert.x** is a powerful toolkit for building Reactive Applications
+
+---
+
+## References
+
+- [Vert.x Documentation](https://vertx.io/docs/)
+- [The Reactive Manifesto](https://www.reactivemanifesto.org/)
+- [Reactive Programming with Java](https://www.baeldung.com/java-reactive-programming)

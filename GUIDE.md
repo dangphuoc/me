@@ -9,40 +9,56 @@
 
 ## Thêm Blog Post
 
-Blog sử dụng **MDX files** trong thư mục `content/blog/`. Mỗi file `.mdx` là một bài viết.
+Blog sử dụng **MDX files** trong thư mục `content/blog/`. Mỗi bài viết cần **2 file** cho 2 ngôn ngữ.
 
-### Bước 1: Tạo file MDX mới
+### Bước 1: Tạo 2 file MDX (Vietnamese + English)
 
 ```bash
-# Tạo file mới trong content/blog/
-content/blog/ten-bai-viet.mdx
+# Tạo file tiếng Việt
+content/blog/ten-bai-viet.vi.mdx
+
+# Tạo file tiếng Anh
+content/blog/ten-bai-viet.en.mdx
 ```
 
 **Quy tắc đặt tên file:**
 - Sử dụng chữ thường, không dấu
 - Dùng dấu gạch ngang `-` thay khoảng trắng
-- Tên file sẽ trở thành URL slug: `ten-bai-viet` → `/blog/ten-bai-viet`
+- Format: `slug.locale.mdx` (ví dụ: `my-post.vi.mdx`, `my-post.en.mdx`)
+- Slug sẽ trở thành URL: `ten-bai-viet` → `/vi/blog/ten-bai-viet` hoặc `/en/blog/ten-bai-viet`
 
 ### Bước 2: Thêm Frontmatter
 
-Mỗi file MDX cần có phần frontmatter ở đầu file:
+Mỗi file MDX cần có phần frontmatter đơn giản (không cần `_vi` hoặc `_en` suffix):
 
+**File `.vi.mdx`:**
 ```mdx
 ---
-title: Tiêu đề mặc định
-title_vi: Tiêu đề tiếng Việt
-title_en: English Title
-excerpt_vi: Mô tả ngắn bằng tiếng Việt (1-2 câu). Hiển thị trong danh sách blog.
-excerpt_en: Short description in English (1-2 sentences). Shown in blog listing.
+title: Tiêu đề tiếng Việt
+excerpt: Mô tả ngắn bằng tiếng Việt (1-2 câu).
 date: 2024-01-20
 tags:
   - Tag1
   - Tag2
-  - Tag3
 thumbnail: https://images.unsplash.com/photo-xxxxx?w=800
 ---
 
-# Nội dung bài viết bắt đầu từ đây
+# Nội dung tiếng Việt ở đây
+```
+
+**File `.en.mdx`:**
+```mdx
+---
+title: English Title
+excerpt: Short description in English (1-2 sentences).
+date: 2024-01-20
+tags:
+  - Tag1
+  - Tag2
+thumbnail: https://images.unsplash.com/photo-xxxxx?w=800
+---
+
+# English content here
 ```
 
 ### Bước 3: Viết nội dung
@@ -127,14 +143,13 @@ git push
 
 | Field | Bắt buộc | Mô tả |
 |-------|----------|-------|
-| `title` | ✅ | Tiêu đề mặc định (fallback) |
-| `title_vi` | ✅ | Tiêu đề tiếng Việt |
-| `title_en` | ✅ | Tiêu đề tiếng Anh |
-| `excerpt_vi` | ✅ | Mô tả ngắn tiếng Việt |
-| `excerpt_en` | ✅ | Mô tả ngắn tiếng Anh |
+| `title` | ✅ | Tiêu đề bài viết (theo ngôn ngữ của file) |
+| `excerpt` | ✅ | Mô tả ngắn (theo ngôn ngữ của file) |
 | `date` | ✅ | Ngày đăng (YYYY-MM-DD) |
 | `tags` | ✅ | Danh sách tags (array) |
 | `thumbnail` | ❌ | URL ảnh thumbnail |
+
+> **Note:** Mỗi file `.vi.mdx` và `.en.mdx` có frontmatter riêng theo ngôn ngữ tương ứng.
 
 ---
 
@@ -304,10 +319,13 @@ const sampleMoments = [
 ```
 personal_page/
 ├── content/
-│   └── blog/                    # ← MDX blog posts
-│       ├── api-contract-openapi.mdx
-│       ├── building-reactive-systems.mdx
-│       └── non-blocking-io.mdx
+│   └── blog/                    # ← MDX blog posts (2 files per post)
+│       ├── api-contract-openapi.vi.mdx
+│       ├── api-contract-openapi.en.mdx
+│       ├── building-reactive-systems.vi.mdx
+│       ├── building-reactive-systems.en.mdx
+│       ├── non-blocking-io.vi.mdx
+│       └── non-blocking-io.en.mdx
 ├── public/
 │   └── images/
 │       └── moments/             # ← Ảnh moments
@@ -360,11 +378,12 @@ personal_page/
 ## Checklist sau khi thêm nội dung
 
 ### Blog Post
-- [ ] Tạo file `.mdx` trong `content/blog/`
-- [ ] Điền đủ frontmatter (title_vi, title_en, excerpt_vi, excerpt_en, date, tags)
-- [ ] Format ngày đúng: `YYYY-MM-DD`
+- [ ] Tạo 2 file: `slug.vi.mdx` và `slug.en.mdx` trong `content/blog/`
+- [ ] Điền đủ frontmatter trong mỗi file (title, excerpt, date, tags)
+- [ ] Format ngày đúng: `YYYY-MM-DD` (giống nhau cho cả 2 file)
+- [ ] Viết nội dung tiếng Việt trong `.vi.mdx`, tiếng Anh trong `.en.mdx`
 - [ ] Không dùng ASCII diagram phức tạp (dùng table thay thế)
-- [ ] Chạy `npm run dev` để kiểm tra
+- [ ] Chạy `npm run dev` để kiểm tra cả 2 ngôn ngữ
 - [ ] Chạy `npm run build` để verify
 - [ ] Commit và push lên GitHub
 

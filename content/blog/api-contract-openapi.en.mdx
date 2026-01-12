@@ -1,0 +1,322 @@
+---
+title: API Contract - When Code Learns to Communicate
+excerpt: The story of "silent" APIs and the journey to find their voice through OpenAPI. Contract-First Development with Vert.x and the art of writing self-explaining APIs.
+date: 2024-01-15
+tags:
+  - OpenAPI
+  - Vert.x
+  - API Design
+  - Microservices
+thumbnail: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800
+---
+
+# The Story of "Silent" APIs
+
+There's something interesting I've realized after years of working with microservices: **APIs don't know how to communicate**.
+
+Sounds strange, but think about it. You write an API, frontend calls it, everything works. Then one day, you change a field from `userId` to `user_id`. Nobody knows. Nobody gets notified. Until production "explodes".
+
+> *"If you're building microservices, you are building a distributed system."* — Jez Humble
+
+---
+
+## When Silence Becomes the Enemy
+
+![API Chaos](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+Imagine a company with 50 microservices. Each service has 10-20 APIs. That's hundreds of endpoints to be managed, updated, and... communicated.
+
+**Confluence?** Outdated after 2 weeks. **Slack?** Messages drown in thousands of other messages. **Email?** Who reads email anymore?
+
+The result? Teams work in the dark. Frontend guesses the API. Backend guesses what frontend needs. And QA? QA guesses both.
+
+> *"The biggest problem in communication is the illusion that it has taken place."* — George Bernard Shaw
+
+---
+
+## Contract-First: When APIs Learn to Speak
+
+![Contract](https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800)
+
+There's a different approach - **Contract-First Development**. The idea is simple:
+
+*Before writing a single line of code, define your API.*
+
+Like signing a contract before building a house. You know exactly what you'll get. No surprises. No "I thought it was...".
+
+**Benefits?**
+
+- Frontend and Backend can work **in parallel** - nobody waits for anyone
+- Every change is **documented** and **notified**
+- Security team can **scan APIs** before deployment
+- Onboarding new developers? Give them the spec file, done.
+
+---
+
+## OpenAPI - The Common Language of APIs
+
+**OpenAPI** (formerly Swagger) is the industry standard for describing RESTful APIs. It's like a "contract" written in YAML or JSON that both humans and machines understand.
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Transfer Service API
+  version: 1.0.0
+  description: API for money transfer service
+
+paths:
+  /api/v1/transfer:
+    post:
+      operationId: createTransfer
+      summary: Create a money transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+        '400':
+          description: Invalid request
+
+components:
+  schemas:
+    TransferRequest:
+      type: object
+      required:
+        - fromAccount
+        - toAccount
+        - amount
+      properties:
+        fromAccount:
+          type: string
+          example: "1234567890"
+        toAccount:
+          type: string
+          example: "0987654321"
+        amount:
+          type: number
+          minimum: 1000
+          example: 50000
+```
+
+Looking at this file, you immediately know:
+- Which endpoints are available
+- What the request body needs
+- What format the response returns
+- What the validation rules are
+
+---
+
+## Vert.x + OpenAPI = Magic
+
+![Vert.x](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+Here's the interesting part. With **Vert.x Web OpenAPI**, you can create a router directly from the OpenAPI spec. No need to write validation code. No need to parse requests manually.
+
+### Setup dependency
+
+```xml
+<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-web-openapi</artifactId>
+  <version>4.5.12</version>
+</dependency>
+```
+
+### Create Router from OpenAPI spec
+
+```java
+RouterBuilder.create(vertx, "openapi/transfer-api.yaml")
+  .onSuccess(routerBuilder -> {
+    // Map operation to handler
+    routerBuilder.operation("createTransfer")
+      .handler(this::handleCreateTransfer);
+
+    routerBuilder.operation("getTransferStatus")
+      .handler(this::handleGetStatus);
+
+    // Create router
+    Router router = routerBuilder.createRouter();
+
+    // Start server
+    vertx.createHttpServer()
+      .requestHandler(router)
+      .listen(8080)
+      .onSuccess(server ->
+        logger.info("Server started on port 8080"));
+  })
+  .onFailure(err ->
+    logger.error("Failed to load OpenAPI spec", err));
+```
+
+**What's the magic here?**
+
+When a request arrives, Vert.x **automatically validates** based on the OpenAPI spec:
+- Type checking (string, number, boolean)
+- Required fields
+- Format validation (email, date, uuid)
+- Min/max values
+- Pattern matching (regex)
+
+You don't need to write a single line of validation code!
+
+---
+
+## Automatic Validation - Real Example
+
+Suppose the client sends a request missing the `amount` field:
+
+```json
+{
+  "fromAccount": "1234567890",
+  "toAccount": "0987654321"
+}
+```
+
+Vert.x will automatically return:
+
+```json
+{
+  "code": 400,
+  "message": "Validation error",
+  "errors": [
+    {
+      "field": "amount",
+      "message": "required field is missing"
+    }
+  ]
+}
+```
+
+Or if `amount` is less than minimum:
+
+```json
+{
+  "fromAccount": "1234567890",
+  "toAccount": "0987654321",
+  "amount": 500
+}
+```
+
+Response:
+
+```json
+{
+  "code": 400,
+  "message": "Validation error",
+  "errors": [
+    {
+      "field": "amount",
+      "message": "value 500 is less than minimum 1000"
+    }
+  ]
+}
+```
+
+---
+
+## Swagger UI - Living Documentation
+
+![Swagger UI](https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800)
+
+One of the great things about OpenAPI is you can automatically generate **interactive documentation**.
+
+```java
+// Serve Swagger UI
+router.route("/docs/*").handler(
+  StaticHandler.create("swagger-ui")
+);
+
+// Serve OpenAPI spec
+router.route("/api-docs").handler(ctx -> {
+  ctx.response()
+    .putHeader("Content-Type", "application/yaml")
+    .sendFile("openapi/transfer-api.yaml");
+});
+```
+
+Now, anyone can:
+- View all API endpoints
+- Understand request/response format
+- **Try it out** - test API directly from browser
+
+---
+
+## Splitting Specs with $ref
+
+When APIs grow large, a single YAML file can become massive. Solution? **Split with $ref**.
+
+```
+openapi/
+├── main.yaml           # Main file
+├── paths/
+│   ├── transfer.yaml   # Transfer endpoints
+│   └── account.yaml    # Account endpoints
+└── schemas/
+    ├── transfer.yaml   # Transfer schemas
+    └── common.yaml     # Shared schemas
+```
+
+In `main.yaml`:
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Banking API
+  version: 1.0.0
+
+paths:
+  /api/v1/transfer:
+    $ref: './paths/transfer.yaml#/createTransfer'
+  /api/v1/account/{id}:
+    $ref: './paths/account.yaml#/getAccount'
+```
+
+Clean, organized, maintainable.
+
+---
+
+## Lessons Learned
+
+After many projects with OpenAPI, here's what I've learned:
+
+### 1. Contract first, code later
+Spend time designing the API spec. Review with the team. When everyone agrees, start coding.
+
+### 2. Validation is free
+With OpenAPI + Vert.x, you get validation "free". Take advantage of it. Don't duplicate logic in code.
+
+### 3. Documentation = Living document
+OpenAPI spec isn't write once and forget. It must be updated along with code. Put it in source control.
+
+### 4. Don't overdo it
+Not everything needs OpenAPI. Small internal tools? Maybe not. But for public APIs or large microservices? Definitely use it.
+
+---
+
+## Conclusion
+
+APIs don't have to be "silent". With **OpenAPI** and **Contract-First Development**, you can:
+
+- Create a common language between teams
+- Automate validation
+- Generate living documentation
+- Reduce misunderstandings and bugs
+
+> *"Good communication is the bridge between confusion and clarity."* — Nat Turner
+
+Next time you start a new project, try writing the OpenAPI spec first. You'll be surprised how it changes the way your team works.
+
+---
+
+**Resources:**
+- [OpenAPI Specification](https://swagger.io/specification/)
+- [Vert.x Web OpenAPI](https://vertx.io/docs/vertx-web-openapi/java/)
+- [Swagger Editor](https://editor.swagger.io/)
