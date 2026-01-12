@@ -449,19 +449,31 @@ Client ngây thơ không biết mình bị 'đá'..."
 
 ### Diagram và hình ảnh
 
-**Sequence diagram:** Dùng Mermaid.ink để generate image
-```markdown
-![Diagram](https://mermaid.ink/img/base64code?type=png)
-```
-
 **KHÔNG dùng:**
 - ASCII art phức tạp (dễ vỡ khi render)
 - Table để vẽ sequence (xấu)
+- Mermaid.ink (trông lạc quẻ với tổng thể bài viết)
 
 **NÊN dùng:**
-- Mermaid.ink cho sequence/flow diagrams
+- **Unsplash images** cho illustration
+- **Mô tả bằng lời** với numbered steps cho sequence/flow
 - Table cho so sánh, liệt kê
-- Unsplash images cho illustration
+
+**Ví dụ mô tả sequence:**
+```markdown
+![Network Connection](https://images.unsplash.com/photo-xxx?w=800)
+
+**Request 1** - Mọi thứ suôn sẻ:
+1. Client lấy connection từ pool
+2. Gửi request đến server
+3. Server xử lý, trả response
+4. Server gọi `response.close()` → **âm thầm đóng TCP connection**
+
+**Request 2** - Thảm họa:
+1. Client lấy đúng connection đó ra
+2. Cố gửi data qua đường dây đã chết
+3. **Bùm** - "Connection was closed"
+```
 
 ### Code blocks
 
@@ -487,5 +499,5 @@ Gọi thêm `close()` là **phá hoại**.
 - [ ] Có suspense/mystery trước khi reveal?
 - [ ] Code có context và giải thích?
 - [ ] Ngôn ngữ vui nhộn nhưng lịch sự?
-- [ ] Diagram dùng Mermaid.ink (không ASCII)?
+- [ ] Diagram/sequence dùng Unsplash image + mô tả bằng lời (không ASCII, không Mermaid)?
 - [ ] Có cả 2 file .vi.mdx và .en.mdx?

@@ -136,11 +136,21 @@ The developer who wrote that code probably thought: *"Done with work, clean up"*
 
 To help you visualize, here's what happens:
 
-![Connection Closed Sequence](https://mermaid.ink/img/c2VxdWVuY2VEaWFncmFtCiAgICBwYXJ0aWNpcGFudCBDIGFzIENsaWVudDxicj4oQ29ubmVjdGlvbiBQb29sKQogICAgcGFydGljaXBhbnQgQ09OTiBhcyBUQ1AgQ29ubmVjdGlvbgogICAgcGFydGljaXBhbnQgUyBhcyBTZXJ2ZXIKICAgIAogICAgTm90ZSBvdmVyIEMsUzogUmVxdWVzdCAxIC0gU3VjY2VzcwogICAgQy0-PkNPTk46IEdldCBjb25uZWN0aW9uIGZyb20gcG9vbAogICAgQ09OTi0-PlM6IEhUVFAgUmVxdWVzdCAxCiAgICBTLS0-PkNPTk46IEhUVFAgUmVzcG9uc2UgMQogICAgUy14IENPTk46IHJlc3BvbnNlLmNsb3NlKCkgLT4gQ2xvc2UgVENQCiAgICBDLT4-Q09OTjogUmV0dXJuIHRvIHBvb2wgKHRoaW5rcyBhbGl2ZSkKICAgIAogICAgTm90ZSBvdmVyIEMsUzogUmVxdWVzdCAyIC0gRmFpbCEKICAgIEMtPj5DT05OOiBHZXQgY29ubmVjdGlvbiBmcm9tIHBvb2wgKGRlYWQhKQogICAgQ09OTi14UzogSFRUUCBSZXF1ZXN0IDIKICAgIE5vdGUgb3ZlciBDT05OOiDinYwgQ29ubmVjdGlvbiB3YXMgY2xvc2VkCiAgICBDT05OLS0-PkM6IElPRXhjZXB0aW9u?type=png)
+![Network Connection](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
 
-**Request 1** goes through smoothly. Server processes it, returns response, then silently closes connection. Client doesn't know, thinks connection is still alive, puts it back in pool.
+**Request 1** - Everything goes smoothly:
+1. Client grabs a connection from the pool
+2. Sends request to server
+3. Server processes, returns response
+4. Server calls `response.close()` → **silently kills the TCP connection**
+5. Client doesn't notice, happily puts the "dead" connection back in pool
 
-**Request 2** grabs that exact connection. Tries to send data through a dead line. **Boom** - "Connection was closed".
+**Request 2** - Disaster strikes:
+1. Client grabs that same connection (thinking it's alive)
+2. Tries to send data through a dead line
+3. **Boom** - "Connection was closed"
+
+It's like putting your phone in your pocket without realizing the other person already hung up. Next time you pick it up to continue talking... only silence answers back.
 
 ---
 

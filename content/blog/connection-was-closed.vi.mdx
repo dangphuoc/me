@@ -136,11 +136,21 @@ Developer viết code đó có lẽ nghĩ: *"Xong việc thì dọn dẹp cho s�
 
 Để bạn hình dung rõ hơn, đây là những gì xảy ra:
 
-![Connection Closed Sequence](https://mermaid.ink/img/c2VxdWVuY2VEaWFncmFtCiAgICBwYXJ0aWNpcGFudCBDIGFzIENsaWVudDxicj4oQ29ubmVjdGlvbiBQb29sKQogICAgcGFydGljaXBhbnQgQ09OTiBhcyBUQ1AgQ29ubmVjdGlvbgogICAgcGFydGljaXBhbnQgUyBhcyBTZXJ2ZXIKICAgIAogICAgTm90ZSBvdmVyIEMsUzogUmVxdWVzdCAxIC0gVGjDoG5oIGPDtG5nCiAgICBDLT4+Q09OTjogTOG6pXkgY29ubmVjdGlvbiB04burIHBvb2wKICAgIENPTk4tPj5TOiBIVFRQIFJlcXVlc3QgMQogICAgUy0tPj5DT05OOiBIVFRQIFJlc3BvbnNlIDEKICAgIFMteCBDT05OOiByZXNwb25zZS5jbG9zZSgpIOKGkiBDbG9zZSBUQ1AKICAgIEMtPj5DT05OOiBUcuG6oyB24buBIHBvb2wgKHTGsOG7n25nIGPDsm4gc+G7kW5nKQogICAgCiAgICBOb3RlIG92ZXIgQyxTOiBSZXF1ZXN0IDIgLSBM4buXaSEKICAgIEMtPj5DT05OOiBMYXkgY29ubmVjdGlvbiB04burIHBvb2wgKMSRw6MgY2jhur90ISkKICAgIENPTk4teFM6IEhUVFAgUmVxdWVzdCAyCiAgICBOb3RlIG92ZXIgQ09OTjog4p2MIENvbm5lY3Rpb24gd2FzIGNsb3NlZAogICAgQ09OTi0tPj5DOiBJT0V4Y2VwdGlvbg?type=png)
+![Network Connection](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
 
-**Request 1** đi qua ngon lành. Server xử lý, trả response, rồi âm thầm đóng connection. Client không biết, nghĩ connection vẫn sống, cất vào pool.
+**Request 1** - Mọi thứ suôn sẻ:
+1. Client lấy connection từ pool
+2. Gửi request đến server
+3. Server xử lý, trả response
+4. Server gọi `response.close()` → **âm thầm đóng TCP connection**
+5. Client không hay biết, vui vẻ cất connection "đã chết" vào pool
 
-**Request 2** lấy đúng connection đó ra. Cố gửi data qua một đường dây đã chết. **Bùm** - "Connection was closed".
+**Request 2** - Thảm họa:
+1. Client lấy đúng connection đó ra (nghĩ nó còn sống)
+2. Cố gửi data qua một đường dây đã chết
+3. **Bùm** - "Connection was closed"
+
+Như việc bạn cất điện thoại vào túi mà không biết đầu dây bên kia đã cúp máy. Lần sau lấy ra nói tiếp... chỉ có im lặng đáp lại.
 
 ---
 
