@@ -1,0 +1,232 @@
+---
+title: Connection Was Closed - A Sleepless Christmas Eve
+excerpt: The story of a seemingly harmless line of code that kept the entire team awake on Christmas night. Lessons about connection pooling, HTTP keep-alive, and small errors ignored during integration.
+date: 2024-12-25
+tags:
+  - Debugging
+  - Connection Pool
+  - HTTP
+  - Vert.x
+  - Production Issue
+thumbnail: https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800
+---
+
+# Connection Was Closed - A Sleepless Christmas Eve
+
+## Prologue
+
+**6 PM, December 24th.** While everyone was preparing for Christmas Eve, our team received alerts from production: *"Connection was closed"* - transactions failing in waves.
+
+This is the story of an all-nighter, from 6 PM to 3 AM, hunting for a bug that seemed simple but turned out to be deadly.
+
+> *"We see this error occasionally, but restart fixes it..."* — A familiar phrase we had ignored.
+
+![Debugging at night](https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800)
+
+---
+
+## Context
+
+We had just completed **4 months of integration** with a major partner. Our system acts as the **server**, with the partner as the **client** connecting to us.
+
+During UAT, everything seemed stable. Occasionally there were "Connection was closed" errors, but restarting the service fixed it. The team thought it was an infrastructure issue, maybe Kubernetes updating something.
+
+**This was the fatal mistake:** Ignoring small, recurring errors.
+
+When we went to production with massive transaction volumes, this error appeared more and more frequently. And on Christmas Eve, it exploded.
+
+---
+
+## The Investigation Begins
+
+### 12:25 AM - Ruling Out Infrastructure
+
+> **Hieu:** *"Let's start the adapter locally tomorrow. To rule out infrastructure issues."*
+>
+> **Nguyen:** *"I'll write it outside completely, from the resource level, not touching any of the other services."*
+
+We decided to run the service locally to eliminate all infrastructure factors - Kubernetes, sidecars, network policies...
+
+### 12:28 AM - GPT Says It Might Be K8s
+
+> **Me:** *"Just researched, GPT says it could be k8s. Many possible causes. Will add more trace logs tomorrow. Our logging isn't complete enough."*
+
+There are indeed many articles about Redis and database connections being closed by sidecars. But intuition said the problem wasn't there.
+
+### 12:31 AM - First Clue
+
+> **Nguyen:** *"The first few requests don't fail. After some time, it starts failing."*
+
+This was a crucial clue. If it were an infrastructure issue, errors would occur immediately or randomly. But this pattern showed something accumulating over time.
+
+### 12:55 AM - The Iron Logic
+
+> **Hieu:** *"If server closes connection, client throws exception immediately when submitting. Not after waiting."*
+>
+> **Hieu:** *"So server closes connection, but that connection is still in the pool because client TTL is large. Next request grabs it, boom... Connection was closed."*
+
+**Bingo!** This logic explained everything:
+
+1. Server closes connection after each request
+2. Client doesn't know, keeps connection in pool
+3. Next request grabs a "dead" connection from pool
+4. **BOOM!** - "Connection was closed"
+
+---
+
+## Root Cause Analysis
+
+### Sequence Diagram
+
+**Request 1 - Success:**
+
+| Step | Client (Connection Pool) | Connection | Server |
+|------|--------------------------|------------|--------|
+| 1 | Get connection from pool | → | |
+| 2 | | HTTP Request 1 → | Receive request |
+| 3 | | ← HTTP Response 1 | Send response |
+| 4 | | ← **Close connection** | `response.close()` |
+| 5 | Return to pool *(thinking it's alive)* | | |
+
+**Request 2 - Error "Connection was closed":**
+
+| Step | Client (Connection Pool) | Connection | Server |
+|------|--------------------------|------------|--------|
+| 1 | Reuse connection from pool | → *(already dead!)* | |
+| 2 | | HTTP Request 2 → | |
+| 3 | | ❌ **Connection was closed** | |
+| 4 | IOException! | | |
+
+### Root Cause
+
+| Component | Behavior | Problem |
+|-----------|----------|---------|
+| **Server** | Closes connection after each request | `httpServerResponse.close()` |
+| **Client** | Keeps connection in pool for reuse | Large TTL, doesn't know it's closed |
+| **Result** | ⚠️ **Mismatch configuration!** | Connection pool holds "dead bodies" |
+
+---
+
+## 1:00 AM - Caught the Rabbit
+
+> **Me:** *"Oh my... `httpServerResponse.close();` - delete that line, start local, tested for 2 years with no errors."*
+>
+> **Nguyen:** *"So it's the adapter? We're totally screwed!"*
+>
+> **Long:** *"Case closed."*
+
+Just **one line of code**. One seemingly harmless `response.close()`.
+
+```java
+// Code causing the problem
+public void handleRequest(HttpServerRequest request) {
+    // ... business logic ...
+
+    HttpServerResponse response = request.response();
+    response.end(result);
+    response.close();  // ← THIS LINE IS THE CULPRIT!
+}
+```
+
+### Why You Don't Need `close()`
+
+> **Hieu:** *"Just asked AI, it says no need to close on server."*
+>
+> **Me:** *"Joking aside, I know about this, you shouldn't close after end."*
+
+When you call `response.end()`, Vert.x has already:
+- Sent the entire response to client
+- Flushed the buffer
+- Prepared for the next request (HTTP keep-alive)
+
+Calling `response.close()` additionally will **close the TCP connection**, breaking the keep-alive mechanism the client relies on.
+
+```java
+// Correct code
+public void handleRequest(HttpServerRequest request) {
+    // ... business logic ...
+
+    HttpServerResponse response = request.response();
+    response.end(result);
+    // NO NEED for close() - Vert.x manages the connection
+}
+```
+
+---
+
+## The Damage Spreads
+
+### 1:17 AM - Finding More Victims
+
+> **Nguyen:** *"The VA flow for BVB, they've been raising 500 or 502 errors a lot. Could they also be using .close()?"*
+>
+> **Long:** *"I just realized TCB has been telling us the same thing."*
+
+Turns out it wasn't just one service. Many other services might be "poisoned" by the same pattern.
+
+> **Hieu:** *"So anyone not using pool won't have this issue. But if using pool, they're screwed. And most of the world uses pools."*
+
+### 1:28 AM - Reviewing Old Code
+
+> **Me:** *"Looking at the transfer code and remembering those connection lost issues, it crashes immediately. Not timeout. Damn."*
+
+Those old bugs we encountered, those times clients complained about "connection lost"... They probably all had the same cause.
+
+---
+
+## Lessons Learned
+
+### 1. Don't Ignore "Small" Errors
+
+> *"We see it occasionally, restart fixes it"* - This phrase cost us a Christmas night.
+
+Every error has a cause. If an error repeats, even rarely, investigate immediately. Don't wait for production.
+
+### 2. Understand Connection Lifecycle
+
+| Method | Meaning |
+|--------|---------|
+| `response.end()` | Ends response, keeps connection for next request |
+| `response.close()` | **Closes TCP connection**, client must create new connection |
+
+### 3. Connection Pool + Close = Disaster
+
+When server closes connection without client knowing:
+- Client keeps "dead body" in pool
+- Next request gets dead connection
+- **Fails immediately**, not timeout
+
+### 4. Review Codebase When Finding Error Patterns
+
+A bug in one place can exist in many others. When you find a root cause, review the entire codebase.
+
+---
+
+## Conclusion
+
+> **Nguyen:** *"+1 expensive lesson on Christmas Eve."*
+>
+> **Hieu:** *"Anyway, +1 interview experience. Thanks to this, learned a lot."*
+
+**3 AM, December 25th.** After 9 hours of debugging, we found the culprit: **one line of code**.
+
+```java
+response.close();  // Delete this line
+```
+
+That Christmas Eve, we had no party, no gifts. But we had a valuable lesson about:
+- Connection pooling and HTTP keep-alive
+- The importance of not ignoring "small" errors
+- The power of teamwork when debugging production issues
+
+> *"Merry Christmas everyone!"* — 1:32 AM, after finding the bug
+
+**Happy debugging, and Merry Christmas!** 🎄
+
+---
+
+## References
+
+- [HTTP Keep-Alive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Keep-Alive)
+- [Vert.x HttpServerResponse](https://vertx.io/docs/apidocs/io/vertx/core/http/HttpServerResponse.html)
+- [Connection Pooling Best Practices](https://www.baeldung.com/java-connection-pooling)
