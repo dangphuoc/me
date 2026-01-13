@@ -35,7 +35,7 @@ const socialLinks = [
   },
   {
     icon: Mail,
-    href: 'mailto:contact@example.com',
+    href: 'mailto:dangphuocbk.93@gmail.com',
     label: 'Email',
     color: 'hover:text-red-500',
   },
@@ -51,16 +51,30 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
+  const FORMSPREE_ID = 'xkoonvob';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // For demo, always show success
-    setStatus('success');
-    setFormData({ name: '', email: '', message: '' });
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
 
     // Reset status after 3 seconds
     setTimeout(() => setStatus('idle'), 3000);
@@ -234,10 +248,10 @@ export default function ContactPage() {
                     Email
                   </h3>
                   <a
-                    href="mailto:contact@example.com"
+                    href="mailto:dangphuocbk.93@gmail.com"
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    contact@example.com
+                    dangphuocbk.93@gmail.com
                   </a>
                 </div>
               </div>
@@ -266,22 +280,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Availability */}
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
-                </span>
-                <span className="text-gray-900 dark:text-gray-100 font-medium">
-                  Available for opportunities
-                </span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                I&apos;m currently open to new opportunities and collaborations.
-                Feel free to reach out!
-              </p>
-            </div>
           </motion.div>
         </div>
       </div>
