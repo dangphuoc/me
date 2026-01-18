@@ -1,0 +1,226 @@
+---
+title: "Little Rabbit (Part 1) - When HTTP Is No Longer Enough"
+title_vi: "Bé Thỏ (Phần 1) - Khi HTTP không còn đủ"
+title_en: "Little Rabbit (Part 1) - When HTTP Is No Longer Enough"
+excerpt_vi: "Câu chuyện về thời kỳ đồ đá của microservices, khi Docker còn xa lạ, deploy bằng SSH, và RabbitMQ trở thành vị cứu tinh cho bài toán load balancing."
+excerpt_en: "A story from the stone age of microservices, when Docker was unfamiliar, deployment meant SSH, and RabbitMQ became the savior for load balancing challenges."
+date: 2025-01-18
+tags:
+  - RabbitMQ
+  - Architecture
+  - Message Queue
+  - Load Balancing
+  - Little Rabbit Series
+thumbnail: https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800
+---
+
+# Little Rabbit (Part 1) - When HTTP Is No Longer Enough
+
+## The Stone Age
+
+About 10 years ago.
+
+Docker? Kubernetes? These concepts were as foreign as stories from Mars. Back then, "deployment" meant a manual, ceremonial process:
+
+1. Build the JAR file on your local machine
+2. Send an email to the CTO requesting approval
+3. Wait...
+4. SSH into the server
+5. Backup the old JAR (just in case you need to rollback)
+6. Copy the new JAR
+7. Restart the service
+8. Pray
+
+My team was allocated 5 VM servers by infrastructure. Sounds like a lot, but when traffic started growing, those 5 servers suddenly felt like 5 little ants trying to carry an entire building.
+
+![Server Room](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+## When Traffic Grows, HTTP Starts Crying
+
+Our internal services communicated via HTTP. Simple, straightforward, everyone knew how to do it.
+
+The initial architecture looked like this:
+
+**Service A** needs to call **Service B**:
+1. Service A sends an HTTP request to Service B's IP
+2. Service B processes it
+3. Service B returns a response
+4. Done!
+
+The problem appeared when Service B was no longer on just one server. It was deployed across 3 servers to handle the load. Now, who should Service A call?
+
+## The Classic Solution: A Proxy in the Middle
+
+We placed an **Nginx** (or HAProxy) as a load balancer:
+
+```
+Service A → [Nginx Load Balancer] → Service B (Server 1)
+                                  → Service B (Server 2)
+                                  → Service B (Server 3)
+```
+
+Nginx would round-robin requests to the 3 instances of Service B. Problem solved!
+
+...or was it?
+
+## The Pain Points of HTTP + Proxy
+
+### 1. Single Point of Failure
+
+That Nginx sitting in the middle suddenly became the "death point." If Nginx dies, all communication between A and B dies with it.
+
+**Solution?** Add a backup Nginx. Then add Keepalived for failover. Then add a Virtual IP...
+
+The architecture started inflating like a balloon.
+
+### 2. Configuration Hell
+
+Every time you added a new server for Service B, you had to:
+- SSH into the Nginx server
+- Edit the config
+- Reload Nginx
+- Test again
+
+Multiply this by dozens of services, and you'd have a DevOps engineer spending all day SSH-ing and editing configs.
+
+### 3. Health Check Overhead
+
+Nginx had to constantly ping backends to know which servers were alive. With hundreds of backend servers, this overhead was significant.
+
+### 4. Synchronous Blocking
+
+HTTP is synchronous. Service A sends a request and then **waits** for Service B to finish processing before doing anything else.
+
+If Service B is slow (database queries, third-party API calls...), Service A gets blocked too. Domino effect.
+
+![Traffic Jam](https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800)
+
+## Little Rabbit Appears
+
+While we were wrestling with the mess of Nginx configs, a senior engineer on the team said:
+
+> "Why not try RabbitMQ?"
+
+RabbitMQ. The name sounds cute, like a little rabbit. And indeed, its logo is an orange bunny.
+
+But don't let appearances fool you. This little rabbit has remarkable power.
+
+## RabbitMQ RPC Pattern - Natural Load Balancing
+
+The core idea is surprisingly simple:
+
+**Instead of** Service A calling Service B directly via HTTP...
+
+**We place** a RabbitMQ in the middle. Service A sends messages to a queue, Service B picks up messages and processes them.
+
+![Message Queue Concept](https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800)
+
+### How It Works
+
+**Producer (Service A):**
+1. Create a message with the request content
+2. Send to queue `service-b-requests`
+3. Wait for response on queue `service-a-replies`
+
+**Consumer (Service B):**
+1. Subscribe to queue `service-b-requests`
+2. Pick up and process messages
+3. Send response to the reply queue
+
+### The Magic: Competing Consumers
+
+This is the best part.
+
+When you have **3 instances of Service B** all subscribing to the same queue, RabbitMQ will **automatically** distribute messages to them in a round-robin fashion.
+
+```
+Service A → [RabbitMQ Queue] ← Consumer (VM 1)
+                            ← Consumer (VM 2)
+                            ← Consumer (VM 3)
+```
+
+**No Nginx needed. No config needed. No health checks needed.**
+
+Want to scale up? Just start another consumer on a new VM. RabbitMQ automatically knows there's another "receiver" and distributes messages to them.
+
+Want to scale down? Just stop a consumer. RabbitMQ knows and stops sending messages to it.
+
+**Load balancing as natural as breathing.**
+
+## Comparing the Two Approaches
+
+| Criteria | HTTP + Proxy | RabbitMQ RPC |
+|----------|--------------|--------------|
+| Load balancing | Requires proxy config | Automatic (competing consumers) |
+| Scale up/down | Edit config, reload | Start/stop consumer |
+| Single point of failure | Proxy is the death point | RabbitMQ cluster can be HA |
+| Sync/Async | Synchronous | Can be async |
+| Message persistence | No | Yes (if configured) |
+| Retry | Must implement yourself | Built-in with acknowledgment |
+
+## Code Example
+
+With the Vert.x RabbitMQ client, a consumer is as simple as this:
+
+```java
+// Consumer - Service B
+rabbitMQClient.basicConsumer("service-b-requests", result -> {
+    if (result.succeeded()) {
+        RabbitMQConsumer consumer = result.result();
+        consumer.handler(message -> {
+            // Process request
+            String requestBody = message.body().toString();
+            String response = processRequest(requestBody);
+
+            // Send response to reply queue
+            String replyTo = message.properties().replyTo();
+            rabbitMQClient.basicPublish("", replyTo,
+                Buffer.buffer(response), publishResult -> {
+                    // Acknowledge message has been processed
+                    rabbitMQClient.basicAck(message.envelope().deliveryTag(),
+                        false, ackResult -> {});
+                });
+        });
+    }
+});
+```
+
+Want 10 consumers? Just deploy this code to 10 VMs. **Done.**
+
+## A Beautiful World... Or Is It?
+
+After migrating to RabbitMQ RPC, our team's life suddenly became easier:
+
+- No more SSH-ing all day to edit Nginx configs
+- Scaling services became as easy as turning machines on/off
+- Messages weren't lost when services restarted (persistence)
+- Automatic retry when processing failed
+
+We thought we had mastered the little rabbit.
+
+We were wrong.
+
+![Rabbit Trap](https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800)
+
+## Teaser: The Deadly Traps
+
+Little Rabbit is cute, but it also has traps that, if you're not careful, you'll painfully discover:
+
+- **Channel Leak**: Opening channels without closing them, until RabbitMQ refuses to serve you
+- **Reply Queue Explosion**: 1 million requests = 1 million reply queues? The system will explode
+- **Connection Storm**: 500,000 connections flooding in at once, what happens then?
+
+These stories, I'll tell in the next part.
+
+---
+
+## "Little Rabbit" Series
+
+| Part | Title | Content |
+|------|-------|---------|
+| [Part 1](/en/blog/be-tho-part-1) | When HTTP Is No Longer Enough | RabbitMQ RPC, competing consumers (you are here) |
+| [Part 2](/en/blog/be-tho-part-2) | The Deadly Traps | Channel Leak, Reply Queue Explosion |
+| [Part 3](/en/blog/be-tho-part-3) | The Night of 500,000 Connections | A real incident and lessons learned |
+| [Part 4](/en/blog/be-tho-part-4) | A War Without Winners | Little's Law, accept uncertainty |
+
+*Stay tuned!*

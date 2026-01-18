@@ -105,15 +105,26 @@ export default function BlogPostClient({ post, locale, author = 'Phuoc Nguyen' }
       const headers = rows[0].split('|').filter(cell => cell.trim());
       const dataRows = rows.slice(2);
 
+      // Process cell content: handle links, bold, code
+      const processCellContent = (cellText: string) => {
+        return cellText
+          .trim()
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">$1</code>')
+          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>');
+      };
+
       return (
         <div key={`table-${key}`} className="overflow-x-auto mb-8 mt-4">
           <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <thead className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30">
               <tr>
                 {headers.map((header, i) => (
-                  <th key={i} className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {header.trim()}
-                  </th>
+                  <th
+                    key={i}
+                    className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                    dangerouslySetInnerHTML={{ __html: processCellContent(header) }}
+                  />
                 ))}
               </tr>
             </thead>
@@ -121,9 +132,11 @@ export default function BlogPostClient({ post, locale, author = 'Phuoc Nguyen' }
               {dataRows.map((row, rowIdx) => (
                 <tr key={rowIdx} className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   {row.split('|').filter(cell => cell.trim()).map((cell, cellIdx) => (
-                    <td key={cellIdx} className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                      {cell.trim().replace(/\*\*(.*?)\*\*/g, '$1')}
-                    </td>
+                    <td
+                      key={cellIdx}
+                      className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300"
+                      dangerouslySetInnerHTML={{ __html: processCellContent(cell) }}
+                    />
                   ))}
                 </tr>
               ))}

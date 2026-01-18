@@ -1,0 +1,226 @@
+---
+title: "Bé Thỏ (Phần 1) - Khi HTTP không còn đủ"
+title_vi: "Bé Thỏ (Phần 1) - Khi HTTP không còn đủ"
+title_en: "Little Rabbit (Part 1) - When HTTP Is No Longer Enough"
+excerpt_vi: "Câu chuyện về thời kỳ đồ đá của microservices, khi Docker còn xa lạ, deploy bằng SSH, và RabbitMQ trở thành vị cứu tinh cho bài toán load balancing."
+excerpt_en: "A story from the stone age of microservices, when Docker was unfamiliar, deployment meant SSH, and RabbitMQ became the savior for load balancing challenges."
+date: 2025-01-18
+tags:
+  - RabbitMQ
+  - Architecture
+  - Message Queue
+  - Load Balancing
+  - Series Bé Thỏ
+thumbnail: https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=800
+---
+
+# Bé Thỏ (Phần 1) - Khi HTTP không còn đủ
+
+## Thời kỳ đồ đá
+
+Khoảng 10 năm trước.
+
+Docker? Kubernetes? Những khái niệm ấy còn xa lạ như chuyện trên sao Hỏa. Thời đó, "deploy" có nghĩa là một quy trình thủ công đầy nghi lễ:
+
+1. Build file JAR trên máy local
+2. Gửi email cho CTO xin approve
+3. Chờ...
+4. SSH vào server
+5. Backup JAR cũ (phòng khi rollback)
+6. Copy JAR mới lên
+7. Restart service
+8. Cầu nguyện
+
+Team tôi được hạ tầng cấp cho 5 con server VM. Nghe thì nhiều, nhưng khi traffic bắt đầu tăng, 5 con server bỗng trở nên nhỏ bé như 5 chú kiến đang cố gánh cả tòa nhà.
+
+![Server Room](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+## Khi traffic tăng, HTTP bắt đầu khóc
+
+Các service internal của chúng tôi gọi nhau bằng HTTP. Đơn giản, dễ hiểu, ai cũng biết làm.
+
+Kiến trúc ban đầu trông như thế này:
+
+**Service A** cần gọi **Service B**:
+1. Service A gửi HTTP request đến IP của Service B
+2. Service B xử lý
+3. Service B trả response
+4. Done!
+
+Vấn đề xuất hiện khi Service B không còn nằm trên 1 server nữa. Nó được deploy trên 3 server để chịu tải. Giờ Service A phải gọi ai?
+
+## Giải pháp cổ điển: Proxy đứng giữa
+
+Chúng tôi đặt một con **Nginx** (hoặc HAProxy) làm load balancer:
+
+```
+Service A → [Nginx Load Balancer] → Service B (Server 1)
+                                  → Service B (Server 2)
+                                  → Service B (Server 3)
+```
+
+Nginx sẽ round-robin request đến 3 instance của Service B. Vấn đề giải quyết!
+
+...hay là chưa?
+
+## Những nỗi đau của HTTP + Proxy
+
+### 1. Single Point of Failure
+
+Con Nginx đứng giữa bỗng trở thành "điểm chết". Nếu Nginx chết, toàn bộ communication giữa A và B chết theo.
+
+**Giải pháp?** Thêm Nginx backup. Rồi thêm Keepalived để failover. Rồi thêm Virtual IP...
+
+Kiến trúc bắt đầu phình to như bong bóng.
+
+### 2. Configuration Hell
+
+Mỗi lần thêm server mới cho Service B, phải:
+- SSH vào Nginx server
+- Sửa config
+- Reload Nginx
+- Test lại
+
+Nhân lên với hàng chục service, bạn sẽ có một anh DevOps suốt ngày SSH và sửa config.
+
+### 3. Health Check Overhead
+
+Nginx phải liên tục ping các backend để biết server nào còn sống. Với hàng trăm backend servers, đây là overhead không nhỏ.
+
+### 4. Synchronous Blocking
+
+HTTP là synchronous. Service A gửi request rồi **đứng chờ** Service B xử lý xong mới làm tiếp.
+
+Nếu Service B xử lý chậm (query database, call API bên thứ 3...), Service A cũng bị block theo. Domino effect.
+
+![Traffic Jam](https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800)
+
+## Bé Thỏ xuất hiện
+
+Giữa lúc chúng tôi đang vật lộn với mớ config Nginx, một anh senior trong team nói:
+
+> "Sao không thử RabbitMQ?"
+
+RabbitMQ. Cái tên nghe dễ thương như một chú thỏ. Và đúng vậy, logo của nó là một chú thỏ màu cam.
+
+Nhưng đừng để vẻ ngoài đánh lừa. Bé Thỏ này có sức mạnh đáng kinh ngạc.
+
+## RabbitMQ RPC Pattern - Load Balancing tự nhiên
+
+Ý tưởng cốt lõi đơn giản đến bất ngờ:
+
+**Thay vì** Service A gọi trực tiếp Service B qua HTTP...
+
+**Chúng tôi đặt** một con RabbitMQ ở giữa. Service A gửi message vào queue, Service B lấy message ra xử lý.
+
+![Message Queue Concept](https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800)
+
+### Cách hoạt động
+
+**Producer (Service A):**
+1. Tạo message với nội dung request
+2. Gửi vào queue `service-b-requests`
+3. Chờ response ở queue `service-a-replies`
+
+**Consumer (Service B):**
+1. Subscribe vào queue `service-b-requests`
+2. Lấy message ra xử lý
+3. Gửi response vào queue reply
+
+### Điều kỳ diệu: Competing Consumers
+
+Đây là phần hay nhất.
+
+Khi bạn có **3 instance của Service B** cùng subscribe vào một queue, RabbitMQ sẽ **tự động** phân phối message cho chúng theo kiểu round-robin.
+
+```
+Service A → [RabbitMQ Queue] ← Consumer (VM 1)
+                            ← Consumer (VM 2)
+                            ← Consumer (VM 3)
+```
+
+**Không cần Nginx. Không cần config. Không cần health check.**
+
+Bạn muốn scale? Cứ start thêm consumer trên VM mới. RabbitMQ tự biết có thêm "người nhận" và chia message cho họ.
+
+Bạn muốn scale down? Cứ stop consumer. RabbitMQ tự biết và không gửi message đến nữa.
+
+**Load balancing tự nhiên như hơi thở.**
+
+## So sánh hai cách tiếp cận
+
+| Tiêu chí | HTTP + Proxy | RabbitMQ RPC |
+|----------|--------------|--------------|
+| Load balancing | Cần config proxy | Tự động (competing consumers) |
+| Scale up/down | Sửa config, reload | Start/stop consumer |
+| Single point of failure | Proxy là điểm chết | RabbitMQ cluster có thể HA |
+| Sync/Async | Synchronous | Có thể async |
+| Message persistence | Không | Có (nếu config) |
+| Retry | Phải tự implement | Built-in với acknowledgment |
+
+## Code minh họa
+
+Với Vert.x RabbitMQ client, consumer đơn giản như này:
+
+```java
+// Consumer - Service B
+rabbitMQClient.basicConsumer("service-b-requests", result -> {
+    if (result.succeeded()) {
+        RabbitMQConsumer consumer = result.result();
+        consumer.handler(message -> {
+            // Xử lý request
+            String requestBody = message.body().toString();
+            String response = processRequest(requestBody);
+
+            // Gửi response về reply queue
+            String replyTo = message.properties().replyTo();
+            rabbitMQClient.basicPublish("", replyTo,
+                Buffer.buffer(response), publishResult -> {
+                    // Acknowledge message đã xử lý xong
+                    rabbitMQClient.basicAck(message.envelope().deliveryTag(),
+                        false, ackResult -> {});
+                });
+        });
+    }
+});
+```
+
+Giờ bạn muốn 10 consumers? Cứ deploy code này lên 10 VM. **Xong.**
+
+## Thế giới tươi đẹp... hay chưa?
+
+Sau khi migrate sang RabbitMQ RPC, cuộc sống của team tôi bỗng nhẹ nhàng hơn:
+
+- Không còn suốt ngày SSH sửa config Nginx
+- Scale service dễ như bật/tắt máy
+- Message không bị mất khi service restart (persistence)
+- Retry tự động khi xử lý fail
+
+Chúng tôi tưởng đã master được bé Thỏ.
+
+Chúng tôi đã nhầm.
+
+![Rabbit Trap](https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=800)
+
+## Teaser: Những cái bẫy chết người
+
+Bé Thỏ dễ thương, nhưng bé cũng có những cái bẫy mà nếu không cẩn thận, bạn sẽ đau đớn nhận ra:
+
+- **Channel Leak**: Mở channel mà quên đóng, đến lúc RabbitMQ từ chối tiếp khách
+- **Reply Queue Explosion**: 1 triệu request = 1 triệu queue reply? Hệ thống sẽ nổ tung
+- **Connection Storm**: 500.000 connections đổ vào cùng lúc, chuyện gì sẽ xảy ra?
+
+Những câu chuyện này, tôi sẽ kể trong phần tiếp theo.
+
+---
+
+## Series "Bé Thỏ"
+
+| Phần | Tiêu đề | Nội dung |
+|------|---------|----------|
+| [Phần 1](/vi/blog/be-tho-part-1) | Khi HTTP không còn đủ | RabbitMQ RPC, competing consumers (bạn đang ở đây) |
+| [Phần 2](/vi/blog/be-tho-part-2) | Những cái bẫy chết người | Channel Leak, Reply Queue Explosion |
+| [Phần 3](/vi/blog/be-tho-part-3) | Đêm 500 ngàn connections | Incident thực tế và bài học |
+| [Phần 4](/vi/blog/be-tho-part-4) | Cuộc chiến không có kẻ thắng | Little's Law, accept uncertainty |
+
+*Stay tuned!*

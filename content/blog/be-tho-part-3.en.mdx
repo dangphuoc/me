@@ -1,0 +1,322 @@
+---
+title: "Little Rabbit (Part 3) - The Night of 500,000 Connections"
+title_vi: "Bé Thỏ (Phần 3) - Đêm 500 ngàn connections"
+title_en: "Little Rabbit (Part 3) - The Night of 500,000 Connections"
+excerpt_vi: "8h09 PM, 11/01/2023. SOC gọi điện. 500,000 connections đổ vào RabbitMQ. 1.8 triệu transactions lost. Đây là câu chuyện về đêm dài nhất của team tôi."
+excerpt_en: "8:09 PM, January 11, 2023. SOC called. 500,000 connections flooding RabbitMQ. 1.8 million transactions lost. This is the story of my team's longest night."
+date: 2025-01-18
+tags:
+  - RabbitMQ
+  - Incident Response
+  - Architecture
+  - Debugging
+  - Little Rabbit Series
+thumbnail: https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800
+---
+
+# Little Rabbit (Part 3) - The Night of 500,000 Connections
+
+## 8:09 PM
+
+January 11, 2023.
+
+I was about to leave the office when my phone buzzed. SOC (Security Operations Center) was calling.
+
+> "Hey, RabbitMQ has a problem. Message rate dropped to 0."
+
+I opened my laptop and accessed the RabbitMQ management console.
+
+The screen displayed terrifying numbers.
+
+![Monitoring Dashboard](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+## The Haunting Numbers
+
+| Metric | Normal | At that moment |
+|--------|--------|----------------|
+| Message rate | ~10,000 msg/s | **0 msg/s** |
+| Connections (HAProxy) | 50,000 - 55,000 | **~500,000** |
+| Connections (RabbitMQ) | ~25,000 | Overloaded |
+| Erlang processes | Baseline | **2.5x increase** |
+
+Message rate was at **0**. Not decreased. **Zero**.
+
+Then the message rate would jump to about 1,000, then fall back to 0. Up, down. Up, down. Like a dying patient gasping for breath.
+
+Connections to HAProxy and RabbitMQ were abnormally high. Maxing out at **500,000 connections**. Normally it was only 50,000-55,000.
+
+Each K8s worker connecting to RabbitMQ had hit the **3,000 connection** limit. And we had about 100 workers across all K8s clusters.
+
+## Impact
+
+I looked at the business metrics dashboard.
+
+The numbers hit like a slap in the face:
+
+- **~1,841,340 paid transactions** lost
+- **~446,085 users** affected
+
+All services using RabbitMQ were dead. Core banking, payment, user service, notification... Everything.
+
+![Crisis](https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800)
+
+## Finding the Root Cause
+
+### First Clue
+
+Around 8 PM - the same time as the incident - there was a large batch of commands from Core connecting to the Database. At the same time, a **Lock Agent** occurred on a critical service.
+
+Database connections from the Backend team spiked.
+
+But this was only the **trigger**, not the **root cause**.
+
+### Connection Storm
+
+When RabbitMQ started slowing down (due to increased load), services began timing out. And when they timed out, what did they do?
+
+**Reconnect.**
+
+But our reconnect logic had a problem:
+
+```java
+// Old config - DANGEROUS
+return new RabbitMQOptions()
+    .setAutomaticRecoveryEnabled(true)
+    .setReconnectAttempts(Integer.MAX_VALUE)  // INFINITE retries!
+    .setReconnectInterval(1000L);              // Retry every 1 second
+```
+
+When RabbitMQ slowed down:
+1. Service A timeout → reconnect
+2. Service B timeout → reconnect
+3. ...
+4. 100 workers x 3,000 connections = **300,000 reconnect attempts**
+
+Each reconnect attempt added more load to RabbitMQ. RabbitMQ got slower. More timeouts. More reconnects.
+
+**Vicious cycle. Connection storm.**
+
+### TIME_WAIT Hell
+
+Checking on HAProxy:
+
+```bash
+netstat -nat | grep TIME_WAIT | wc -l
+```
+
+Result: hundreds of thousands of connections in TIME_WAIT state.
+
+When a connection is closed, it doesn't disappear immediately. It stays in TIME_WAIT state for about 60 seconds (Linux default) to ensure no packets are lost.
+
+With 500,000 connections constantly opening/closing, the TIME_WAIT count grew out of control.
+
+## Emergency Response
+
+### Step 1: Isolate the System
+
+```bash
+# Stop HAProxy - cut external connections
+/etc/init.d/haproxy stop
+
+# Stop RabbitMQ
+systemctl stop rabbitmq-server
+```
+
+We had to **completely stop** both HAProxy and RabbitMQ. There was no other way when the system was in a "thrashing" state.
+
+### Step 2: Scale Down Services
+
+Scale down all services to prevent them from continuously reconnecting when RabbitMQ restarts.
+
+### Step 3: Limit Connections
+
+Modify HAProxy config to limit sessions per IP:
+
+```bash
+# /etc/haproxy/haproxy.cfg
+# Reduce from 3000 to 300 connections/IP
+stick-table type ip size 100k expire 30s store conn_cur
+tcp-request connection reject if { src_conn_cur ge 300 }
+```
+
+Purpose: when services start again, they can't create too many connections at once.
+
+### Step 4: Restart RabbitMQ
+
+```bash
+systemctl start rabbitmq-server
+```
+
+Check connections:
+
+```bash
+netstat -an | awk '/tcp/ {print $6}' | sort | uniq -c
+```
+
+```
+  36778 ESTABLISHED
+      3 FIN_WAIT2
+      8 LISTEN
+    578 TIME_WAIT
+```
+
+TIME_WAIT had significantly decreased. RabbitMQ was stabilizing.
+
+### Step 5: Start HAProxy
+
+```bash
+/etc/init.d/haproxy start
+```
+
+### Step 6: Apply Temporary Policy
+
+Apply a **no-delete queue policy** to prevent queues without consumers from being deleted. We would reapply the normal policy after stabilization.
+
+### Step 7: Start Services in Order
+
+Don't start everything at once. Start in priority order:
+
+1. **Core** - Core banking system
+2. **Core-payment, Payment** - Payment processing
+3. **User profile** - User information
+4. **Login** - Authentication
+5. **Others** - Remaining services
+
+At each step, monitor connections and message rate. Only proceed when metrics stabilize.
+
+### Step 8: Gradually Increase Connection Limit
+
+After all services started and stabilized, gradually increase the connection limit: 300 → 500 → 1000 → 3000.
+
+![Recovery](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+## Lessons Learned
+
+### 1. Reconnect Attempts Must Have a Limit
+
+**Old config (WRONG):**
+```java
+.setReconnectAttempts(Integer.MAX_VALUE)
+```
+
+**New config (CORRECT):**
+```java
+.setReconnectAttempts(5)
+.setReconnectInterval(10000L)  // 10 seconds
+```
+
+If 5 reconnect attempts fail, **stop**. Let circuit breakers or human intervention handle it. Don't keep reconnecting infinitely - you'll only make things worse.
+
+### 2. Standard RabbitMQ Config
+
+After the incident, we unified the config template for all services:
+
+```java
+return new RabbitMQOptions()
+    .setUser(rabbitMqCfg.user)
+    .setPassword(rabbitMqCfg.pass)
+    .setPort(rabbitMqCfg.port)
+    .setAutomaticRecoveryEnabled(false)  // Manage recovery ourselves
+    .setReconnectInterval(10000L)         // 10 seconds
+    .setReconnectAttempts(5)              // Only 5 times
+    .setConnectionTimeout(7000)           // 7 seconds
+    .setHandshakeTimeout(7000)            // 7 seconds
+    .setRequestedChannelMax(5)            // Limit channels
+    .setNetworkRecoveryInterval(7000);    // 7 seconds
+```
+
+**Explanation:**
+- `AutomaticRecoveryEnabled = false`: Manage recovery ourselves instead of letting the RabbitMQ client handle it automatically
+- `ReconnectAttempts = 5`: Limit retry attempts
+- `RequestedChannelMax = 5`: Detect channel leaks early
+
+### 3. Separate RabbitMQ for Critical Services
+
+One of the post-incident decisions:
+
+- **Main RabbitMQ cluster**: Only for critical services (payment, core banking)
+- **Secondary RabbitMQ cluster**: For non-critical services (notification, logging, analytics)
+
+If the secondary cluster has issues, it won't affect business-critical operations.
+
+### 4. Separate RabbitMQ Users
+
+Each service group has its own user. When isolation is needed, you can disable a user without affecting the entire system.
+
+### 5. Incident Response Playbook
+
+Rewrote the detailed incident response playbook:
+
+| Step | Action | Verify |
+|------|--------|--------|
+| 1 | Stop HAProxy | `netstat` shows no new connections |
+| 2 | Stop RabbitMQ | Service stopped |
+| 3 | Scale down all services | Pods = 0 |
+| 4 | Limit connections (300) | HAProxy config updated |
+| 5 | Start RabbitMQ | `rabbitmqctl status` OK |
+| 6 | Start HAProxy | Connections < 1000 |
+| 7 | Apply no-delete policy | Policy applied |
+| 8 | Start services in order | Monitor msg rate |
+| 9 | Gradually increase connection limit | 300 → 3000 |
+
+## Re-Architecture Initiative
+
+After the incident, leadership decided to establish a **Re-Architecture** project with the goal:
+
+> **System must not have passive downtime exceeding 15 minutes**
+
+Initiatives included:
+- **RabbitMQ clustering** with HA policy
+- **Circuit breaker** at application level
+- **Rate limiting** at gateway
+- **Graceful degradation** for non-critical features
+- **Chaos engineering** to test resilience
+
+---
+
+## Looking Back
+
+The night of January 11, 2023 was my team's longest night.
+
+1.8 million transactions. 446,000 users. Haunting numbers.
+
+But from that incident, we learned:
+
+1. **Little Rabbit is powerful, but also fragile** when not configured properly
+2. **Connection storm** is a silent killer
+3. **Infinite reconnect** is not resilience - it's suicide
+4. **Playbooks** and **drills** are mandatory, not optional
+5. **Isolate critical services** from the start, don't wait for an incident
+
+Little Rabbit is still our trusted companion. But now, we understand it better. Respect it more.
+
+And most importantly: **we never take it for granted anymore**.
+
+![Lessons](https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800)
+
+## Teaser: Little's Law and the Unanswered Question
+
+But the story doesn't end here.
+
+A few months later, a new problem emerged. On peak days - the 5th and 10th of every month - the system got congested again. But this time, **all metrics looked normal**.
+
+Servers said processing was fast. Producers said calls were slow. DevOps said RabbitMQ had no issues.
+
+Who was right? Who was wrong? And what did **Little's Law** help the CTO see?
+
+This story, I'll tell in the final part of the series.
+
+---
+
+## "Little Rabbit" Series
+
+| Part | Content | Key Lesson |
+|------|---------|------------|
+| [Part 1](/en/blog/be-tho-part-1) | From HTTP to RabbitMQ RPC | Competing consumers, natural load balancing |
+| [Part 2](/en/blog/be-tho-part-2) | Channel leak, Reply queue explosion | Singleton pattern is not just theory |
+| [Part 3](/en/blog/be-tho-part-3) | 500K connections incident | Limited reconnects, playbooks are mandatory |
+| [Part 4](/en/blog/be-tho-part-4) | A War Without Winners | Little's Law, accept uncertainty |
+
+---
+
+*Stay tuned for the final part!*

@@ -1,0 +1,286 @@
+---
+title: "Little Rabbit (Part 4) - A War Without Winners"
+title_vi: "Bé Thỏ (Phần 4) - Cuộc chiến không có kẻ thắng"
+title_en: "Little Rabbit (Part 4) - A War Without Winners"
+excerpt_vi: "Khi mọi metrics đều xanh, mọi team đều đúng, nhưng hệ thống vẫn chết. Câu chuyện về những cuộc họp căng thẳng, những cái tôi va chạm, và một câu hỏi vẫn chưa có lời đáp."
+excerpt_en: "When all metrics are green, every team is right, but the system still dies. A story of tense meetings, clashing egos, and a question that remains unanswered."
+date: 2025-01-18
+tags:
+  - RabbitMQ
+  - Little's Law
+  - Architecture
+  - Performance
+  - Little Rabbit Series
+thumbnail: https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800
+---
+
+# Little Rabbit (Part 4) - A War Without Winners
+
+## The Meeting Room on the 7th Floor
+
+Thursday. 9 AM. The meeting room on the 7th floor.
+
+This was the fourth meeting this month about the same issue. The atmosphere was heavy, like the calm before a storm. Cold coffee cups sat on the table. On the screen, latency charts glowed red like wounds that wouldn't heal.
+
+I sat in one corner, observing. Khoa - Tech Lead of the Transaction team - sat across from Dat, the Tech Director in charge of Profile Service. Between them was two meters of conference table, but the distance felt much greater.
+
+![Meeting Room](https://images.unsplash.com/photo-1552581234-26160f608093?w=800)
+
+## "The Problem Isn't on My Side"
+
+Khoa spoke first, his voice trying to stay calm but unable to hide the exhaustion:
+
+> "I've said this before. Every 5th, every 10th of the month - payday, payment day - latency calling Profile increases 5x. My requests go out, wait forever for a response. SLA is 200ms, reality is 800ms to 1 second. Customers timeout, transactions fail. This is data, not feelings."
+
+Dat looked straight at him, unblinking:
+
+> "And I've also said. We process in **40 milliseconds**. Forty. Request in, process, response out. CPU normal. Memory normal. Nothing unusual. My data is also data."
+
+Silence.
+
+Hien from the DevOps team - who had been monitoring RabbitMQ for 3 years - spoke up:
+
+> "I've checked RabbitMQ. Message rate is stable. Queue depth isn't high. Memory, disk all within thresholds. Erlang processes show no abnormal spikes. Everything is... green."
+
+Three people, three perspectives, three sets of data. And all of them were **right**.
+
+## When Everyone Is Right, Who Is Wrong?
+
+This is the most frustrating type of problem in distributed systems.
+
+No red error logs to debug. No server crashes to restart. No memory leaks to fix. Everything looks completely normal - until you look at the end user's experience.
+
+Transaction Service calls Profile Service via RabbitMQ RPC. Between them:
+- An HAProxy
+- A RabbitMQ cluster
+- Network switches
+- And hundreds of other variables no one measured
+
+Someone in this chain was lying. Or no one was lying at all - but the truth still lay somewhere, waiting to be discovered.
+
+![Mystery](https://images.unsplash.com/photo-1509475826633-fed577a2c71b?w=800)
+
+## The Peak Days
+
+This pattern repeated for 3 months.
+
+Normal days: everything ran smoothly. The 5th, the 10th: hell.
+
+Khoa's Transaction Service was the heart of the payment system. Each transaction needed:
+
+1. Call **Profile Service** - get customer information
+2. Call **SOF Service** - verify fund source
+3. Call **Core Banking** - execute the transaction
+
+All through RabbitMQ RPC. And when one link slowed down, the domino effect pulled everything down.
+
+Khoa had tried everything:
+- Increase timeout? Only made requests wait longer before failing
+- Retry? Increased load, made things worse
+- Circuit breaker? Customers still couldn't complete transactions
+
+Every meeting, the same story repeated. Every meeting, no one backed down.
+
+## The Call at 10 PM
+
+One late evening, Khoa called me.
+
+> "Hey, I don't know what to do anymore. Every month when peak days come, I can't sleep. My team gets blamed, but I look at the code, look at the metrics, and don't know where to fix. Profile says they're fast. DevOps says RabbitMQ is fine. So what's slow?"
+
+His voice no longer had the firmness from the meeting room. It was the voice of someone who was exhausted.
+
+> "I have a hypothesis," he continued. "Maybe my messages are sitting on the queue without anyone picking them up. Or sitting somewhere in the network. But I can't prove it."
+
+I listened in silence. Sometimes, what people need isn't a solution, but someone to listen.
+
+![Late Night](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+## The CTO Steps In
+
+After many tense meetings that went nowhere, the CTO decided to get directly involved.
+
+The next meeting, he brought a whiteboard.
+
+> "Today we won't argue about who's right or wrong," he said. "We'll look at the numbers together."
+
+Dat shared that Profile Service currently had:
+- **4,000 RPS** (requests per second)
+- **40 pods**
+- Average latency: **40ms**
+
+The CTO wrote on the board:
+
+```
+Each pod receives: 4,000 / 40 = 100 RPS
+```
+
+> "With 40ms latency, how many requests is each pod processing concurrently?"
+
+Dat calculated: "100 times 0.04... about 4 concurrent requests."
+
+The CTO nodded, continued writing:
+
+```
+Little's Law: Concurrency = RPS × Latency
+Concurrency = 100 × 0.04 = 4 requests
+```
+
+> "Now," he asked, "what if latency isn't 40ms, but 200ms?"
+
+## The Numbers No One Wanted to Hear
+
+The room fell silent as the CTO wrote:
+
+```
+New Concurrency = 100 × 0.2 = 20 requests
+```
+
+From 4 to 20. **A 5x increase.**
+
+> "Each pod still receives 100 RPS," the CTO explained. "The load balancer doesn't care if your pod is processing fast or slow. It just distributes evenly. But when latency increases, the number of requests queued in the pod increases too."
+
+Dat frowned: "But CPU, memory on my side are still normal."
+
+> "Correct. Because the pod hasn't reached resource overload. But it may have reached **concurrency** overload. Thread pools might be full. Connection pools might be exhausted. Event loops might be blocked."
+
+I jumped in: "So if we want to keep concurrency at 4 like before?"
+
+The CTO wrote:
+
+```
+RPS per pod = 4 / 0.2 = 20 RPS
+Pods needed = 4,000 / 20 = 200 pods
+```
+
+200 pods. From 40 to 200. **A 5x increase** - exactly matching the latency increase ratio.
+
+![Whiteboard](https://images.unsplash.com/photo-1596495577886-d920f1fb7238?w=800)
+
+## "But Where Does the Latency Increase Come From?"
+
+Dat's question hung in the air.
+
+> "Our internal is 40ms. So where's the other 160ms?"
+
+No one had an answer.
+
+- **Queue delay?** DevOps said queue depth was normal
+- **Network?** Other services on the same network weren't affected
+- **RabbitMQ internal?** Metrics didn't show anything unusual
+- **HAProxy?** No signs of congestion
+
+The CTO looked around the room:
+
+> "We can measure the **beginning** and the **end**, but not the **middle**."
+
+Request leaving Transaction Service - measured.
+Response returning to Transaction Service - measured.
+Profile Service receiving and processing request - measured.
+
+But:
+- How long did the request sit in RabbitMQ before a consumer picked it up?
+- How long did the response sit in the reply queue?
+- Network latency between hops?
+
+**No one measured that.**
+
+## A Hypothesis in the Dark
+
+The CTO offered a hypothesis - not to assert, but to get everyone thinking:
+
+> "Maybe on peak days, Profile's consumers can't pick up messages fast enough. Not because processing is slow, but because **prefetch** or **channels** are bottlenecked. Messages wait in the queue - not long enough for queue depth to increase significantly, but enough to add up latency."
+
+Dat nodded slowly: "Possible. But how do we prove it?"
+
+> "We need more metrics. Measure time from publish to consume. Measure queue wait time, not just queue depth."
+
+Hien took notes: "I'll add monitoring for this."
+
+But we all knew: this was just **one** hypothesis among dozens of others.
+
+## Deciding in the Fog
+
+Two weeks later. New metrics still weren't conclusive. The 5th was approaching. Pressure from business was mounting.
+
+In another meeting, Khoa proposed:
+
+> "I want to try gRPC."
+
+The whole room looked at him.
+
+> "Instead of calling Profile through RabbitMQ, I call directly via gRPC. No queue, no broker in between. If latency decreases, at least we know the problem is somewhere in the RabbitMQ layer."
+
+Dat didn't object: "We can expose a gRPC endpoint. Not difficult."
+
+This wasn't a perfect solution. This was an **experiment**. A way to narrow down the suspects.
+
+![Crossroads](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800)
+
+## The Results
+
+Two weeks after deploying gRPC for part of the traffic:
+
+**Latency decreased by 60%.**
+
+Khoa called me, his voice much lighter:
+
+> "Hey, the 10th just passed smoothly. The part calling Profile via gRPC had no issues."
+
+But the CTO asked in the review meeting: "So what can we conclude?"
+
+The room fell silent.
+
+Khoa answered honestly: "I... I'm not sure. Maybe RabbitMQ was the problem. Maybe gRPC is simply faster. Maybe both. I can't say 100% certain."
+
+That was the truth. gRPC is inherently faster - binary protocol, HTTP/2, multiplexing. The improvement might not be because RabbitMQ was "wrong", but because gRPC was "more right" for this use case.
+
+**We still don't know for sure where the original problem was.**
+
+## An Ending Without Closure
+
+This is the reality of distributed systems.
+
+Not every story has a clear villain to defeat. Not every bug has a root cause to fix. Sometimes, you have to accept **uncertainty** and move forward with the **best available option**.
+
+RabbitMQ still runs in our system - for the use cases it's suited for. gRPC is used where low latency and direct communication are needed.
+
+Khoa is still Tech Lead of the Transaction team. Dat still manages Profile. They still occasionally debate in meeting rooms - but now, with more respect. Because they both understand: in distributed systems, sometimes **everyone can be right, but the system can still be wrong**.
+
+And that, too, is a lesson.
+
+![Ending](https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=800)
+
+---
+
+## Little's Law - The Formula to Remember
+
+```
+L = λ × W
+
+Where:
+- L = Number of requests being processed concurrently
+- λ = Request arrival rate (RPS)
+- W = Processing time (latency)
+```
+
+When designing systems:
+- **Latency increases 5x** → Concurrency increases 5x → **Scale 5x**
+- Scaling addresses symptoms, **not root causes**
+- Measuring end-to-end isn't enough - measure **each segment**
+
+---
+
+## "Little Rabbit" Series
+
+| Part | Title | Lesson |
+|------|-------|--------|
+| [Part 1](/en/blog/be-tho-part-1) | When HTTP Is No Longer Enough | Competing consumers, natural load balancing |
+| [Part 2](/en/blog/be-tho-part-2) | The Deadly Traps | Singleton pattern, channel/queue management |
+| [Part 3](/en/blog/be-tho-part-3) | The Night of 500,000 Connections | Connection storm, reconnect limits |
+| [Part 4](/en/blog/be-tho-part-4) | A War Without Winners | Little's Law, accept uncertainty |
+
+---
+
+*Thank you for reading this far. Distributed systems is a journey without a destination - only lessons along the way.*
+
+*And sometimes, the biggest lesson is: not every question has an answer.*
