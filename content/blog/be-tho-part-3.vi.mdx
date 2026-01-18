@@ -20,289 +20,208 @@ thumbnail: https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800
 
 Ngày 11 tháng 1 năm 2023.
 
-Tôi đang chuẩn bị rời văn phòng thì điện thoại rung. SOC (Security Operations Center) gọi.
+Tôi đang chuẩn bị rời văn phòng thì điện thoại rung. SOC gọi. Giọng người trực nghe căng thẳng hơn bình thường: *"Anh ơi, RabbitMQ có vấn đề. Message rate về 0."*
 
-> "Anh ơi, RabbitMQ có vấn đề. Message rate về 0."
+Message rate về 0. Không phải giảm xuống. Là **0**.
 
-Tôi bật laptop lên, truy cập vào trang quản trị RabbitMQ.
+Tôi bật laptop, truy cập dashboard. Và những gì hiện ra trên màn hình khiến tôi đông cứng tại chỗ.
 
-Màn hình hiện lên những con số đáng sợ.
+Connections đang ở mức 500,000. Bình thường chỉ 50,000. Gấp 10 lần.
 
-![Monitoring Dashboard](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+Message rate nhảy nhót như nhịp tim của người sắp chết - lên được vài trăm rồi rớt về 0, lên rồi lại rớt. Hệ thống đang thở hắt ra.
 
-## Những con số ám ảnh
+Tôi gọi ngay cho anh CTO. *"Anh ơi, rabbit chết rồi."*
 
-| Metric | Bình thường | Lúc này |
-|--------|-------------|---------|
-| Message rate | ~10,000 msg/s | **0 msg/s** |
-| Connections (HAProxy) | 50,000 - 55,000 | **~500,000** |
-| Connections (RabbitMQ) | ~25,000 | Overloaded |
-| Erlang processes | Baseline | **x2.5 lần** |
+![Crisis](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
 
-Message rate về **0**. Không phải giảm xuống. Là **0**.
+## Con số ám ảnh
 
-Sau đó message rate nhảy lên được khoảng 1,000, rồi lại rơi về 0. Lên, xuống. Lên, xuống. Như một con bệnh đang thở hắt ra.
+Trong lúc chờ team online, tôi nhìn vào dashboard business metrics. Và đây là lúc tim tôi thực sự đập nhanh hơn.
 
-Connections tới HAProxy và RabbitMQ tăng lên bất thường. Max lên đến **500,000 connections**. Trong khi bình thường chỉ 50,000-55,000.
+**1.8 triệu transactions** đã bị lost. **446,000 users** bị ảnh hưởng.
 
-Mỗi worker K8s kết nối tới RabbitMQ đều đạt ngưỡng limit **3,000 connections**. Và chúng tôi có khoảng 100 workers cho tất cả các cụm K8s.
+Tất cả services sử dụng RabbitMQ đều chết. Core banking, payment, user service, notification. Mọi thứ. Toàn bộ hệ thống payment đang trong trạng thái "clinically dead" - còn thở nhưng không còn sống.
 
-## Impact
+## Truy tìm thủ phạm
 
-Tôi nhìn vào dashboard business metrics.
+Khi cả team đã online, câu hỏi đầu tiên là: **Cái gì đã trigger incident này?**
 
-Số liệu hiện lên như một cái tát:
+Kiểm tra logs, chúng tôi tìm thấy manh mối đầu tiên. Khoảng 8 giờ tối - cùng thời điểm với incident - có một đợt lệnh lớn từ hệ thống Core kết nối vào Database, gây ra Lock Agent. Connection database tăng đột biến.
 
-- **~1,841,340 paid transactions** bị lost
-- **~446,085 users** bị ảnh hưởng
+Nhưng đó chỉ là **trigger**, không phải **root cause**. Database có vấn đề thì RabbitMQ liên quan gì?
 
-Tất cả các service sử dụng RabbitMQ đều chết. Core banking, payment, user service, notification... Mọi thứ.
+Câu trả lời nằm ở một hiện tượng mà sau này chúng tôi gọi là **Connection Storm**.
 
-![Crisis](https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800)
+## Hiệu ứng bầy đàn chết người
 
-## Truy tìm nguyên nhân
+Hãy tưởng tượng một cây cầu nhỏ bắc qua sông. Bình thường, 100 người đi qua cầu mỗi phút - thoải mái, không chen lấn.
 
-### Manh mối đầu tiên
+Một ngày, có sự cố nhỏ khiến cầu tắc nghẽn trong 30 giây. Những người đang chờ bắt đầu sốt ruột. Họ cố chen lên để qua cầu nhanh hơn. Nhưng càng chen, cầu càng tắc. Càng tắc, càng nhiều người chen.
 
-Khoảng 8h PM - cùng thời điểm với incident - có một đợt lệnh lớn từ Core kết nối vào Database. Cùng lúc đó, xảy ra **Lock Agent** của một service quan trọng.
+Và rồi, cầu sập.
 
-Connection database của team Backend tăng đột biến.
+**Đó chính xác là những gì đã xảy ra với RabbitMQ của chúng tôi.**
 
-Nhưng đây chỉ là **trigger**, không phải **root cause**.
+Khi Database lock xảy ra, một số services phụ thuộc vào database bắt đầu chậm lại. Chậm lại có nghĩa là giữ connection RabbitMQ lâu hơn. Connection bị giữ lâu hơn có nghĩa là RabbitMQ bắt đầu quá tải.
 
-### Connection Storm
-
-Khi RabbitMQ bắt đầu chậm (do load tăng), các service bắt đầu timeout. Và khi timeout, chúng làm gì?
-
-**Reconnect.**
-
-Nhưng reconnect logic của chúng tôi có vấn đề:
+Và đây là lúc config "auto reconnect" của chúng tôi trở thành hung thủ.
 
 ```java
-// Config cũ - NGUY HIỂM
-return new RabbitMQOptions()
-    .setAutomaticRecoveryEnabled(true)
-    .setReconnectAttempts(Integer.MAX_VALUE)  // Retry VÔ HẠN!
-    .setReconnectInterval(1000L);              // Cứ 1 giây retry lại
+// Config lúc đó
+.setReconnectAttempts(Integer.MAX_VALUE)  // Retry VÔ HẠN
+.setReconnectInterval(1000L)               // Cứ 1 giây retry lại
 ```
 
-Khi RabbitMQ chậm:
-1. Service A timeout → reconnect
-2. Service B timeout → reconnect
-3. ...
-4. 100 workers x 3,000 connections = **300,000 reconnect attempts**
+`Integer.MAX_VALUE`. Retry vô hạn. Mỗi giây một lần.
 
-Mỗi reconnect attempt tạo thêm load cho RabbitMQ. RabbitMQ càng chậm. Càng nhiều timeout. Càng nhiều reconnect.
+Khi RabbitMQ bắt đầu chậm, các services bắt đầu timeout. Và khi timeout, chúng làm gì? **Reconnect.** Ngay lập tức. Không chờ đợi. Không suy nghĩ.
 
-**Vicious cycle. Connection storm.**
+100 workers, mỗi worker có thể tạo đến 3,000 connections. Tất cả đồng loạt reconnect. Không phải 1 lần. Mà là vô số lần mỗi giây.
 
-### TIME_WAIT Hell
+RabbitMQ vốn đã quá tải, giờ phải xử lý thêm hàng trăm ngàn connection requests mỗi giây. Nó càng chậm hơn. Càng nhiều timeout. Càng nhiều reconnect.
 
-Kiểm tra trên HAProxy:
+**Vicious cycle. Bầy đàn hoảng loạn.**
+
+Trong vòng vài phút, hệ thống từ "hơi chậm" đã biến thành "chết hoàn toàn".
+
+![Stampede](https://images.unsplash.com/photo-1582139329536-e7284fece509?w=800)
+
+## TIME_WAIT - Kẻ giết người thầm lặng
+
+Nhưng câu chuyện chưa dừng lại ở đó.
+
+Khi kiểm tra trên HAProxy, chúng tôi phát hiện thêm một vấn đề: hàng trăm ngàn connections đang ở trạng thái TIME_WAIT.
+
+Để hiểu TIME_WAIT, bạn cần biết cách TCP connection hoạt động. Khi một connection bị đóng, nó không biến mất ngay lập tức. Nó ở trạng thái "chờ" khoảng 60 giây để đảm bảo không có packet nào bị mất trong quá trình đóng.
+
+Bình thường, điều này không phải vấn đề. Nhưng với 500,000 connections liên tục đóng và mở lại mỗi giây, số lượng TIME_WAIT tăng lên không kiểm soát. Mỗi TIME_WAIT connection vẫn chiếm một port, một file descriptor, một phần memory.
+
+Hệ thống đang chết đuối trong biển connections của chính nó.
+
+## Quyết định khó khăn nhất
+
+Đến thời điểm này, chúng tôi đứng trước một quyết định khó khăn.
+
+Thông thường, khi có incident, bạn cố gắng fix vấn đề mà không shutdown service. Downtime là kẻ thù. Mỗi phút downtime là tiền bạc, là uy tín, là khách hàng.
+
+Nhưng nhìn vào tình hình hiện tại, anh CTO đưa ra quyết định mà không ai muốn nghe: *"Stop hết đi. Cả HAProxy lẫn RabbitMQ."*
+
+Stop hoàn toàn. Không phải restart. Không phải graceful shutdown. **Stop.**
+
+Đây là quyết định mà sau này tôi hiểu là hoàn toàn đúng đắn. Khi hệ thống đang trong trạng thái "thrashing" - khi mỗi hành động khắc phục chỉ làm tình hình tồi tệ hơn - cách duy nhất là **dừng lại hoàn toàn và bắt đầu lại từ đầu**.
+
+Giống như khi máy tính bị treo cứng, đôi khi cách duy nhất là tắt nguồn và bật lại.
+
+## Hồi sinh từ tro tàn
+
+Sau khi stop cả HAProxy và RabbitMQ, chúng tôi bắt đầu quá trình "hồi sinh" có kiểm soát.
+
+Bước đầu tiên: **giới hạn connections**. Trước đó, mỗi IP có thể tạo đến 3,000 connections. Chúng tôi giảm xuống 300. Một phần mười. Mục đích không phải để hạn chế vĩnh viễn, mà để đảm bảo rằng khi hệ thống start lại, không có ai có thể tạo ra connection storm lần nữa.
 
 ```bash
-netstat -nat | grep TIME_WAIT | wc -l
-```
-
-Kết quả: hàng trăm ngàn connections trong trạng thái TIME_WAIT.
-
-Khi một connection bị đóng, nó không biến mất ngay. Nó ở trạng thái TIME_WAIT trong khoảng 60 giây (default của Linux) để đảm bảo không có packet nào bị mất.
-
-Với 500,000 connections đóng/mở liên tục, số lượng TIME_WAIT tăng lên không kiểm soát.
-
-## Xử lý khẩn cấp
-
-### Bước 1: Cô lập hệ thống
-
-```bash
-# Stop HAProxy - ngắt connection từ bên ngoài
-/etc/init.d/haproxy stop
-
-# Stop RabbitMQ
-systemctl stop rabbitmq-server
-```
-
-Chúng tôi phải **stop hoàn toàn** cả HAProxy lẫn RabbitMQ. Không có cách nào khác khi hệ thống đang trong trạng thái "thrashing".
-
-### Bước 2: Scale down services
-
-Scale down toàn bộ services để ngăn chúng tiếp tục reconnect khi RabbitMQ start lại.
-
-### Bước 3: Limit connection
-
-Sửa config HAProxy để limit session từ mỗi IP:
-
-```bash
-# /etc/haproxy/haproxy.cfg
-# Giảm từ 3000 xuống 300 connection/IP
+# Config mới cho HAProxy
 stick-table type ip size 100k expire 30s store conn_cur
 tcp-request connection reject if { src_conn_cur ge 300 }
 ```
 
-Mục đích: khi services start lại, chúng không thể tạo quá nhiều connections cùng lúc.
+Bước thứ hai: **start RabbitMQ trước**. Kiểm tra trạng thái. Đảm bảo nó stable. Đảm bảo số connections TIME_WAIT đã giảm về mức bình thường.
 
-### Bước 4: Start lại RabbitMQ
+Bước thứ ba: **start HAProxy**. Nhưng vẫn chưa có traffic nào vào vì tất cả services vẫn đang bị scale down về 0.
 
-```bash
-systemctl start rabbitmq-server
-```
+Bước cuối cùng và quan trọng nhất: **start services theo thứ tự ưu tiên**. Không phải tất cả cùng lúc. Core banking trước. Rồi payment. Rồi user profile. Rồi authentication. Cuối cùng mới đến các services phụ.
 
-Kiểm tra connections:
+Mỗi lần start một nhóm services, chúng tôi dừng lại, monitor. Connections có tăng quá nhanh không? Message rate có ổn định không? Chỉ khi mọi thứ OK, mới tiếp tục start nhóm tiếp theo.
 
-```bash
-netstat -an | awk '/tcp/ {print $6}' | sort | uniq -c
-```
-
-```
-  36778 ESTABLISHED
-      3 FIN_WAIT2
-      8 LISTEN
-    578 TIME_WAIT
-```
-
-TIME_WAIT đã giảm đáng kể. RabbitMQ đang ổn định.
-
-### Bước 5: Start HAProxy
-
-```bash
-/etc/init.d/haproxy start
-```
-
-### Bước 6: Apply policy tạm thời
-
-Apply policy **không xóa queue** để tránh trường hợp queue không có consumer bị delete. Sau khi ổn định sẽ apply lại policy này.
-
-### Bước 7: Start services theo thứ tự
-
-Không start tất cả cùng lúc. Start theo thứ tự ưu tiên:
-
-1. **Core** - Hệ thống core banking
-2. **Core-payment, Payment** - Thanh toán
-3. **User profile** - Thông tin user
-4. **Login** - Authentication
-5. **Others** - Các services còn lại
-
-Mỗi bước, monitor connections và message rate. Chỉ start tiếp khi metrics ổn định.
-
-### Bước 8: Tăng dần connection limit
-
-Sau khi tất cả services đã start và ổn định, từ từ tăng connection limit từ 300 → 500 → 1000 → 3000.
+Quá trình này mất gần 2 giờ. Nhưng khi kết thúc, hệ thống đã sống lại. Stable. Controllable.
 
 ![Recovery](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
 
-## Lessons Learned
+## Sai lầm chết người: Retry vô hạn
 
-### 1. Reconnect Attempts phải có giới hạn
+Sau incident, khi ngồi lại phân tích, một câu hỏi cứ ám ảnh tôi: **Tại sao chúng tôi lại config reconnect vô hạn?**
 
-**Config cũ (SAI):**
-```java
-.setReconnectAttempts(Integer.MAX_VALUE)
-```
+Câu trả lời đau lòng là: vì chúng tôi nghĩ đó là "resilient".
 
-**Config mới (ĐÚNG):**
-```java
-.setReconnectAttempts(5)
-.setReconnectInterval(10000L)  // 10 giây
-```
+Logic lúc đó nghe có vẻ đúng: *"Nếu connection bị mất, cứ reconnect cho đến khi thành công. Service phải luôn available. Never give up."*
 
-Nếu reconnect 5 lần mà không được, **dừng lại**. Để circuit breaker hoặc human intervention xử lý. Đừng cố reconnect vô hạn - bạn sẽ chỉ làm tình hình tồi tệ hơn.
+Nhưng "never give up" trong context của distributed systems lại là một ý tưởng tồi tệ.
 
-### 2. Config chuẩn cho RabbitMQ
+Hãy nghĩ về điều này: nếu RabbitMQ đang overload, và 1,000 clients đồng loạt retry mỗi giây, bạn đang làm gì? Bạn đang **DDoS chính hệ thống của mình**.
 
-Sau incident, chúng tôi thống nhất config template cho tất cả services:
+Reconnect vô hạn không phải resilience. Đó là **tự sát tập thể**.
+
+Config đúng phải là:
 
 ```java
-return new RabbitMQOptions()
-    .setUser(rabbitMqCfg.user)
-    .setPassword(rabbitMqCfg.pass)
-    .setPort(rabbitMqCfg.port)
-    .setAutomaticRecoveryEnabled(false)  // Tự quản lý recovery
-    .setReconnectInterval(10000L)         // 10 giây
-    .setReconnectAttempts(5)              // Chỉ 5 lần
-    .setConnectionTimeout(7000)           // 7 giây
-    .setHandshakeTimeout(7000)            // 7 giây
-    .setRequestedChannelMax(5)            // Giới hạn channel
-    .setNetworkRecoveryInterval(7000);    // 7 giây
+.setReconnectAttempts(5)        // Chỉ retry 5 lần
+.setReconnectInterval(10000L)   // Mỗi lần cách nhau 10 giây
 ```
 
-**Giải thích:**
-- `AutomaticRecoveryEnabled = false`: Tự quản lý recovery thay vì để RabbitMQ client tự động
-- `ReconnectAttempts = 5`: Giới hạn số lần retry
-- `RequestedChannelMax = 5`: Phát hiện channel leak sớm
+Nếu 5 lần reconnect trong 50 giây mà vẫn không được, **dừng lại**. Log error. Alert. Để circuit breaker xử lý. Để human intervention vào cuộc.
 
-### 3. Tách biệt RabbitMQ cho services quan trọng
+Đừng cố reconnect vô hạn. Bạn không phải anh hùng. Bạn đang làm tình hình tồi tệ hơn.
 
-Một trong những quyết định sau incident:
+## Bài học về kiến trúc
 
-- **RabbitMQ cluster chính**: Chỉ cho services critical (payment, core banking)
-- **RabbitMQ cluster phụ**: Cho services không critical (notification, logging, analytics)
+Incident này dạy chúng tôi nhiều điều, nhưng có một bài học vượt ra ngoài kỹ thuật: **không nên đặt tất cả trứng vào một giỏ**.
 
-Nếu cluster phụ có vấn đề, không ảnh hưởng đến business critical.
+Trước incident, tất cả services - từ critical đến non-critical - đều dùng chung một RabbitMQ cluster. Payment và notification cùng một chỗ. Core banking và analytics cùng một chỗ.
 
-### 4. Tách user RabbitMQ
+Điều này có nghĩa là: khi RabbitMQ chết, **TẤT CẢ** đều chết. Không có cách nào để "hy sinh" notification để "cứu" payment.
 
-Mỗi nhóm services có user riêng. Khi cần isolate, có thể disable user mà không ảnh hưởng toàn bộ hệ thống.
+Sau incident, chúng tôi tách thành hai clusters:
+- **Cluster chính**: Chỉ cho services critical - payment, core banking, user authentication
+- **Cluster phụ**: Cho services không critical - notification, logging, analytics
 
-### 5. Playbook xử lý sự cố
+Nếu cluster phụ có vấn đề, users vẫn có thể thanh toán. Họ chỉ không nhận được notification ngay lập tức - một trade-off chấp nhận được.
 
-Viết lại kịch bản xử lý sự cố chi tiết:
+Đây là nguyên tắc **graceful degradation**: khi hệ thống gặp vấn đề, nó không chết hoàn toàn, mà "giảm cấp" một cách có kiểm soát. Tính năng quan trọng nhất được bảo vệ. Tính năng ít quan trọng hơn có thể tạm thời bị hy sinh.
 
-| Step | Action | Verify |
-|------|--------|--------|
-| 1 | Stop HAProxy | `netstat` không có connection mới |
-| 2 | Stop RabbitMQ | Service stopped |
-| 3 | Scale down all services | Pods = 0 |
-| 4 | Limit connection (300) | HAProxy config updated |
-| 5 | Start RabbitMQ | `rabbitmqctl status` OK |
-| 6 | Start HAProxy | Connections < 1000 |
-| 7 | Apply no-delete policy | Policy applied |
-| 8 | Start services theo thứ tự | Monitor msg rate |
-| 9 | Tăng dần connection limit | 300 → 3000 |
+## Playbook - Thứ không ai muốn viết nhưng ai cũng cần
 
-## Re-Architecture Initiative
+Một trong những việc đầu tiên sau incident là viết **playbook** - một tài liệu chi tiết về cách xử lý khi RabbitMQ gặp sự cố tương tự.
 
-Sau incident, ban lãnh đạo quyết định thành lập dự án **Re-Architecture** với mục tiêu:
+Playbook không phải để đọc cho vui. Nó để dùng lúc 2 giờ sáng, khi bạn vừa bị đánh thức bởi PagerDuty, mắt còn mờ, não chưa tỉnh. Lúc đó, bạn cần một checklist rõ ràng: bước 1 làm gì, bước 2 làm gì, verify như thế nào.
 
-> **Hệ thống chỉ được phép downtime bị động tối đa 15 phút**
+Chúng tôi cũng bắt đầu drill định kỳ - mỗi quý một lần, giả lập incident và chạy theo playbook. Không phải để "cho vui", mà để đảm bảo rằng khi incident thật xảy ra, mọi người đều biết mình phải làm gì.
 
-Các initiatives bao gồm:
-- **RabbitMQ clustering** với HA policy
-- **Circuit breaker** ở application level
-- **Rate limiting** ở gateway
-- **Graceful degradation** cho non-critical features
-- **Chaos engineering** để test resilience
+Drill đầu tiên, mất 45 phút để recovery. Drill thứ hai, 30 phút. Drill gần nhất, chỉ 15 phút.
 
----
+**Practice makes perfect.** Đặc biệt là với những thứ bạn không muốn phải làm.
+
+![Playbook](https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800)
 
 ## Nhìn lại
 
 Đêm 11/01/2023 là đêm dài nhất của team tôi.
 
-1.8 triệu transactions. 446,000 users. Những con số ám ảnh.
+1.8 triệu transactions. 446,000 users. Những con số ám ảnh mà đến giờ tôi vẫn nhớ như in.
 
-Nhưng từ incident đó, chúng tôi học được:
+Nhưng từ đêm đó, chúng tôi học được những bài học mà không sách vở nào dạy:
 
-1. **Bé Thỏ rất mạnh, nhưng cũng rất fragile** khi không được configure đúng cách
-2. **Connection storm** là kẻ giết người thầm lặng
-3. **Reconnect vô hạn** không phải là resilience - đó là tự sát
-4. **Playbook** và **drill** là bắt buộc, không phải optional
-5. **Isolate critical services** ngay từ đầu, đừng đợi incident
+**Bé Thỏ rất mạnh, nhưng cũng rất fragile** khi không được configure đúng cách. Một config "reconnect vô hạn" tưởng chừng vô hại có thể giết chết cả hệ thống.
 
-Bé Thỏ vẫn là người bạn đồng hành đáng tin cậy của chúng tôi. Nhưng giờ đây, chúng tôi hiểu bé hơn. Tôn trọng bé hơn.
+**Connection storm là kẻ giết người thầm lặng.** Nó không đến từ bên ngoài, mà từ chính services của bạn. Chính sự "cố gắng" của services đã giết chết hệ thống.
 
-Và quan trọng nhất: **không bao giờ chủ quan với bé nữa**.
+**Đôi khi, cách tốt nhất để fix là stop hoàn toàn.** Không phải lúc nào cũng cần phải "fix on the fly". Khi hệ thống đang thrashing, dừng lại và bắt đầu lại từ đầu có thể là lựa chọn đúng đắn nhất.
 
-![Lessons](https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800)
+**Graceful degradation là bắt buộc, không phải optional.** Tách biệt critical và non-critical services. Khi có sự cố, biết cái gì cần được bảo vệ và cái gì có thể hy sinh.
 
-## Teaser: Little's Law và câu hỏi không lời đáp
+Bé Thỏ vẫn là người bạn đồng hành đáng tin cậy của chúng tôi. Nhưng giờ đây, chúng tôi hiểu bé hơn. Tôn trọng bé hơn. Và quan trọng nhất - **không bao giờ chủ quan với bé nữa**.
 
-Nhưng câu chuyện chưa kết thúc ở đây.
+---
 
-Vài tháng sau, một vấn đề mới xuất hiện. Vào những ngày cao điểm - ngày 5, ngày 10 hàng tháng - hệ thống lại nghẽn. Nhưng lần này, **mọi metrics đều bình thường**.
+## Chưa hết
+
+Nhưng câu chuyện về Bé Thỏ chưa kết thúc ở đây.
+
+Vài tháng sau, một vấn đề mới xuất hiện. Vào những ngày cao điểm - ngày 5, ngày 10 hàng tháng - hệ thống lại nghẽn. Nhưng lần này, điều kỳ lạ là **mọi metrics đều bình thường**.
 
 Server nói xử lý nhanh. Producer nói gọi chậm. DevOps nói RabbitMQ không có vấn đề.
 
-Ai đúng? Ai sai? Và **Little's Law** đã giúp CTO nhìn ra điều gì?
+Ba teams, ba bộ metrics, và ai cũng đúng. Nhưng hệ thống vẫn chậm.
+
+Ai đúng? Ai sai? Và một công thức toán học đơn giản có tên **Little's Law** đã giúp CTO nhìn ra điều gì mà không ai thấy?
 
 Câu chuyện này, tôi sẽ kể trong phần cuối cùng của series.
 
@@ -310,13 +229,11 @@ Câu chuyện này, tôi sẽ kể trong phần cuối cùng của series.
 
 ## Series "Bé Thỏ"
 
-| Phần | Nội dung | Bài học chính |
-|------|----------|---------------|
-| [Phần 1](/vi/blog/be-tho-part-1) | Từ HTTP đến RabbitMQ RPC | Competing consumers, natural load balancing |
-| [Phần 2](/vi/blog/be-tho-part-2) | Channel leak, Reply queue explosion | Singleton pattern không chỉ là lý thuyết |
-| [Phần 3](/vi/blog/be-tho-part-3) | Incident 500K connections | Reconnect có giới hạn, playbook là bắt buộc |
+| Phần | Tiêu đề | Bài học chính |
+|------|---------|---------------|
+| [Phần 1](/vi/blog/be-tho-part-1) | Khi HTTP không còn đủ | Competing consumers, natural load balancing |
+| [Phần 2](/vi/blog/be-tho-part-2) | Những cái bẫy chết người | Singleton pattern, channel/queue management |
+| [Phần 3](/vi/blog/be-tho-part-3) | Đêm 500 ngàn connections | Connection storm, graceful degradation |
 | [Phần 4](/vi/blog/be-tho-part-4) | Cuộc chiến không có kẻ thắng | Little's Law, accept uncertainty |
-
----
 
 *Stay tuned cho phần cuối cùng!*

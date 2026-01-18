@@ -1,0 +1,245 @@
+---
+title: "When Logging Becomes a Traitor"
+title_vi: "Khi Logging Trở Thành Kẻ Phản Bội"
+title_en: "When Logging Becomes a Traitor"
+excerpt_vi: "Câu chuyện về tính năng ghi log lỗi vào Kafka - thứ đã cứu team hàng trăm lần trong quá khứ - bỗng trở thành nguyên nhân khiến hơn 9.000 giao dịch bị drop. Một bài học về những chi tiết 'không quan trọng' trong migration."
+excerpt_en: "The story of error logging to Kafka - a feature that saved the team hundreds of times - suddenly became the cause of over 9,000 dropped transactions. A lesson about 'unimportant' details in migration."
+date: 2025-09-10
+tags:
+  - Kafka
+  - Log4j
+  - Infrastructure
+  - Incident
+  - Migration
+thumbnail: https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800
+---
+
+# When Logging Becomes a Traitor
+
+## The Silent Night Watch
+
+In our payment system, there was a feature everyone loved: sending error logs directly to Kafka.
+
+The idea was born after an all-night debugging session. Logs were scattered across dozens of pods, we grep'd until our eyes blurred but still couldn't find the root cause. Hieu - our Tech Lead - suggested: *"Why don't we push logs to Kafka and query them centrally?"*
+
+The implementation was surprisingly simple. Just add a Kafka appender to Log4j2, and error logs would automatically flow to a dedicated topic. From there, we could query in real-time, set up alerts, analyze patterns - all in seconds instead of hours of manual grep.
+
+Countless production on-call nights, this feature saved us. It was like a silent night watchman, always there when needed. Merchant complaints? Traced immediately. Mysterious service errors? Error logs had all the context.
+
+But there was one thing we didn't anticipate: this night watchman had a fatal weakness.
+
+![Night Watch](https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800)
+
+## Migration Night and a "Reasonable" Decision
+
+The night of September 4th, the team began migrating Kafka to a new cluster.
+
+By 5 AM, everything seemed complete. Business logic was running smoothly. Transaction path OK. Everyone's eyes were red from lack of sleep, but smiles were bright.
+
+Just then, Nguyen - the youngest engineer on the team - noticed a detail: *"The Kafka config in log4j2 is still pointing to the old cluster."*
+
+I looked at the clock. 5:17 AM. Everyone was exhausted. And that config... it was just for error logging. Didn't affect transactions.
+
+*"Can we sync it later? Priority is the transaction path first,"* - I suggested.
+
+Hieu nodded. A completely reasonable decision. Syncing all services at 5 AM when everyone was exhausted? Risky. Besides, that log4j2 config didn't affect anything - it was just for viewing error logs, nothing to do with transactions.
+
+**At least, that's what we thought.**
+
+## Anatomy of a Time Bomb
+
+To understand why a logging config could kill an entire service, you need to understand how Log4j2 Kafka Appender works.
+
+Imagine you're at a bank teller counter. After processing each transaction, the teller needs to write in a journal. Normally, writing takes just a few seconds - so fast that customers don't even notice.
+
+But what if the journal is locked in a cabinet and the key is lost?
+
+The teller will stand there, waiting for someone to open the cabinet. Can't serve the next customer. Can't do anything else. Just wait.
+
+**That's exactly how Log4j2 Kafka Appender works by default.**
+
+When code calls `logger.error("Something went wrong")`, here's what happens:
+
+1. Log message is formatted
+2. Message is sent to Kafka
+3. **Thread WAITS until Kafka confirms receipt**
+4. Only after receiving ACK does the thread continue with other work
+
+Step 3 is the problem. If Kafka doesn't respond - for any reason - the thread gets **blocked**. Not blocked briefly and then released, but blocked until timeout (usually 30-60 seconds).
+
+And during all that time, the thread can't process any other requests.
+
+![Blocking](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+## The Domino Effect
+
+Now imagine a service with 50 worker threads, processing 100 requests per second.
+
+Normally, each request takes about 200ms to process, including logging errors if any occur. 50 threads can easily handle 100 requests per second.
+
+But when Kafka logging is blocked:
+
+**Request 1** hits a validation error → needs to log error → thread 1 calls `logger.error()` → sends to Kafka → Kafka doesn't respond → thread 1 is blocked, waiting 30 seconds.
+
+**Request 2** also hits an error → thread 2 is blocked.
+
+**Request 3, 4, 5...** same story.
+
+After a few seconds, all 50 threads are waiting for Kafka to respond. No thread is free to handle new requests.
+
+The service still receives requests from clients. But all requests sit in a queue, waiting for a thread to process them. Waiting forever. Until timeout.
+
+**The service was breathing but no longer alive.**
+
+The scary part: CPU normal, Memory normal, Network normal. All metrics green. Only transactions were deep red.
+
+## September 8th - The Bomb Explodes
+
+After migration night, Nguyen created 5 merge requests to update the log4j2 config for all namespaces: bank, adapter-bank, w2b, ekyc, and va-bank.
+
+On September 6th, the team proceeded to merge. Four MRs were merged successfully. But one MR was missed - **va-bank**.
+
+I don't know what happened that night. Maybe fatigue. Maybe another alert needed handling. Maybe simply a checkbox overlooked.
+
+Two days later, at 11:45 AM on September 8th, the infras team shut down the old Kafka cluster - the final step of migration.
+
+From that moment, every time an error occurred in the VA-bank service, Log4j2 tried to send a log to a dead Kafka cluster. And by default behavior, it blocked the thread until timeout.
+
+At 12:40 PM, the alert channel exploded. Transaction success dropped to 0. Circuit breaker automatically enabled maintenance mode.
+
+![Alert](https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?w=800)
+
+## Root Cause Found in 26 Minutes
+
+Nguyen was the first to notice an unusual pattern: all threads in the VA-bank service were in BLOCKED state, waiting for something related to Kafka producer.
+
+But the team had already migrated Kafka? Transaction path was working fine on the new cluster.
+
+Digging deeper into the stack trace, the answer appeared: **kafka-dc1:9092**. The old cluster address. And it came from Log4j2 Kafka Appender - the config that the va-bank MR hadn't merged.
+
+1:06 PM - 26 minutes after the first alert - root cause identified.
+
+1:18 PM, Nguyen synced the new config. 1:22 PM, service was back online.
+
+But the damage was done: **6,768 VA Payment transactions** and **2,484 VA P2P transactions** dropped. Over 9,000 transactions in 40 minutes.
+
+## Why Can Logging Block Transactions?
+
+This is the most important question, and the most expensive lesson.
+
+The answer lies in two words: **Synchronous I/O**.
+
+Most developers think of logging as an insignificant side effect. Call `logger.error()`, message gets written somewhere, done. Doesn't affect business logic.
+
+But "written somewhere" is the problem. If "somewhere" is a file on local disk - fast, low risk. If "somewhere" is a remote system like Kafka - **everything changes**.
+
+When you send a message to Kafka, many things can go wrong:
+- High network latency
+- Kafka broker overloaded
+- Kafka cluster rebalancing
+- Or like our case - Kafka cluster is dead
+
+And if the appender is configured as **synchronous** (the default for Log4j2 Kafka Appender), each log call will block the thread until it receives a response from Kafka.
+
+## Config Before and After - A Life-or-Death Difference
+
+**Old config** - simple and dangerous:
+
+```xml
+<Kafka name="KafkaAppender" topic="error-logs">
+    <PatternLayout pattern="%m"/>
+    <Property name="bootstrap.servers">kafka-dc1:9092</Property>
+</Kafka>
+
+<Root level="error">
+    <AppenderRef ref="KafkaAppender"/>
+</Root>
+```
+
+This config has a fatal flaw: it **always** sends logs to Kafka, and **always** waits for a response. No plan B.
+
+**New config** - resilient and controllable:
+
+```xml
+<!-- Async wrapper: logs sent in separate background thread -->
+<Async name="AsyncKafka" bufferSize="1024"
+       blocking="false"
+       shutdownTimeout="0">
+    <AppenderRef ref="KafkaAppenderRouting"/>
+</Async>
+
+<!-- Routing: can enable/disable Kafka logging via environment variable -->
+<Routing name="KafkaAppenderRouting">
+    <Routes pattern="${env:ENABLE_KAFKA_LOG:-false}">
+        <Route key="true">
+            <Kafka name="KafkaAppender" topic="error-logs">
+                <PatternLayout pattern="%m"/>
+                <Property name="bootstrap.servers">${env:KAFKA_BROKERS}</Property>
+            </Kafka>
+        </Route>
+        <Route key="false">
+            <Null name="NullAppender"/>
+        </Route>
+    </Routes>
+</Routing>
+```
+
+Three critical changes:
+
+**1. Async wrapper with blocking="false"**
+
+Instead of the business thread directly sending logs to Kafka, messages are pushed into a buffer. A separate background thread handles sending to Kafka. The business thread doesn't need to wait.
+
+If the buffer is full (Kafka too slow), new messages are dropped instead of blocking the thread - that's what `blocking="false"` means. Losing logs is better than losing transactions.
+
+**2. Environment variable to enable/disable**
+
+`ENABLE_KAFKA_LOG` allows disabling Kafka logging instantly without deploying new code. During migration? Disable. When Kafka has issues? Disable. One config change, no restart needed.
+
+**3. Fallback to Null**
+
+When `ENABLE_KAFKA_LOG=false`, logs go to `NullAppender` - a special appender that does nothing. No errors, no exceptions, no side effects.
+
+![Config](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+
+## Lessons About "Unimportant" Things
+
+After the incident, I thought a lot about that decision at 5 AM.
+
+*"It's just for error logging. Doesn't affect transactions."*
+
+That statement wasn't wrong - by normal logic. Logging is a side effect, an auxiliary feature for debugging. It **shouldn't** affect the transaction path.
+
+But "shouldn't" and "doesn't" are two different things.
+
+In distributed systems, any network call can fail. And any network call can block if not handled properly. Logging to a remote system is also a network call.
+
+**Lesson 1: No dependency is "unimportant"**
+
+Every connection, every config, every library can become a single point of failure. The question isn't "is it important?" but "what if it fails?"
+
+**Lesson 2: Understand sync vs async before using**
+
+The default behavior of many libraries is synchronous - safe, predictable, but dangerous when the destination is unavailable. Always ask: "If the remote system doesn't respond, what will my code do?"
+
+**Lesson 3: Always have a kill switch**
+
+Any feature that depends on an external system needs a way to disable it quickly. Not deploy new code, not restart service - just an environment variable or feature flag.
+
+**Lesson 4: Migration checklist must be comprehensive**
+
+Not just the transaction path. **ALL** connections: transaction Kafka, logging Kafka, audit, monitoring, cache, database. One missed connection = one time bomb.
+
+---
+
+## Closing Thoughts
+
+Kafka error logging still runs in our system. It's still a useful feature, still helps with quick debugging.
+
+But now, it runs in an async wrapper. It has a kill switch. And most importantly - we understand that it can cause harm if not controlled.
+
+Sometimes, the most expensive lessons don't come from complex things. They come from things we thought were simple, not worth noticing.
+
+*9,000 transactions. 40 minutes. One missed MR.*
+
+*That's the price of "unimportant."*
