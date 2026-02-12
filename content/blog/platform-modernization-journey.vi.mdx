@@ -211,9 +211,9 @@ Một tip quan trọng: **không cố gắng native hóa tất cả cùng lúc**
 
 ## Impact: Không Chỉ Là Lời Hứa
 
-### Q1 2025: Right-sizing Results
+### Right-sizing Results
 
-Sau khi áp dụng công thức right-sizing cho toàn bộ services trong namespace Bank và eKYC:
+Sau khi áp dụng công thức right-sizing cho toàn bộ services:
 
 | Metric | Original | Saved | Percentage |
 |--------|----------|-------|------------|
@@ -229,26 +229,26 @@ Bên cạnh đó, team đã:
 - Setup **alert rules** cho các ngưỡng bất thường
 - Tổ chức **training session** cho developers về Kubernetes resource management
 
-### Q2-Q4 2025: Platform Migration Results
+### Platform Migration Results
 
-Riêng với eKYC - một trong những hệ thống phức tạp nhất với **28 core modules** - tiến độ migration như sau:
+Với một hệ thống phức tạp gồm hàng chục modules, tiến độ migration theo chiến lược soft migration:
 
-| Stack | Số lượng | Tỷ lệ | Ghi chú |
-|-------|----------|-------|---------|
-| **V3 Native (GraalVM)** | 3 modules | 11% | lighthouse, osiris, service-internal |
-| **V3 JVM (Quarkus)** | 4 modules | 14% | ekyc-engine, service-face-streaming, service-id-card... |
-| **V2 (Vert.x + Dagger)** | 21 modules | 75% | 9 adapters + 12 services - target migration tiếp theo |
+| Stack | Tỷ lệ | Ghi chú |
+|-------|-------|---------|
+| **V3 Native (GraalVM)** | ~10% | Các modules đơn giản, stateless |
+| **V3 JVM (Quarkus)** | ~15% | Modules phức tạp hơn |
+| **V2 (Vert.x + Dagger)** | ~75% | Đang dần chuyển đổi |
 
-Ngoài eKYC, các namespace khác cũng đang tiến hành:
-- **~10 Bank services/adapters** đã migrate
+Kết quả đạt được:
 - **100% services mới** được viết trên V3 framework
-- **Documentation đầy đủ** với sự hỗ trợ của AI
+- **Documentation đầy đủ** cho việc onboarding
+- **Phased rollout** giảm thiểu risk
 
 ### Native Code: Từ 250MB xuống 25MB
 
 Và đây là phần thú vị nhất.
 
-Team đã thử nghiệm build native code cho `ekyc_service-internal` - service phục vụ các team khác gọi vô kiểm tra kết quả eKYC. Đây là một trong 3 modules đầu tiên chạy Native trên production (cùng với lighthouse và osiris).
+Team đã thử nghiệm build native code cho một internal service - một trong những modules đầu tiên chạy Native trên production.
 
 **Kết quả thực tế đo được:**
 
@@ -279,52 +279,26 @@ Sau gần một năm thực hiện, chúng tôi có những suy nghĩ về hành
 
 **Tự hào thứ nhất:** Dù sao cũng đã nhận ra để đưa mọi thứ đi đúng hướng. Chỉ cần **một bước nhìn lại**, tối ưu những gì đang sử dụng, cũng là một bước tiến lớn. 44% CPU saved không đến từ đâu xa - nó đến từ việc hiểu đúng và config đúng.
 
-**Tự hào thứ hai:** Native code **thực sự works**. 250MB xuống 25MB không phải marketing material - đó là thực tế đo đạc được trên production. Và đây là foundation cho những gì team sẽ làm tiếp trong năm 2026.
+**Tự hào thứ hai:** Native code **thực sự works**. 250MB xuống 25MB không phải marketing material - đó là thực tế đo đạc được trên production.
 
-### Expected Outcomes: Dự kiến khi hoàn thành
+## Tiếp theo là gì?
 
-Nếu hoàn thành migration toàn bộ 28 modules eKYC sang Native, dựa trên data thực tế từ 3 modules đã chạy production:
+Hành trình chưa kết thúc. Với những kết quả đã đạt được, hướng đi tiếp theo khá rõ ràng:
 
-| Metric | Hiện tại (V2/JVM) | Mục tiêu (Native) | Expected Impact |
-|--------|-------------------|-------------------|-----------------|
-| **Startup Time** | 5-10 seconds | < 100 ms | ~100x faster |
-| **Memory Usage** | 300-500 MB/pod | 50-100 MB/pod | ~5x lower |
-| **Pod Scaling** | 10-15 seconds | < 1 second | ~15x faster |
-| **Cloud Cost** | Baseline | -30% to -50% | Significant savings |
+**1. Mở rộng Native Code Coverage**
 
-**30-50% cloud cost reduction** không phải con số marketing. Đó là projection dựa trên memory footprint giảm 5x, cho phép consolidate workloads trên ít nodes hơn.
+Bắt đầu từ những modules đơn giản, dần dần mở rộng sang các modules phức tạp hơn. Mỗi module native thành công là một bước tiến về hiệu suất và chi phí.
 
-## Kế hoạch 2026: Tiếp tục hành trình
+**2. Hoàn thiện V3 Migration**
 
-Câu chuyện chưa kết thúc. Năm 2026, team có những mục tiêu rõ ràng:
-
-**1. Expand Native Code Coverage (eKYC)**
-
-Với namespace eKYC, sau thành công với 3 modules đầu tiên (lighthouse, osiris, service-internal), tiếp tục migrate theo roadmap:
-- **Phase 1 (Q1):** 4 modules V3 JVM → V3 Native (low effort, 2-4 weeks)
-- **Phase 2 (Q2-Q4):** 21 modules V2 → V3 Native (high effort, ưu tiên theo complexity)
-
-**2. Complete V3 Migration (eKYC)**
-
-Hoàn thành migration toàn bộ services từ V2 sang V3 framework. Đảm bảo tất cả services đạt chuẩn V3 Module Maturity Model với đầy đủ:
+Tiếp tục chuyển đổi các modules còn lại sang V3 framework, đảm bảo đầy đủ:
 - Unit tests và integration tests
 - Fault tolerance (Rate limit, Bulkhead, Circuit breaker)
 - Observability (Health checks, Metrics, Tracing)
 
-**3. Mở rộng ra toàn bộ namespaces (Song song)**
+**3. Duy trì Culture Optimization**
 
-eKYC là pilot project, nhưng các namespaces khác **không chờ đợi** - tất cả đang thực hiện **song song** cùng một mindset chuyển đổi:
-
-- **Bank** - Core banking services và adapters
-- **W2B** - Wallet to Bank services
-- **VA-Bank** - Virtual Account services
-- Và tất cả các namespaces khác...
-
-Mỗi namespace sẽ đi qua cùng một quy trình: **V3 Migration → Native compilation**. Không phải làm lại từ đầu - những gì đã học được từ eKYC sẽ là blueprint cho toàn bộ organization.
-
-**4. Continuous Optimization**
-
-Duy trì culture right-sizing. Review resource usage định kỳ. Alert khi có services sử dụng resource bất thường (quá cao hoặc quá thấp).
+Right-sizing không phải việc làm một lần. Cần review resource usage định kỳ, alert khi có services sử dụng resource bất thường (quá cao hoặc quá thấp).
 
 ---
 
@@ -344,25 +318,7 @@ Và đôi khi, bước tiến lớn nhất không đến từ việc xây dựng
 
 ## Phụ lục
 
-### A. Resource Optimization Details
-
-Chi tiết kết quả tối ưu resource Q1 2025: [Google Sheets](https://docs.google.com/spreadsheets/d/1ge3s7GNhQOg_scssuf9FlUicjNDzzKY3/edit?usp=sharing&ouid=103824342518635947109&rtpof=true&sd=true)
-
-### B. Seminar: Kubernetes Resource Management
-
-Slide training cho developers về cách config resource đúng cách: [Resource Allocation Seminar](https://drive.google.com/file/d/1VS6iWLSGqKh10H5UVTjn-gl0LxSOi9tq/view?usp=sharing)
-
-### C. Grafana Dashboards
-
-- Resource Usage Dashboard: Internal Grafana monitoring
-- JVM Mode Memory: Internal metrics dashboard
-- Native Mode Memory: Internal metrics dashboard
-
-### D. V3 Architecture Documentation
-
-V3 Architecture Overview: Xem chi tiết tại `.architect/architecture-overview.md` trong repository.
-
-### E. Right-sizing Formula Reference
+### Right-sizing Formula Reference
 
 | Parameter | Formula | Example |
 |-----------|---------|---------|

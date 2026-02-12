@@ -211,9 +211,9 @@ One important tip: **don't try to native-ize everything at once**. Start with sm
 
 ## Impact: Not Just Promises
 
-### Q1 2025: Right-sizing Results
+### Right-sizing Results
 
-After applying the right-sizing formula to all services in the Bank and eKYC namespaces:
+After applying the right-sizing formula to all services:
 
 | Metric | Original | Saved | Percentage |
 |--------|----------|-------|------------|
@@ -229,26 +229,26 @@ Additionally, the team:
 - Set up **alert rules** for abnormal thresholds
 - Organized **training sessions** for developers on Kubernetes resource management
 
-### Q2-Q4 2025: Platform Migration Results
+### Platform Migration Results
 
-For eKYC specifically - one of our most complex systems with **28 core modules** - migration progress looks like this:
+For a complex system with dozens of modules, migration progress following the soft migration strategy:
 
-| Stack | Count | Percentage | Notes |
-|-------|-------|------------|-------|
-| **V3 Native (GraalVM)** | 3 modules | 11% | lighthouse, osiris, service-internal |
-| **V3 JVM (Quarkus)** | 4 modules | 14% | ekyc-engine, service-face-streaming, service-id-card... |
-| **V2 (Vert.x + Dagger)** | 21 modules | 75% | 9 adapters + 12 services - next migration target |
+| Stack | Percentage | Notes |
+|-------|------------|-------|
+| **V3 Native (GraalVM)** | ~10% | Simple, stateless modules |
+| **V3 JVM (Quarkus)** | ~15% | More complex modules |
+| **V2 (Vert.x + Dagger)** | ~75% | Gradually migrating |
 
-Beyond eKYC, other namespaces are also progressing:
-- **~10 Bank services/adapters** migrated
+Results achieved:
 - **100% of new services** written on V3 framework
-- **Complete documentation** with AI assistance
+- **Complete documentation** for onboarding
+- **Phased rollout** minimizing risk
 
 ### Native Code: From 250MB to 25MB
 
 And here's the most exciting part.
 
-The team experimented with building native code for `ekyc_service-internal` - a service that serves other teams calling in to check eKYC results. This is one of the first 3 modules running Native in production (along with lighthouse and osiris).
+The team experimented with building native code for an internal service - one of the first modules running Native in production.
 
 **Actual measured results:**
 
@@ -279,52 +279,26 @@ After nearly a year of implementation, we have some thoughts about this journey.
 
 **First pride:** At least we realized in time to put things on the right track. Just **one step of looking back**, optimizing what we're using, is already a big step forward. 44% CPU saved didn't come from anywhere far - it came from understanding correctly and configuring correctly.
 
-**Second pride:** Native code **actually works**. 250MB down to 25MB isn't marketing material - it's measurable reality in production. And this is the foundation for what the team will do next in 2026.
+**Second pride:** Native code **actually works**. 250MB down to 25MB isn't marketing material - it's measurable reality in production.
 
-### Expected Outcomes: Projected Results
+## What's Next?
 
-If we complete migration of all 28 eKYC modules to Native, based on actual data from the 3 modules already running in production:
+The journey isn't over. With the results achieved, the path forward is clear:
 
-| Metric | Current (V2/JVM) | Target (Native) | Expected Impact |
-|--------|------------------|-----------------|-----------------|
-| **Startup Time** | 5-10 seconds | < 100 ms | ~100x faster |
-| **Memory Usage** | 300-500 MB/pod | 50-100 MB/pod | ~5x lower |
-| **Pod Scaling** | 10-15 seconds | < 1 second | ~15x faster |
-| **Cloud Cost** | Baseline | -30% to -50% | Significant savings |
+**1. Expand Native Code Coverage**
 
-**30-50% cloud cost reduction** isn't marketing material. That's a projection based on 5x memory footprint reduction, allowing workload consolidation on fewer nodes.
+Starting from simple modules, gradually expanding to more complex ones. Each successful native module is a step forward in performance and cost efficiency.
 
-## 2026 Plan: Continuing the Journey
+**2. Complete V3 Migration**
 
-The story isn't over. In 2026, the team has clear goals:
-
-**1. Expand Native Code Coverage (eKYC)**
-
-For eKYC namespace, after success with the first 3 modules (lighthouse, osiris, service-internal), continue migrating according to the roadmap:
-- **Phase 1 (Q1):** 4 modules V3 JVM → V3 Native (low effort, 2-4 weeks)
-- **Phase 2 (Q2-Q4):** 21 modules V2 → V3 Native (high effort, prioritized by complexity)
-
-**2. Complete V3 Migration (eKYC)**
-
-Complete migration of all services from V2 to V3 framework. Ensure all services meet V3 Module Maturity Model standards with complete:
+Continue migrating remaining modules to the V3 framework, ensuring complete:
 - Unit tests and integration tests
 - Fault tolerance (Rate limit, Bulkhead, Circuit breaker)
 - Observability (Health checks, Metrics, Tracing)
 
-**3. Expand to All Namespaces (In Parallel)**
+**3. Maintain Optimization Culture**
 
-eKYC is the pilot project, but other namespaces **aren't waiting** - all are executing **in parallel** with the same transformation mindset:
-
-- **Bank** - Core banking services and adapters
-- **W2B** - Wallet to Bank services
-- **VA-Bank** - Virtual Account services
-- And all other namespaces...
-
-Each namespace will go through the same process: **V3 Migration → Native compilation**. No need to start from scratch - lessons learned from eKYC will serve as the blueprint for the entire organization.
-
-**4. Continuous Optimization**
-
-Maintain right-sizing culture. Review resource usage regularly. Alert when services use abnormal resources (too high or too low).
+Right-sizing isn't a one-time task. Regular review of resource usage is needed, with alerts for services using abnormal resources (too high or too low).
 
 ---
 
@@ -344,25 +318,7 @@ And sometimes, the biggest step forward doesn't come from building something new
 
 ## Appendix
 
-### A. Resource Optimization Details
-
-Detailed Q1 2025 resource optimization results: [Google Sheets](https://docs.google.com/spreadsheets/d/1ge3s7GNhQOg_scssuf9FlUicjNDzzKY3/edit?usp=sharing&ouid=103824342518635947109&rtpof=true&sd=true)
-
-### B. Seminar: Kubernetes Resource Management
-
-Training slides for developers on proper resource configuration: [Resource Allocation Seminar](https://drive.google.com/file/d/1VS6iWLSGqKh10H5UVTjn-gl0LxSOi9tq/view?usp=sharing)
-
-### C. Grafana Dashboards
-
-- Resource Usage Dashboard: Internal Grafana monitoring
-- JVM Mode Memory: Internal metrics dashboard
-- Native Mode Memory: Internal metrics dashboard
-
-### D. V3 Architecture Documentation
-
-V3 Architecture Overview: See details in `.architect/architecture-overview.md` in the repository.
-
-### E. Right-sizing Formula Reference
+### Right-sizing Formula Reference
 
 | Parameter | Formula | Example |
 |-----------|---------|---------|
