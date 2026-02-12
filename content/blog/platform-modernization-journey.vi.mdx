@@ -40,7 +40,7 @@ Chuyển từ Vert.x + Dagger sang Quarkus không đơn giản như upgrade vers
 
 ```java
 // V2 Pattern - Callback-based
-public void processTransfer(MomoData input, Handler<MomoData> whenDone) {
+public void processTransfer(TransferData input, Handler<TransferData> whenDone) {
     validateTask.exec(input, validatedData -> {
         coreTask.exec(validatedData, coreResult -> {
             persistTask.exec(coreResult, whenDone);
@@ -136,7 +136,7 @@ Song song với việc right-sizing, team bắt đầu xây dựng platform V3 v
 
 **Common Libraries V3** được xây dựng hoàn toàn mới:
 
-- `lib_v3-scaffold`: Core framework với MomoTask, MomoWorkFlow pattern
+- `lib_v3-scaffold`: Core framework với Task, WorkFlow pattern
 - `lib_v3-http-server`: REST API với JWT authentication
 - `lib_v3-jdbc`: Reactive database access
 - `lib_v3-redis`: Caching với multi-instance support
@@ -147,14 +147,14 @@ Mỗi library được thiết kế với **Reactive First** mindset - tất c�
 
 ```java
 // lib_v3-jdbc interface
-public interface MomoJDBCClient {
+public interface ReactiveJDBCClient {
     <T> Uni<T> querySingle(String query, Class<T> tClass);
     <T> Multi<T> query(String query, Class<T> tClass);
     Uni<Integer> updateWithParams(String query, List<Object> params);
 }
 
 // lib_v3-redis interface
-public interface MomoRedisClient {
+public interface ReactiveRedisClient {
     Uni<String> get(String key);
     Uni<Void> setWithTTLSeconds(String key, String value, Long ttlSeconds);
     Uni<Boolean> hset(String key, String field, String value);
@@ -354,9 +354,9 @@ Slide training cho developers về cách config resource đúng cách: [Resource
 
 ### C. Grafana Dashboards
 
-- Resource Usage Dashboard (sample): [Grafana Link](https://graf9.mservice.com.vn/d/V5ZtPwzMk/ekyc-resource-usage?orgId=12&refresh=1m)
-- JVM Mode Memory: [Grafana Link](https://graf9.mservice.com.vn/d/beyfn5k607uv4c/new-kubernetes?orgId=12&var-kubernetes_node=k8smaster-5540&var-namespace=ekyc&var-container=service-internal-jvm-app&var-pod=adapter-datanest-app-777df768f9-dtwlw&viewPanel=30)
-- Native Mode Memory: [Grafana Link](https://graf9.mservice.com.vn/d/beyfn5k607uv4c/new-kubernetes?orgId=12&var-kubernetes_node=k8smaster-5540&var-namespace=ekyc&var-container=service-internal-app&var-pod=adapter-datanest-app-777df768f9-dtwlw&viewPanel=30)
+- Resource Usage Dashboard: Internal Grafana monitoring
+- JVM Mode Memory: Internal metrics dashboard
+- Native Mode Memory: Internal metrics dashboard
 
 ### D. V3 Architecture Documentation
 
