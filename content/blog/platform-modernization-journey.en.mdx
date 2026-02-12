@@ -1,0 +1,376 @@
+---
+title: "When Developers Learn to Save"
+title_vi: "Khi Developer Học Cách Tiết Kiệm"
+title_en: "When Developers Learn to Save"
+excerpt_vi: "Câu chuyện về hành trình chuyển đổi platform từ Vert.x sang Quarkus, tối ưu 44% CPU, và bài học về việc nhìn lại những gì mình đang sử dụng. Từ 250MB xuống 25MB - đó không phải lý thuyết."
+excerpt_en: "The story of platform transformation from Vert.x to Quarkus, optimizing 44% CPU, and lessons about reviewing what we're using. From 250MB to 25MB - that's not theory."
+date: 2025-01-20
+tags:
+  - Platform
+  - Quarkus
+  - GraalVM
+  - Optimization
+  - Architecture
+thumbnail: https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800
+---
+
+# When Developers Learn to Save
+
+## The Beginning Question
+
+October 2024, during a team meeting, a question was raised: *"We need to find a more powerful framework to replace our current approach."*
+
+At that time, our system was running on **Vert.x** - a Java toolkit famous for its performance with an event-loop non-blocking model. For Dependency Injection, we used **Dagger** - Google's compile-time DI. The codebase had been built over many years, with dozens of services handling millions of transactions daily.
+
+But in the world of technology, standing still means falling behind.
+
+The team discovered **Quarkus** - a framework designed for Kubernetes and cloud-native applications. What's interesting is that Quarkus's core is actually Vert.x, meaning all our knowledge about reactive programming would still be utilized. But Quarkus goes further with outstanding advantages: extremely fast startup time, small memory footprint, and the ability to build native code with GraalVM.
+
+The question wasn't "Is Quarkus good?" but **"Is the transformation worth it?"**
+
+![Decision](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+
+## The Cost of Change
+
+Switching from Vert.x + Dagger to Quarkus isn't as simple as upgrading a library version. It's changing the entire **philosophy** of how we code.
+
+**Dependency Injection** had to shift from Dagger (compile-time, annotation processing) to CDI (Jakarta EE standard). Two completely different approaches.
+
+**Programming model** had to shift from callbacks to Mutiny (Uni/Multi). Although both are reactive, the syntax and mindset differ significantly.
+
+```java
+// V2 Pattern - Callback-based
+public void processTransfer(TransferData input, Handler<TransferData> whenDone) {
+    validateTask.exec(input, validatedData -> {
+        coreTask.exec(validatedData, coreResult -> {
+            persistTask.exec(coreResult, whenDone);
+        });
+    });
+}
+
+// V3 Pattern - Mutiny reactive
+public Uni<RequestMsg> processTransfer(RequestMsg input) {
+    return validateTask.exec(input)
+        .flatMap(coreTask::exec)
+        .flatMap(persistTask::exec);
+}
+```
+
+And most importantly: **all common libraries** had to be rebuilt from scratch. Database connection, message broker, Redis caching, workflow engine, task scheduling - everything had to be rewritten for the V3 platform.
+
+Looking at the scope of work, the team asked ourselves: *"Is it really worth it?"*
+
+## Unexpected Inspiration
+
+One day by chance, we came across an article about [**Capital One's journey from Java to Golang**](https://www.capitalone.com/tech/software-engineering/go-is-boring/). Their Credit Offers API was completely rewritten from Java to Go. Many people thought they switched because Golang was "cooler." But no. The real results were: **70% performance gain** and **90% cost savings** - an incredible number.
+
+Java running on JVM consumes quite a lot of resources. Each service needs several hundred MB of RAM just to start. When you have thousands of microservices, that number multiplies into enormous costs.
+
+That's when the team's mindset changed.
+
+Platform transformation isn't just about "upgrading technology for fun." It can bring **real business value**: reduced infrastructure costs, reduced resource consumption, increased system efficiency.
+
+And from there, a clear goal was set: **Optimize 30% resource**.
+
+![Target](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+## Two Parallel Approaches
+
+Realizing we couldn't wait to finish building the new platform before optimizing, the team decided to split into **two workstreams** running in parallel.
+
+### Workstream 1: Right-sizing - Optimizing What We Have
+
+Before thinking about changing platforms, let's look at what we're currently using.
+
+The team began reviewing the entire resource configuration of all services. And we discovered an embarrassing truth: **many pods were only using 0.2% to 0.5% of their requested CPU**.
+
+Imagine renting a 100m² apartment but only using 1m². That's what we were doing with our infrastructure.
+
+Why was this happening? The answer is simple: **lack of knowledge about Kubernetes resource management**.
+
+When configuring resources for a service, developers typically "leave extra to be safe." Request 2 CPU cores while only using 0.1. Request 4GB RAM while only using 500MB. The "better safe than sorry" mentality leads to systematic waste.
+
+After researching with the DevOps team, we developed a **standard formula** for resource configuration:
+
+**Request Resource (what K8s guarantees you'll have):**
+```
+CPU Request = Peak Usage / (HPA threshold - 20%)
+Memory Request = Peak Usage / (HPA threshold - 20%)
+```
+
+**Limit Resource (maximum allowed threshold):**
+```
+CPU Limit = CPU Request × 2 to 4 (depending on workload)
+Memory Limit = Memory Request × 1.2
+```
+
+**How to determine Peak Usage:**
+1. Open Grafana, view metrics from the past 7 days
+2. Identify resource usage at peak traffic times
+3. Apply the formula above
+
+Example: Service A has peak CPU usage of 0.48 cores. With HPA threshold 80%:
+```
+CPU Request = 0.48 / 0.6 = 0.8 cores
+CPU Limit = 0.8 × 3 = 2.4 cores
+```
+
+Instead of requesting 2 cores like before, now we only need 0.8 cores. A **60%** savings with just one service.
+
+![Right-sizing](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
+
+### Workstream 2: Platform V3 - Building the New Foundation
+
+In parallel with right-sizing, the team began building the V3 platform with Quarkus.
+
+**V3 Architecture** was designed with the following principles:
+
+| Component | V2 (Legacy) | V3 (Modern) |
+|-----------|-------------|-------------|
+| Framework | Vert.x 4.x | Quarkus 3.15.1 |
+| Java | 17 | 21 |
+| DI Container | Dagger | CDI (Jakarta EE) |
+| Async Model | Callbacks | Mutiny (Uni/Multi) |
+| HTTP | Vert.x HTTP Server | JAX-RS (RESTEasy Reactive) |
+| Build | Maven Shade (Fat JAR) | Quarkus Maven + Native |
+
+**V3 Common Libraries** were built completely new:
+
+- `lib_v3-scaffold`: Core framework with Task, WorkFlow patterns
+- `lib_v3-http-server`: REST API with JWT authentication
+- `lib_v3-jdbc`: Reactive database access
+- `lib_v3-redis`: Caching with multi-instance support
+- `lib_v3-kafka`: Event streaming
+- `lib_v3-rabbit`: RabbitMQ RPC communication
+
+Each library was designed with a **Reactive First** mindset - all operations are non-blocking, all returns are `Uni<T>` or `Multi<T>`.
+
+```java
+// lib_v3-jdbc interface
+public interface ReactiveJDBCClient {
+    <T> Uni<T> querySingle(String query, Class<T> tClass);
+    <T> Multi<T> query(String query, Class<T> tClass);
+    Uni<Integer> updateWithParams(String query, List<Object> params);
+}
+
+// lib_v3-redis interface
+public interface ReactiveRedisClient {
+    Uni<String> get(String key);
+    Uni<Void> setWithTTLSeconds(String key, String value, Long ttlSeconds);
+    Uni<Boolean> hset(String key, String field, String value);
+}
+```
+
+## Expensive Lessons
+
+The implementation didn't go as smoothly as planned. And each difficulty brought a lesson.
+
+### Lesson 1: High Memory Services - When Code is the Culprit
+
+During the resource review, the team discovered some services with abnormal memory usage: **many pods but still high memory, some even restarting due to memory peaks**.
+
+Initially, we thought this was a configuration issue. But no. This was a **code** issue.
+
+After investigating, we found the root cause was in the **code** - not infrastructure. There were patterns in the code causing memory leaks or holding resources longer than necessary.
+
+Lesson: **Right-sizing is just the first step. Sometimes you need to invest additional resources to optimize code before optimizing infrastructure.**
+
+### Lesson 2: Big Bang Migration Isn't Feasible
+
+The original plan was: build the complete V3 platform, then migrate all services.
+
+Reality: **main resources must focus on business projects**. The team didn't have enough bandwidth to maintain V2, build V3, and migrate simultaneously.
+
+Solution: **Soft Migration Strategy**
+
+- **New modules**: Use V3 framework from the start
+- **Critical old modules**: Keep the tech stack (Vert.x + Dagger), only migrate to V3 project to sync versions and dependencies
+- **Non-critical old modules**: Gradually migrate to V3 framework when resources allow
+
+This strategy reduces risk and allows the team to move forward without needing an "all-in" migration.
+
+### Lesson 3: GraalVM Native - Difficult but Worthwhile
+
+One of Quarkus's promises is the ability to build **native executables** with GraalVM. Native code doesn't need a JVM, startup is nearly instant, and memory footprint is extremely small.
+
+But building native isn't simple. The team encountered and overcame many challenges:
+
+| Risk | Impact | Solution |
+|------|--------|----------|
+| **Reflection issues** | High | Use `@RegisterForReflection`, configure `reflect-config.json` |
+| **Third-party libraries not compatible** | High | Check Quarkus extensions first, fallback to JVM mode if needed |
+| **Long build time (10-15 mins)** | Medium | CI caching, parallel builds |
+| **Learning curve** | Medium | Start with simple modules, create detailed documentation |
+| **Regression bugs** | High | Comprehensive testing, phased rollouts |
+
+The team initially struggled because GitLab runners didn't have GraalVM. After DevOps helped install GraalVM on the runners, building native became feasible.
+
+One important tip: **don't try to native-ize everything at once**. Start with small, stateless modules with minimal dependencies. Once the team is familiar with the pitfalls, move on to more complex modules.
+
+![Native Build](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+## Impact: Not Just Promises
+
+### Q1 2025: Right-sizing Results
+
+After applying the right-sizing formula to all services in the Bank and eKYC namespaces:
+
+| Metric | Original | Saved | Percentage |
+|--------|----------|-------|------------|
+| **CPU** | 419.2 cores | 184.8 cores | **44.08%** |
+| **Memory** | 590,951 MB | 22,756 MB | **3.85%** |
+
+**44% CPU saved.** This number far exceeded our initial 30% target.
+
+What's worth reflecting on: this wasn't from optimizing code or changing architecture. This was just from **configuring correctly what we actually need**.
+
+Additionally, the team:
+- Built **Grafana dashboards** monitoring all resource usage
+- Set up **alert rules** for abnormal thresholds
+- Organized **training sessions** for developers on Kubernetes resource management
+
+### Q2-Q4 2025: Platform Migration Results
+
+For eKYC specifically - one of our most complex systems with **28 core modules** - migration progress looks like this:
+
+| Stack | Count | Percentage | Notes |
+|-------|-------|------------|-------|
+| **V3 Native (GraalVM)** | 3 modules | 11% | lighthouse, osiris, service-internal |
+| **V3 JVM (Quarkus)** | 4 modules | 14% | ekyc-engine, service-face-streaming, service-id-card... |
+| **V2 (Vert.x + Dagger)** | 21 modules | 75% | 9 adapters + 12 services - next migration target |
+
+Beyond eKYC, other namespaces are also progressing:
+- **~10 Bank services/adapters** migrated
+- **100% of new services** written on V3 framework
+- **Complete documentation** with AI assistance
+
+### Native Code: From 250MB to 25MB
+
+And here's the most exciting part.
+
+The team experimented with building native code for `ekyc_service-internal` - a service that serves other teams calling in to check eKYC results. This is one of the first 3 modules running Native in production (along with lighthouse and osiris).
+
+**Actual measured results:**
+
+| Metric | JVM Mode | Native Mode | Improvement |
+|--------|----------|-------------|-------------|
+| **Memory Usage** | ~250 MB | ~25 MB | **10x** |
+| **Startup Time** | ~5 seconds | ~50 ms | **100x** |
+| **Container Size** | ~200 MB | ~50 MB | **4x** |
+| **Pod Ready Time** | 10-15 seconds | < 1 second | **15x** |
+
+**Why do these numbers matter?**
+
+With Kubernetes, **startup time** determines scaling speed. When traffic spikes suddenly, HPA triggers scale-out. With JVM, each new pod needs 10-15 seconds to be ready. With Native, it takes **under 1 second**. This means the system can **react 15 times faster** to traffic changes.
+
+A **memory footprint** 5-10x smaller means: on the same Kubernetes node, you can schedule **more pods**. Or use **smaller nodes** with lower costs.
+
+The service has been running stable in production. **This isn't theory - this is reality happening right now.**
+
+![Results](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+## Regrets and Pride
+
+After nearly a year of implementation, we have some thoughts about this journey.
+
+**First regret:** All this time, the team had been using resources **wastefully** without realizing it. Those 0.2% CPU usage numbers had existed for a long time, but no one noticed.
+
+**Second regret:** Lack of infrastructure knowledge. As backend developers, we write code running on Kubernetes every day, but we didn't understand how Kubernetes works. Didn't understand what request/limit means. Didn't understand what conditions trigger HPA.
+
+**First pride:** At least we realized in time to put things on the right track. Just **one step of looking back**, optimizing what we're using, is already a big step forward. 44% CPU saved didn't come from anywhere far - it came from understanding correctly and configuring correctly.
+
+**Second pride:** Native code **actually works**. 250MB down to 25MB isn't marketing material - it's measurable reality in production. And this is the foundation for what the team will do next in 2026.
+
+### Expected Outcomes: Projected Results
+
+If we complete migration of all 28 eKYC modules to Native, based on actual data from the 3 modules already running in production:
+
+| Metric | Current (V2/JVM) | Target (Native) | Expected Impact |
+|--------|------------------|-----------------|-----------------|
+| **Startup Time** | 5-10 seconds | < 100 ms | ~100x faster |
+| **Memory Usage** | 300-500 MB/pod | 50-100 MB/pod | ~5x lower |
+| **Pod Scaling** | 10-15 seconds | < 1 second | ~15x faster |
+| **Cloud Cost** | Baseline | -30% to -50% | Significant savings |
+
+**30-50% cloud cost reduction** isn't marketing material. That's a projection based on 5x memory footprint reduction, allowing workload consolidation on fewer nodes.
+
+## 2026 Plan: Continuing the Journey
+
+The story isn't over. In 2026, the team has clear goals:
+
+**1. Expand Native Code Coverage (eKYC)**
+
+For eKYC namespace, after success with the first 3 modules (lighthouse, osiris, service-internal), continue migrating according to the roadmap:
+- **Phase 1 (Q1):** 4 modules V3 JVM → V3 Native (low effort, 2-4 weeks)
+- **Phase 2 (Q2-Q4):** 21 modules V2 → V3 Native (high effort, prioritized by complexity)
+
+**2. Complete V3 Migration (eKYC)**
+
+Complete migration of all services from V2 to V3 framework. Ensure all services meet V3 Module Maturity Model standards with complete:
+- Unit tests and integration tests
+- Fault tolerance (Rate limit, Bulkhead, Circuit breaker)
+- Observability (Health checks, Metrics, Tracing)
+
+**3. Expand to All Namespaces (In Parallel)**
+
+eKYC is the pilot project, but other namespaces **aren't waiting** - all are executing **in parallel** with the same transformation mindset:
+
+- **Bank** - Core banking services and adapters
+- **W2B** - Wallet to Bank services
+- **VA-Bank** - Virtual Account services
+- And all other namespaces...
+
+Each namespace will go through the same process: **V3 Migration → Native compilation**. No need to start from scratch - lessons learned from eKYC will serve as the blueprint for the entire organization.
+
+**4. Continuous Optimization**
+
+Maintain right-sizing culture. Review resource usage regularly. Alert when services use abnormal resources (too high or too low).
+
+---
+
+## Closing Thoughts
+
+The 44% journey taught us one thing: **optimization isn't the infrastructure team's job - it's everyone's job**.
+
+When developers understand resource management, they write better code. When developers understand container limits, they configure more correctly. When developers understand native compilation, they have one more powerful tool in their arsenal.
+
+And sometimes, the biggest step forward doesn't come from building something new. It comes from **looking back and optimizing what you already have**.
+
+44% CPU saved. 10x memory reduction with native code. These numbers are proof of a simple truth: **when developers learn to save, the whole system benefits**.
+
+*Keep going, keep growing.*
+
+---
+
+## Appendix
+
+### A. Resource Optimization Details
+
+Detailed Q1 2025 resource optimization results: [Google Sheets](https://docs.google.com/spreadsheets/d/1ge3s7GNhQOg_scssuf9FlUicjNDzzKY3/edit?usp=sharing&ouid=103824342518635947109&rtpof=true&sd=true)
+
+### B. Seminar: Kubernetes Resource Management
+
+Training slides for developers on proper resource configuration: [Resource Allocation Seminar](https://drive.google.com/file/d/1VS6iWLSGqKh10H5UVTjn-gl0LxSOi9tq/view?usp=sharing)
+
+### C. Grafana Dashboards
+
+- Resource Usage Dashboard: Internal Grafana monitoring
+- JVM Mode Memory: Internal metrics dashboard
+- Native Mode Memory: Internal metrics dashboard
+
+### D. V3 Architecture Documentation
+
+V3 Architecture Overview: See details in `.architect/architecture-overview.md` in the repository.
+
+### E. Right-sizing Formula Reference
+
+| Parameter | Formula | Example |
+|-----------|---------|---------|
+| CPU Request | Peak Usage / 0.6 | 0.48 / 0.6 = 0.8 cores |
+| Memory Request | Peak Usage / 0.6 | 1.5GB / 0.6 = 2.5GB |
+| CPU Limit | Request × 2-4 | 0.8 × 3 = 2.4 cores |
+| Memory Limit | Request × 1.2 | 2.5 × 1.2 = 3GB |
+| Min Pods | Normal Peak / Pod Capacity | 30 rps / 10 = 3 pods |
+| Max Pods | Peak Traffic / Pod Capacity | 100 rps / 10 = 10 pods |
+
+*Note: Default HPA threshold is 80%, so divisor = 0.8 - 0.2 = 0.6*

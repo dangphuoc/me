@@ -1,0 +1,376 @@
+---
+title: "Khi Developer Học Cách Tiết Kiệm"
+title_vi: "Khi Developer Học Cách Tiết Kiệm"
+title_en: "When Developers Learn to Save"
+excerpt_vi: "Câu chuyện về hành trình chuyển đổi platform từ Vert.x sang Quarkus, tối ưu 44% CPU, và bài học về việc nhìn lại những gì mình đang sử dụng. Từ 250MB xuống 25MB - đó không phải lý thuyết."
+excerpt_en: "The story of platform transformation from Vert.x to Quarkus, optimizing 44% CPU, and lessons about reviewing what we're using. From 250MB to 25MB - that's not theory."
+date: 2025-01-20
+tags:
+  - Platform
+  - Quarkus
+  - GraalVM
+  - Optimization
+  - Architecture
+thumbnail: https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800
+---
+
+# Khi Developer Học Cách Tiết Kiệm
+
+## Câu hỏi khởi đầu
+
+Tháng 10 năm 2024, trong một buổi họp team, một câu hỏi được đặt ra: *"Chúng ta cần tìm một framework mạnh mẽ hơn để thay thế cách code hiện tại."*
+
+Lúc đó, hệ thống của team đang chạy trên **Vert.x** - một toolkit Java nổi tiếng về hiệu năng với mô hình event-loop non-blocking. Dependency Injection thì dùng **Dagger** - compile-time DI của Google. Codebase đã được xây dựng qua nhiều năm, với hàng chục services phục vụ hàng triệu transactions mỗi ngày.
+
+Nhưng trong thế giới công nghệ, đứng yên là thụt lùi.
+
+Team tìm thấy **Quarkus** - một framework được thiết kế cho Kubernetes và cloud-native applications. Điều thú vị là core của Quarkus chính là Vert.x, nghĩa là những kiến thức về reactive programming vẫn được tận dụng. Nhưng Quarkus đi xa hơn với những ưu điểm vượt trội: startup time cực nhanh, footprint memory nhỏ, và khả năng build native code với GraalVM.
+
+Câu hỏi đặt ra không phải "Quarkus có tốt không?" mà là **"Việc chuyển đổi có xứng đáng không?"**
+
+![Decision](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+
+## Cái giá của sự thay đổi
+
+Chuyển từ Vert.x + Dagger sang Quarkus không đơn giản như upgrade version library. Đó là thay đổi cả **hệ tư tưởng** về cách code.
+
+**Dependency Injection** phải chuyển từ Dagger (compile-time, annotation processing) sang CDI (Jakarta EE standard). Hai cách tiếp cận hoàn toàn khác nhau.
+
+**Programming model** phải chuyển từ callbacks sang Mutiny (Uni/Multi). Dù cùng là reactive, nhưng syntax và cách tư duy khác biệt đáng kể.
+
+```java
+// V2 Pattern - Callback-based
+public void processTransfer(TransferData input, Handler<TransferData> whenDone) {
+    validateTask.exec(input, validatedData -> {
+        coreTask.exec(validatedData, coreResult -> {
+            persistTask.exec(coreResult, whenDone);
+        });
+    });
+}
+
+// V3 Pattern - Mutiny reactive
+public Uni<RequestMsg> processTransfer(RequestMsg input) {
+    return validateTask.exec(input)
+        .flatMap(coreTask::exec)
+        .flatMap(persistTask::exec);
+}
+```
+
+Và quan trọng nhất: **toàn bộ common libraries** phải được xây dựng lại từ đầu. Database connection, message broker, Redis caching, workflow engine, task scheduling - tất cả đều phải viết lại cho V3 platform.
+
+Nhìn vào scope công việc, cả team tự hỏi: *"Liệu có đáng không?"*
+
+## Nguồn cảm hứng bất ngờ
+
+Một lần tình cờ, chúng tôi đọc được bài viết về câu chuyện [**Capital One chuyển đổi từ Java sang Golang**](https://www.capitalone.com/tech/software-engineering/go-is-boring/). Credit Offers API của họ được viết lại hoàn toàn từ Java sang Go. Nhiều người nghĩ họ chuyển vì Golang "cool" hơn. Nhưng không. Kết quả thực sự là: **70% performance gain** và **90% cost savings** - một con số khó tin.
+
+Java chạy trên JVM khá tốn resource. Mỗi service cần vài trăm MB RAM chỉ để khởi động. Khi bạn có hàng nghìn microservices, con số đó nhân lên thành một khoản chi phí khổng lồ.
+
+Đó là lúc mindset của cả team thay đổi.
+
+Việc chuyển đổi platform không chỉ là "upgrade công nghệ cho vui". Nó có thể mang lại **giá trị kinh doanh thực sự**: giảm chi phí infrastructure, giảm resource consumption, tăng hiệu suất hệ thống.
+
+Và từ đó, một mục tiêu rõ ràng được đặt ra: **Optimize 30% resource**.
+
+![Target](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+## Hai hướng tiếp cận song song
+
+Nhận ra rằng không thể chờ đợi xây dựng xong platform mới rồi mới tối ưu, team quyết định chia thành **hai workstream** chạy song song.
+
+### Workstream 1: Right-sizing - Tối ưu những gì đang có
+
+Trước khi nghĩ đến chuyện thay đổi platform, hãy nhìn lại những gì đang sử dụng.
+
+Team bắt đầu review toàn bộ resource configuration của các services. Và phát hiện ra một sự thật đáng xấu hổ: **nhiều pods chỉ sử dụng 0.2% đến 0.5% CPU so với request**.
+
+Hãy tưởng tượng bạn thuê một căn hộ 100m² nhưng chỉ sử dụng 1m². Đó là những gì chúng tôi đang làm với infrastructure.
+
+Tại sao lại có tình trạng này? Câu trả lời đơn giản: **thiếu kiến thức về Kubernetes resource management**.
+
+Khi config resource cho một service, developers thường "để dư cho chắc". Request CPU 2 core trong khi chỉ dùng 0.1 core. Request 4GB RAM trong khi chỉ dùng 500MB. Tâm lý "better safe than sorry" dẫn đến lãng phí systematic.
+
+Sau khi nghiên cứu với DevOps team, chúng tôi đưa ra **công thức chuẩn** cho việc config resource:
+
+**Request Resource (những gì K8s đảm bảo sẽ có):**
+```
+CPU Request = Peak Usage / (HPA threshold - 20%)
+Memory Request = Peak Usage / (HPA threshold - 20%)
+```
+
+**Limit Resource (ngưỡng tối đa được phép):**
+```
+CPU Limit = CPU Request × 2 đến 4 (tuỳ workload)
+Memory Limit = Memory Request × 1.2
+```
+
+**Cách xác định Peak Usage:**
+1. Mở Grafana, xem metrics trong 7 ngày qua
+2. Xác định resource usage tại thời điểm peak traffic
+3. Áp dụng công thức trên
+
+Ví dụ: Service A có peak CPU usage là 0.48 core. Với HPA threshold 80%:
+```
+CPU Request = 0.48 / 0.6 = 0.8 core
+CPU Limit = 0.8 × 3 = 2.4 core
+```
+
+Thay vì request 2 core như trước, giờ chỉ cần request 0.8 core. Tiết kiệm **60%** chỉ với một service.
+
+![Right-sizing](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
+
+### Workstream 2: Platform V3 - Xây dựng nền tảng mới
+
+Song song với việc right-sizing, team bắt đầu xây dựng platform V3 với Quarkus.
+
+**Architecture V3** được thiết kế với những nguyên tắc sau:
+
+| Component | V2 (Legacy) | V3 (Modern) |
+|-----------|-------------|-------------|
+| Framework | Vert.x 4.x | Quarkus 3.15.1 |
+| Java | 17 | 21 |
+| DI Container | Dagger | CDI (Jakarta EE) |
+| Async Model | Callbacks | Mutiny (Uni/Multi) |
+| HTTP | Vert.x HTTP Server | JAX-RS (RESTEasy Reactive) |
+| Build | Maven Shade (Fat JAR) | Quarkus Maven + Native |
+
+**Common Libraries V3** được xây dựng hoàn toàn mới:
+
+- `lib_v3-scaffold`: Core framework với Task, WorkFlow pattern
+- `lib_v3-http-server`: REST API với JWT authentication
+- `lib_v3-jdbc`: Reactive database access
+- `lib_v3-redis`: Caching với multi-instance support
+- `lib_v3-kafka`: Event streaming
+- `lib_v3-rabbit`: RabbitMQ RPC communication
+
+Mỗi library được thiết kế với **Reactive First** mindset - tất cả operations đều non-blocking, tất cả returns đều là `Uni<T>` hoặc `Multi<T>`.
+
+```java
+// lib_v3-jdbc interface
+public interface ReactiveJDBCClient {
+    <T> Uni<T> querySingle(String query, Class<T> tClass);
+    <T> Multi<T> query(String query, Class<T> tClass);
+    Uni<Integer> updateWithParams(String query, List<Object> params);
+}
+
+// lib_v3-redis interface
+public interface ReactiveRedisClient {
+    Uni<String> get(String key);
+    Uni<Void> setWithTTLSeconds(String key, String value, Long ttlSeconds);
+    Uni<Boolean> hset(String key, String field, String value);
+}
+```
+
+## Những bài học đắt giá
+
+Quá trình thực hiện không suôn sẻ như kế hoạch. Và mỗi khó khăn đều mang lại một bài học.
+
+### Bài học 1: High memory services - Khi code là thủ phạm
+
+Trong quá trình review resource, team phát hiện một số services có memory usage bất thường: **nhiều pods nhưng vẫn high memory, thậm chí có pod bị restart vì memory peak**.
+
+Ban đầu, chúng tôi nghĩ đây là vấn đề config. Nhưng không. Đây là vấn đề **code**.
+
+Sau khi investigate, phát hiện nguyên nhân nằm ở **code** - không phải infrastructure. Có những patterns trong code gây memory leak hoặc giữ resources lâu hơn cần thiết.
+
+Bài học: **Right-sizing chỉ là bước đầu. Đôi khi cần đầu tư thêm nguồn lực để optimize code trước khi tối ưu infrastructure.**
+
+### Bài học 2: Big bang migration không khả thi
+
+Kế hoạch ban đầu là: xây dựng V3 platform hoàn chỉnh, rồi migrate toàn bộ services sang.
+
+Thực tế: **nguồn lực chính phải tập trung cho các dự án business**. Team không có đủ bandwidth để vừa maintain V2, vừa build V3, vừa migrate.
+
+Giải pháp: **Soft Migration Strategy**
+
+- **Module mới**: Sử dụng V3 framework từ đầu
+- **Module cũ critical**: Giữ nguyên tech stack (Vert.x + Dagger), chỉ migrate sang V3 project để đồng bộ version và dependencies
+- **Module cũ không critical**: Dần chuyển sang V3 framework khi có resource
+
+Chiến lược này giảm risk và cho phép team tiến về phía trước mà không cần "all-in" migration.
+
+### Bài học 3: GraalVM Native - Khó nhưng đáng giá
+
+Một trong những promise của Quarkus là khả năng build **native executable** với GraalVM. Native code không cần JVM, startup gần như instant, memory footprint cực nhỏ.
+
+Nhưng việc build native không đơn giản. Team đã gặp và vượt qua nhiều challenges:
+
+| Risk | Impact | Cách giải quyết |
+|------|--------|-----------------|
+| **Reflection issues** | High | Sử dụng `@RegisterForReflection`, config `reflect-config.json` |
+| **Third-party libraries không compatible** | High | Check Quarkus extensions trước, fallback JVM mode nếu cần |
+| **Build time dài (10-15 phút)** | Medium | CI caching, parallel builds |
+| **Learning curve** | Medium | Bắt đầu từ modules đơn giản, tạo documentation chi tiết |
+| **Regression bugs** | High | Comprehensive testing, phased rollouts |
+
+Team gặp khó khăn ban đầu vì GitLab runners không có GraalVM. Sau khi được DevOps hỗ trợ cài đặt GraalVM trên runners, việc build native trở nên khả thi.
+
+Một tip quan trọng: **không cố gắng native hóa tất cả cùng lúc**. Bắt đầu từ những modules nhỏ, stateless, ít dependencies. Khi team quen với các pitfalls, mới tiến đến modules phức tạp hơn.
+
+![Native Build](https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800)
+
+## Impact: Không Chỉ Là Lời Hứa
+
+### Q1 2025: Right-sizing Results
+
+Sau khi áp dụng công thức right-sizing cho toàn bộ services trong namespace Bank và eKYC:
+
+| Metric | Original | Saved | Percentage |
+|--------|----------|-------|------------|
+| **CPU** | 419.2 cores | 184.8 cores | **44.08%** |
+| **Memory** | 590,951 MB | 22,756 MB | **3.85%** |
+
+**44% CPU saved.** Con số này vượt xa mục tiêu 30% ban đầu.
+
+Điều đáng suy ngẫm: đây không phải từ việc tối ưu code hay thay đổi architecture. Đây chỉ là từ việc **config đúng những gì thực sự cần**.
+
+Bên cạnh đó, team đã:
+- Xây dựng **Grafana dashboard** monitoring toàn bộ resource usage
+- Setup **alert rules** cho các ngưỡng bất thường
+- Tổ chức **training session** cho developers về Kubernetes resource management
+
+### Q2-Q4 2025: Platform Migration Results
+
+Riêng với eKYC - một trong những hệ thống phức tạp nhất với **28 core modules** - tiến độ migration như sau:
+
+| Stack | Số lượng | Tỷ lệ | Ghi chú |
+|-------|----------|-------|---------|
+| **V3 Native (GraalVM)** | 3 modules | 11% | lighthouse, osiris, service-internal |
+| **V3 JVM (Quarkus)** | 4 modules | 14% | ekyc-engine, service-face-streaming, service-id-card... |
+| **V2 (Vert.x + Dagger)** | 21 modules | 75% | 9 adapters + 12 services - target migration tiếp theo |
+
+Ngoài eKYC, các namespace khác cũng đang tiến hành:
+- **~10 Bank services/adapters** đã migrate
+- **100% services mới** được viết trên V3 framework
+- **Documentation đầy đủ** với sự hỗ trợ của AI
+
+### Native Code: Từ 250MB xuống 25MB
+
+Và đây là phần thú vị nhất.
+
+Team đã thử nghiệm build native code cho `ekyc_service-internal` - service phục vụ các team khác gọi vô kiểm tra kết quả eKYC. Đây là một trong 3 modules đầu tiên chạy Native trên production (cùng với lighthouse và osiris).
+
+**Kết quả thực tế đo được:**
+
+| Metric | JVM Mode | Native Mode | Improvement |
+|--------|----------|-------------|-------------|
+| **Memory Usage** | ~250 MB | ~25 MB | **10x** |
+| **Startup Time** | ~5 seconds | ~50 ms | **100x** |
+| **Container Size** | ~200 MB | ~50 MB | **4x** |
+| **Pod Ready Time** | 10-15 seconds | < 1 second | **15x** |
+
+**Tại sao những con số này quan trọng?**
+
+Với Kubernetes, **startup time** quyết định tốc độ scaling. Khi traffic spike đột ngột, HPA trigger scale-out. Với JVM, mỗi pod mới cần 10-15 giây để ready. Với Native, chỉ cần **dưới 1 giây**. Nghĩa là hệ thống có thể **phản ứng nhanh hơn 15 lần** với traffic changes.
+
+**Memory footprint** nhỏ hơn 5-10x có nghĩa là: với cùng một node Kubernetes, có thể schedule **nhiều pods hơn**. Hoặc dùng **node nhỏ hơn** với chi phí thấp hơn.
+
+Service đã chạy ổn định trên production. **Đây không phải lý thuyết - đây là thực tế đang xảy ra.**
+
+![Results](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+## Điều Tiếc Nuối và Điều Tự Hào
+
+Sau gần một năm thực hiện, chúng tôi có những suy nghĩ về hành trình này.
+
+**Tiếc nuối thứ nhất:** Bấy lâu nay, team đã sử dụng tài nguyên một cách **phung phí** mà không nhận ra. Những con số 0.2% CPU usage đã tồn tại từ lâu, nhưng không ai để ý.
+
+**Tiếc nuối thứ hai:** Thiếu kiến thức về infrastructure. Là backend developers, chúng tôi viết code chạy trên Kubernetes mỗi ngày, nhưng lại không hiểu Kubernetes hoạt động như thế nào. Không hiểu request/limit có ý nghĩa gì. Không hiểu HPA trigger dựa trên điều kiện nào.
+
+**Tự hào thứ nhất:** Dù sao cũng đã nhận ra để đưa mọi thứ đi đúng hướng. Chỉ cần **một bước nhìn lại**, tối ưu những gì đang sử dụng, cũng là một bước tiến lớn. 44% CPU saved không đến từ đâu xa - nó đến từ việc hiểu đúng và config đúng.
+
+**Tự hào thứ hai:** Native code **thực sự works**. 250MB xuống 25MB không phải marketing material - đó là thực tế đo đạc được trên production. Và đây là foundation cho những gì team sẽ làm tiếp trong năm 2026.
+
+### Expected Outcomes: Dự kiến khi hoàn thành
+
+Nếu hoàn thành migration toàn bộ 28 modules eKYC sang Native, dựa trên data thực tế từ 3 modules đã chạy production:
+
+| Metric | Hiện tại (V2/JVM) | Mục tiêu (Native) | Expected Impact |
+|--------|-------------------|-------------------|-----------------|
+| **Startup Time** | 5-10 seconds | < 100 ms | ~100x faster |
+| **Memory Usage** | 300-500 MB/pod | 50-100 MB/pod | ~5x lower |
+| **Pod Scaling** | 10-15 seconds | < 1 second | ~15x faster |
+| **Cloud Cost** | Baseline | -30% to -50% | Significant savings |
+
+**30-50% cloud cost reduction** không phải con số marketing. Đó là projection dựa trên memory footprint giảm 5x, cho phép consolidate workloads trên ít nodes hơn.
+
+## Kế hoạch 2026: Tiếp tục hành trình
+
+Câu chuyện chưa kết thúc. Năm 2026, team có những mục tiêu rõ ràng:
+
+**1. Expand Native Code Coverage (eKYC)**
+
+Với namespace eKYC, sau thành công với 3 modules đầu tiên (lighthouse, osiris, service-internal), tiếp tục migrate theo roadmap:
+- **Phase 1 (Q1):** 4 modules V3 JVM → V3 Native (low effort, 2-4 weeks)
+- **Phase 2 (Q2-Q4):** 21 modules V2 → V3 Native (high effort, ưu tiên theo complexity)
+
+**2. Complete V3 Migration (eKYC)**
+
+Hoàn thành migration toàn bộ services từ V2 sang V3 framework. Đảm bảo tất cả services đạt chuẩn V3 Module Maturity Model với đầy đủ:
+- Unit tests và integration tests
+- Fault tolerance (Rate limit, Bulkhead, Circuit breaker)
+- Observability (Health checks, Metrics, Tracing)
+
+**3. Mở rộng ra toàn bộ namespaces (Song song)**
+
+eKYC là pilot project, nhưng các namespaces khác **không chờ đợi** - tất cả đang thực hiện **song song** cùng một mindset chuyển đổi:
+
+- **Bank** - Core banking services và adapters
+- **W2B** - Wallet to Bank services
+- **VA-Bank** - Virtual Account services
+- Và tất cả các namespaces khác...
+
+Mỗi namespace sẽ đi qua cùng một quy trình: **V3 Migration → Native compilation**. Không phải làm lại từ đầu - những gì đã học được từ eKYC sẽ là blueprint cho toàn bộ organization.
+
+**4. Continuous Optimization**
+
+Duy trì culture right-sizing. Review resource usage định kỳ. Alert khi có services sử dụng resource bất thường (quá cao hoặc quá thấp).
+
+---
+
+## Lời kết
+
+Hành trình 44% dạy chúng tôi một điều: **optimization không phải là việc của infrastructure team, mà là việc của mọi người**.
+
+Khi developers hiểu về resource management, họ sẽ viết code tốt hơn. Khi developers hiểu về container limits, họ sẽ config đúng hơn. Khi developers hiểu về native compilation, họ sẽ có thêm một lựa chọn powerful.
+
+Và đôi khi, bước tiến lớn nhất không đến từ việc xây dựng thứ gì mới. Mà từ việc **nhìn lại và tối ưu những gì đang có**.
+
+44% CPU saved. 10x memory reduction với native code. Những con số này là minh chứng cho một sự thật đơn giản: **khi developers học cách tiết kiệm, cả hệ thống được hưởng lợi**.
+
+*Keep going, keep growing.*
+
+---
+
+## Phụ lục
+
+### A. Resource Optimization Details
+
+Chi tiết kết quả tối ưu resource Q1 2025: [Google Sheets](https://docs.google.com/spreadsheets/d/1ge3s7GNhQOg_scssuf9FlUicjNDzzKY3/edit?usp=sharing&ouid=103824342518635947109&rtpof=true&sd=true)
+
+### B. Seminar: Kubernetes Resource Management
+
+Slide training cho developers về cách config resource đúng cách: [Resource Allocation Seminar](https://drive.google.com/file/d/1VS6iWLSGqKh10H5UVTjn-gl0LxSOi9tq/view?usp=sharing)
+
+### C. Grafana Dashboards
+
+- Resource Usage Dashboard: Internal Grafana monitoring
+- JVM Mode Memory: Internal metrics dashboard
+- Native Mode Memory: Internal metrics dashboard
+
+### D. V3 Architecture Documentation
+
+V3 Architecture Overview: Xem chi tiết tại `.architect/architecture-overview.md` trong repository.
+
+### E. Right-sizing Formula Reference
+
+| Parameter | Formula | Example |
+|-----------|---------|---------|
+| CPU Request | Peak Usage / 0.6 | 0.48 / 0.6 = 0.8 core |
+| Memory Request | Peak Usage / 0.6 | 1.5GB / 0.6 = 2.5GB |
+| CPU Limit | Request × 2-4 | 0.8 × 3 = 2.4 core |
+| Memory Limit | Request × 1.2 | 2.5 × 1.2 = 3GB |
+| Min Pods | Normal Peak / Pod Capacity | 30 rps / 10 = 3 pods |
+| Max Pods | Peak Traffic / Pod Capacity | 100 rps / 10 = 10 pods |
+
+*Lưu ý: HPA threshold mặc định là 80%, do đó divisor = 0.8 - 0.2 = 0.6*
