@@ -52,66 +52,29 @@ Hãy đi vào chi tiết.
 
 ## Tầng 1: Cron Job là vua
 
-Đây là những task mà bạn muốn chúng chạy ổn định **99.99%**, không bao giờ miss một alert, không có surprise. Đơn giản, deterministic, và nhàm chán — đúng theo cách nó nên như vậy.
+Đây là những task bạn muốn chạy ổn định **99.99%**, không bao giờ miss một alert, không surprise. Đơn giản, deterministic, và nhàm chán — đúng theo cách nó nên như vậy.
 
-### 1. Health check endpoint theo interval
+---
 
-Cứ mỗi 30 giây, ping `GET /health` của từng service. Response 200 thì OK, khác 200 hoặc timeout thì đếm consecutive failure. Đạt ngưỡng 3 lần thì gửi alert Slack và PagerDuty.
+Mỗi 30 giây, có một job âm thầm ping **health check** của từng service. Response 200 thì OK, khác thì đếm consecutive failure. Đạt 3 lần liên tiếp thì alert. Đây là so sánh số thuần túy — `if status != 200: alert()`. Không cần AI hiểu gì cả.
 
-Đây là so sánh số thuần túy. Không cần hiểu bất kỳ ngữ cảnh nào.
+Mỗi phút, job khác query Prometheus để **theo dõi CPU, RAM, disk**. CPU > 85% liên tục 5 phút thì warning, > 95% thì critical. Threshold comparison. Viết một lần, chạy mãi mãi.
 
-```
-if response.status != 200:
-    consecutive_failures += 1
-if consecutive_failures >= 3:
-    send_alert()
-```
+Mỗi ngày, có job quét **certificate và domain expiry**. Còn 30 ngày thì email warning, còn 7 ngày thì critical. Phép tính ngày tháng đơn giản. Không có gì mơ hồ.
 
-### 2. Theo dõi resource usage (CPU, RAM, disk)
+Mỗi phút, job check **queue depth** trong RabbitMQ. Nếu > 10,000 message và consumer < 3, alert "queue đang backlog." Logic cố định. Không cần hiểu message trong queue là gì.
 
-Mỗi phút query metrics từ Prometheus hoặc CloudWatch. Nếu CPU > 85% liên tục 5 phút thì warning, > 95% liên tục 3 phút thì critical. RAM, disk tương tự với ngưỡng khác.
+Mỗi 30 giây, job kiểm tra **database replication lag**. Lag > 5 giây thì warning, > 30 giây thì critical, replica ngừng replicate thì emergency. Số so với số. Deterministic hoàn toàn.
 
-Toàn bộ logic là **threshold comparison**. Viết một lần, chạy mãi.
+Mỗi 5 phút, có **synthetic transaction** chạy kịch bản cố định: tạo test order → verify xuất hiện trong DB → verify email được gửi → cleanup. Pass hoặc fail. Không có vùng xám.
 
-### 3. Check certificate và domain expiry
+Mỗi giờ, job đếm **log volume** — so sánh số dòng ERROR với trung bình 7 ngày cùng khung giờ. Vượt 3x thì alert. Phép thống kê cơ bản. Không cần đọc nội dung log.
 
-Mỗi ngày quét danh sách domain, kiểm tra ngày hết hạn SSL cert và domain registration. Còn 30 ngày thì email warning, còn 7 ngày thì Slack critical.
-
-Phép tính ngày tháng đơn giản. Không có gì mơ hồ.
-
-### 4. Monitor queue depth
-
-Mỗi phút check số message trong RabbitMQ hoặc SQS. Nếu queue depth > 10,000 và consumer count < 3 thì alert "queue đang backlog."
-
-Logic cố định. Không cần hiểu message trong queue là gì.
-
-### 5. Kiểm tra database replication lag
-
-Mỗi 30 giây query replication lag giữa primary và replica. Lag > 5 giây thì warning, > 30 giây thì critical, replica ngừng replicate thì emergency.
-
-Số so với số. Deterministic hoàn toàn.
-
-### 6. Synthetic transaction monitoring
-
-Mỗi 5 phút chạy một kịch bản cố định: tạo test order → verify order xuất hiện trong database → verify email notification được gửi → cleanup.
-
-Pass hoặc fail. Không có vùng xám. Kịch bản không đổi giữa các lần chạy.
-
-### 7. Log volume anomaly đơn giản
-
-Mỗi giờ đếm số dòng log ERROR của từng service, so sánh với trung bình 7 ngày cùng khung giờ. Nếu vượt 3x thì alert.
-
-Đây chỉ là phép tính thống kê cơ bản. Không cần đọc nội dung log.
-
-### 8. Uptime report generation
-
-Cuối mỗi tuần, tổng hợp dữ liệu uptime từ monitoring tool, tính SLA percentage cho từng service, render thành report gửi cho stakeholder.
-
-Input là số, output là bảng, luồng hoàn toàn cố định.
+Cuối tuần, job tự động **generate uptime report** — tổng hợp SLA percentage, render thành bảng gửi stakeholder. Input là số, output là bảng, luồng hoàn toàn cố định.
 
 ![Cron Job Monitoring](https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800)
 
-> **Pattern chung:** Đầu vào là số, logic là so sánh, output là binary (pass/fail) hoặc categorical (ok/warning/critical). Không cần hiểu ngữ nghĩa, không cần context.
+**Pattern chung:** đầu vào là số, logic là so sánh, output là binary (pass/fail) hoặc categorical (ok/warning/critical). Không cần hiểu ngữ nghĩa, không cần context.
 
 ---
 
@@ -119,103 +82,29 @@ Input là số, output là bảng, luồng hoàn toàn cố định.
 
 Đây là những task mà rule-based không cover nổi — vì mỗi lần xảy ra, tình huống lại khác.
 
-### 1. Tự động correlate alert để tìm root cause
+---
 
-Quay lại câu chuyện đầu bài: 47 alert cùng lúc. Cron job chỉ biết gửi 47 notification riêng lẻ. On-call engineer thức dậy thấy 47 tin nhắn và không biết bắt đầu từ đâu.
+Quay lại câu chuyện đầu bài: 47 alert cùng lúc. Cron job chỉ biết gửi 47 notification riêng lẻ. On-call engineer thức dậy, mở điện thoại, thấy 47 tin nhắn và không biết bắt đầu từ đâu.
 
-Agent thì khác. Nó đọc toàn bộ 47 alert, nhìn vào timeline, nhận ra pattern:
+Agent thì khác. Nó đọc toàn bộ 47 alert, nhìn vào timeline, nhận ra pattern: DB connection pool exhausted lúc 3:01, sau đó mọi service phụ thuộc DB bắt đầu timeout, queue backlog vì consumer không xử lý được, 5xx tăng. Agent **correlate alert và tìm root cause**, tổng hợp thành một message duy nhất: *"Root cause khả năng cao là DB connection pool. 46 alert còn lại là domino effect."* Mỗi lần incident, tổ hợp alert khác nhau — không rule nào cover hết.
 
-1. Database connection pool exhausted lúc 3:01
-2. Mọi service phụ thuộc DB bắt đầu timeout
-3. Queue backlog vì consumer không xử lý được
-4. 5xx tăng
+Hệ thống sinh ra hàng nghìn dòng error log mỗi ngày. Cron job đếm được số lượng, nhưng không biết dòng nào quan trọng. Agent **đọc hiểu error log** và phân biệt: `NullPointerException at PaymentService` xuất hiện 200 lần trong 10 phút — bug nghiêm trọng, ảnh hưởng user. `TimeoutException at RecommendationService` 500 lần — severity thấp, chỉ ảnh hưởng feature gợi ý. Agent phân loại dựa trên **business impact**, không chỉ đếm số.
 
-Agent tổng hợp lại thành **một message duy nhất:**
+Sau mỗi incident, team phải viết postmortem. Thông tin nằm rải rác — alert history từ PagerDuty, deployment log từ CI/CD, Slack conversation, git commit, metrics graph. Agent **tự động viết incident summary**, thu thập từ nhiều nguồn, tổng hợp thành draft postmortem với timeline chính xác đến phút. Mỗi incident diễn biến hoàn toàn khác nhau — không template hóa được.
 
-> *"Root cause khả năng cao là DB connection pool exhausted trên db-primary-01 lúc 3:01 AM. 46 alert còn lại là hậu quả domino. Đề xuất: kiểm tra connection pool config và slow query gần thời điểm đó."*
+2h sáng, on-call nhận alert, đầu óc chưa tỉnh. Agent **đề xuất runbook action**: *"Triệu chứng này giống incident INC-4521 tháng trước. Lần đó root cause là memory leak sau deploy version 3.2.1. Step 1: check memory trend. Step 2: nếu đúng thì rollback."* Agent không chỉ match keyword mà hiểu sự tương đồng về pattern.
 
-Mỗi lần incident, tổ hợp alert khác nhau. Không rule nào cover hết được.
+Latency p99 tăng từ 200ms lên 800ms. Nhưng chỉ ảnh hưởng region Asia, chỉ 18h–22h, chỉ user có cart > 10 items. Cron job chỉ thấy "latency tăng" rồi alert. Agent **phân tích anomaly phức tạp**, drill down nhiều chiều, hypothesize: *"Có thể CDN Singapore có issue, hoặc query tính giá cho cart lớn đang full table scan."* Phân tích đa chiều mà rule-based không cover nổi.
 
-### 2. Đọc hiểu error log để phân loại incident
+Incident xảy ra, ngoài fix còn phải communicate — status page, email customer support, thông báo PM. Agent **tự động draft message cho từng đối tượng**: technical detail cho engineering, business impact cho PM, user-facing message cho status page.
 
-Hệ thống sinh ra hàng nghìn dòng log error mỗi ngày. Cron job đếm được số lượng, nhưng không biết dòng nào quan trọng.
+Alert: *"Error rate tăng 300%."* Thực tế: từ 0.001% lên 0.003% — vẫn rất thấp, số tuyệt đối nhỏ nên phần trăm trông đáng sợ. Agent **đánh giá false positive**: *"Error rate tuyệt đối vẫn OK. Spike do batch job retry. Không cần escalate."* Cron job không có khả năng phán đoán kiểu này.
 
-Agent đọc nội dung log và hiểu rằng:
-
-- `NullPointerException at PaymentService.processRefund line 142` xuất hiện 200 lần trong 10 phút → **bug nghiêm trọng**, ảnh hưởng trực tiếp đến user
-- `TimeoutException at RecommendationService` xuất hiện 500 lần → **severity thấp**, chỉ ảnh hưởng feature gợi ý sản phẩm
-
-Agent phân loại dựa trên **hiểu biết về business impact**, không chỉ đếm số lượng.
-
-### 3. Tự động viết incident summary và timeline
-
-Sau mỗi incident, team phải viết postmortem. Đây là công việc tốn thời gian vì thông tin nằm rải rác:
-
-- Alert history từ PagerDuty
-- Deployment log từ CI/CD
-- Slack conversation của team trong lúc xử lý
-- Git commit liên quan
-- Metrics graph
-
-Agent thu thập từ nhiều nguồn, tổng hợp thành bản draft postmortem với timeline chính xác đến phút, ai đã làm gì, impact ra sao.
-
-Mỗi incident diễn biến hoàn toàn khác nhau — không thể template hóa.
-
-### 4. Đề xuất runbook action dựa trên triệu chứng
-
-On-call engineer nhận alert lúc 2h sáng, đầu óc chưa tỉnh.
-
-Agent phân tích triệu chứng hiện tại, so sánh với lịch sử incident tương tự trong quá khứ:
-
-> *"Triệu chứng này giống incident INC-4521 tháng trước. Lần đó root cause là memory leak sau deploy version 3.2.1. Runbook step 1: kiểm tra memory trend của pod X. Step 2: nếu đúng thì rollback deployment Y."*
-
-Agent không chỉ match keyword mà **hiểu sự tương đồng về pattern** giữa các incident dù mô tả khác nhau.
-
-### 5. Phân tích anomaly phức tạp trong metrics
-
-Latency p99 của API gateway tăng từ 200ms lên 800ms. Nhưng:
-- Chỉ ảnh hưởng request từ **region Asia**
-- Chỉ trong khung giờ **18h–22h**
-- Chỉ với user có **cart size > 10 items**
-
-Cron job chỉ thấy "latency tăng" rồi alert. Agent thì drill down vào nhiều chiều dữ liệu, tìm ra segment bị ảnh hưởng, và hypothesize:
-
-> *"Có thể do CDN node ở Singapore đang có issue, hoặc query tính giá cho cart lớn đang chạy full table scan sau lần migration gần nhất."*
-
-Đây là dạng **phân tích đa chiều** mà rule-based không cover nổi.
-
-### 6. Tự động communicate với stakeholder
-
-Khi incident xảy ra, ngoài fix kỹ thuật còn phải communicate:
-- Cập nhật status page
-- Gửi email cho customer support team
-- Thông báo cho PM biết feature nào bị ảnh hưởng
-
-Agent đọc hiểu scope của incident rồi **draft message phù hợp cho từng đối tượng** — technical detail cho engineering, business impact cho PM, user-facing message cho status page.
-
-### 7. Đánh giá xem alert có phải false positive không
-
-Alert: *"Error rate tăng 300%."*
-
-Thực tế: error rate đang từ 0.001% lên 0.003% — vẫn rất thấp, chỉ là số tuyệt đối quá nhỏ nên phần trăm tăng trông đáng sợ. Hoặc error spike do batch job chạy retry nhiều lần chứ không phải user thật bị lỗi.
-
-Agent hiểu ngữ cảnh và đánh giá:
-
-> *"Alert này là false positive. Error rate tuyệt đối vẫn trong ngưỡng chấp nhận được. Spike do batch job retry. Không cần escalate."*
-
-Cron job không có khả năng **phán đoán** kiểu này.
-
-### 8. Quyết định scale thông minh
-
-Không phải auto-scaling đơn giản dựa trên CPU.
-
-Mà là kiểu: *"Đêm nay có flash sale, traffic pattern sẽ khác ngày thường, cần pre-scale trước 2 tiếng."* Hoặc: *"Traffic đang tăng nhưng là do bot crawl chứ không phải user thật, nên không nên scale mà nên rate limit."*
-
-Agent phân tích tổng hợp traffic source, business calendar, historical pattern rồi ra quyết định phù hợp.
+Đêm nay có flash sale. Agent biết và **quyết định scale thông minh**: *"Traffic pattern sẽ khác ngày thường, cần pre-scale trước 2 tiếng."* Hoặc: *"Traffic tăng nhưng là bot crawl, không nên scale mà nên rate limit."* Phân tích tổng hợp traffic source, business calendar, historical pattern.
 
 ![AI Agent Incident Response](https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800)
 
-> **Pattern chung:** Đầu vào là unstructured data (log, alert stream, conversation), cần hiểu context để quyết định, output là recommendation hoặc action có nhiều nuance.
+**Pattern chung:** đầu vào là unstructured data (log, alert stream, conversation), cần hiểu context để quyết định, output là recommendation có nuance.
 
 ---
 

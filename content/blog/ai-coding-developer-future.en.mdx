@@ -90,79 +90,29 @@ If the answer is 80%, then you need to change. Not change careers, but change **
 
 ## Let AI Handle These
 
-Don't try to prove you're better than AI at these tasks — you'll lose. Instead, let it do them while you go do something more valuable:
+Don't try to prove you're better than AI at these tasks — you'll lose. Instead, let it do them while you go do something more valuable.
 
-### 1. Scaffolding new projects
+Follow a typical week of Minh, a senior developer on my team, since he started using AI effectively.
 
-You need to create a new microservice with Quarkus, plus Docker, CI/CD pipeline, basic auth, health check endpoint. Instead of copying from an old project and modifying, AI generates the entire skeleton in minutes. You review and customize.
+Monday morning, Minh needs to create a new microservice. With Quarkus, Docker, CI/CD, health check, basic auth. Before, he'd copy from an old project and modify — half a day. Now he **scaffolds new projects** with AI, 15 minutes for the skeleton. Review, tweak, done.
 
-**Saved:** Half a day.
+That same Monday afternoon, Minh is assigned to fix a module where nobody dares touch the code — because there are no tests. **Writing tests for legacy code** by hand is terrible. Minh lets AI read the code and generate tests. Not perfect, but gets him from 0% to 60% coverage in 2 days instead of 2 weeks.
 
-### 2. Writing tests for legacy code without tests
+Tuesday, the team has a technical debt task: **convert callback hell to async/await** for the payment module. Mechanical but tedious work. Minh lets AI handle the conversion. He reviews, fixes a few edge cases, done in an afternoon instead of 2 days.
 
-This is every team's biggest pain. Legacy code no one dares refactor because there are no tests, no one writes tests because the code is too complex. AI reads code and generates tests — not perfect but enough to create an initial safety net.
+Wednesday, Minh needs to write a report query. He knows exactly what data he needs but that SQL with 5 JOINs, subqueries, window functions will take an hour to get right. He describes requirements to AI: *"Top 10 customers with highest Q3 orders, exclude cancelled, group by region."* AI **generates the complex SQL query**. Minh verifies on staging, done.
 
-**From 0% coverage to 60% coverage in days instead of months.**
+Thursday morning, Minh integrates with a partner API. Response format is weird, needs parsing with regex. **Nobody remembers regex syntax** — before, Minh would spend 30 minutes on regex101 trial and error. Now he describes the format to AI, gets a working parser in 2 minutes.
 
-### 3. Converting code between paradigms
+That same Thursday afternoon, Minh is **implementing a circuit breaker**. He knows the pattern but doesn't want to write boilerplate. He tells AI his specific context, gets code with correct pattern, correct Quarkus idioms, ready to plug in.
 
-Migrating callback hell to async/await. Converting class components to functional components. Changing REST to GraphQL schema. These tasks are mechanical but time-consuming and error-prone when done manually.
+Friday, end of sprint, Minh has 5 PRs to submit. He pastes code to AI for a quick **code review**: *"Focus on performance and error handling."* AI catches: *"This queries in a loop, should batch,"* *"This exception is swallowed, should log."* Not replacing colleague review, but a good first pass.
 
-AI handles them very well because patterns are clear.
+Still Friday, Minh writes **commit messages and PR descriptions**. Before, it was *"fix bug"* or *"update code."* Now AI reads the diff and generates: *"Fix race condition in payment processing by adding mutex lock on balance update."* Small thing, but documentation quality improves significantly.
 
-### 4. Generating complex SQL queries
+Saturday (yes, sometimes Minh explores on weekends), he wants to try a new library. Instead of reading docs for 2 hours, he asks AI: *"Send email with SendGrid in Node.js, with attachment, template, retry on failure."* AI gives a **working code example** closer to his use case than any doc page.
 
-Developer knows what data they want but writing SQL with 5 table JOINs, subqueries, window functions takes time. Describe in natural language to AI:
-
-> "Get top 10 customers with highest total orders in Q3, exclude cancelled orders, group by region."
-
-AI generates query, you verify on staging, done.
-
-### 5. Writing regex and parsing logic
-
-Nobody remembers regex syntax. Instead of opening regex101 and trial-and-error 20 times, tell AI:
-
-> "Parse this email, extract sender, subject, and body, handle cases with attachments."
-
-AI writes regex or parsing code more accurately than most developers writing by hand.
-
-### 6. Implementing design patterns for specific context
-
-You know you need Strategy pattern but don't want to write boilerplate. Or need to implement retry with exponential backoff. Or circuit breaker.
-
-Tell AI your specific context, it generates code with correct pattern, correct language idiom, ready to plug into codebase.
-
-### 7. Reviewing and suggesting improvements for written code
-
-Paste code in, ask AI:
-
-> "Review this, focus on performance and error handling."
-
-AI points out: *"This queries in a loop, should batch,"* *"This exception is being swallowed, should log or rethrow,"* *"This variable can be null but no check."*
-
-Doesn't replace colleague code review, but complements very well.
-
-### 8. Writing commit messages and PR descriptions
-
-Many developers write commit messages like *"fix bug"* or *"update code."* AI reads diff and generates meaningful message:
-
-> "Fix race condition in payment processing by adding mutex lock on balance update. Closes JIRA-1234."
-
-Small but accumulates into significantly better documentation quality.
-
-### 9. Exploring new APIs or libraries
-
-Instead of reading docs for 2 hours, ask AI:
-
-> "I need to send email with SendGrid in Node.js, with attachment, with template, need retry on failure."
-
-AI gives code example closer to your use case than any doc page. You run it, understand how API works, then customize.
-
-### 10. Writing data transformation and ETL scripts
-
-Receive messy CSV file, need to clean data, map to new schema, validate business rules, output as JSON. Describe rules to AI, it generates script.
-
-These tasks are repetitive, different in details but similar in structure — very suitable for AI.
+One more scenario Minh encounters regularly: receiving a messy CSV file that needs cleaning, mapping to a new schema, validating business rules, outputting as JSON. He describes the rules to AI, it **generates the ETL script**. Repetitive tasks, different in details but similar in structure — very suitable for AI.
 
 ![Coding with AI](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800)
 
@@ -170,73 +120,29 @@ These tasks are repetitive, different in details but similar in structure — ve
 
 ## These? Your Brain Has to Handle Them
 
-This is territory AI shouldn't enter — not because it doesn't want to, but because it can't. And if you outsource these to AI, you'll pay dearly:
+This is territory AI shouldn't enter — not because it doesn't want to, but because it can't. And if you outsource these to AI, you'll pay dearly.
 
-### 1. Designing database schema for new domains
+Let's look at another week — but this time, what Minh does that requires his brain, not AI's.
 
-Schema determines everything. How much to normalize, what indexes, relationships between entities — all depends on deep understanding of business domain and future access patterns.
+Monday, the team kicks off a new product. First task: **design database schema for the new domain**. Schema determines everything. How much to normalize, what indexes, relationships between entities. Minh spent 3 days discussing with the product team, understanding future access patterns, knowing that in 6 months there'll be heavy time-range queries, this table will have 100 million rows. AI can suggest schema, but doesn't have this context. **Getting this wrong is very expensive.**
 
-AI can suggest schema but doesn't know that in 6 months the team will need heavy time-range queries, or that this table will have 100 million rows.
+Tuesday, Minh joins a meeting with the mobile team about **API contracts**. Versioning strategy, backward compatibility policy, error handling conventions, pagination approach. This is an agreement between people, not just code. Minh needs to understand the mobile team's real use cases, then decide together. **AI can't participate in that conversation.**
 
-**Getting this wrong is very expensive.**
+Wednesday, decision day: **choose technical stack** for the new service. Framework, database, message queue, hosting. Each decision has long-term trade-offs. Minh considers: team experience, hiring pool in this market, budget, timeline, vendor lock-in acceptable? AI can list options, but can't weigh all these organizational factors.
 
-### 2. Designing API contracts between teams
+Thursday, production bug that only happens under load. **Race condition** — the kind you can't reproduce by re-running code. Minh reads code, imagines two threads interleaving, traces memory model, locking mechanisms. AI suggests *"might be race condition"* but the proving and fixing process requires reasoning that AI often hallucinates on.
 
-API contract is an agreement between people, not just between code. It involves versioning strategy, backward compatibility policy, error handling convention, pagination approach.
+Still Thursday afternoon, Minh does an **architectural review** for a service with poor error handling. Not try/catch per function, but a global strategy: which errors to retry, which to fail fast, which need human intervention, log format for easy debugging. This affects all services, requiring consistency and cross-cutting understanding.
 
-Need to sit down and discuss with the team consuming the API, understand their real use cases, then decide. **AI can't participate in that conversation.**
+Friday morning, the service is slow. Minh does **performance optimization** — but not the generic kind where AI says *"use cache, add index."* Real optimization requires profiling, measuring, understanding specific data distribution. Turns out the bottleneck is network latency between two availability zones, not code. Adding an index might make writes slower. **Need to measure first to know. AI can't measure.**
 
-### 3. Deciding technical stack for new projects
+Friday afternoon, Minh is pulled into a **security review** session. Not scanning for SQL injection — AI does that. Real threat modeling: *"If attacker gets user A's session token, can they access user B's data? If internal service B is compromised, what's the blast radius?"* This requires understanding overall architecture and adversarial thinking.
 
-Choosing framework, database, message queue, hosting — each decision has long-term trade-offs. What experience does the team have, what's the hiring pool in this market, what's the budget, timeline, is vendor lock-in acceptable.
+End of sprint, classic problem: **decide when to stop and ship**. Is code "good enough"? Refactor more or ship first then iterate? Is this technical debt temporarily acceptable? This is a **judgment** problem based on deadlines, risk appetite, team capacity — all human factors. No AI can teach this.
 
-AI can list options but can't weigh all these organizational factors.
+The following week, new team member joins. Minh's task: **onboarding them to the codebase**. Explaining: *"This code looks weird because historically it was like this, requirements were different then, team discussed 3 times and decided to keep it because cost of change was too high."* This context lives in people's heads, not in code. AI can explain the **what**, but can't explain the **why**.
 
-### 4. Debugging race conditions and concurrency issues
-
-The kind of bug you can't reproduce by re-running code. Need to understand thread model, memory model, locking mechanisms at a very deep level. Need to read code and imagine two threads interleaving.
-
-AI can suggest *"might be race condition here"* but the process of proving and fixing requires reasoning that AI often hallucinates on.
-
-### 5. Writing error handling strategy for entire systems
-
-Not try/catch per function, but global strategy: which errors to retry, which to fail fast, which need human intervention, how to format error messages for users, log format for easy debugging.
-
-This is an **architectural decision** affecting all services, requiring consistency and cross-cutting understanding.
-
-### 6. Performance optimization for specific bottlenecks
-
-AI can say generically *"use cache, add index, batch queries."* But real optimization requires profiling, measuring, understanding specific data distribution.
-
-Sometimes bottleneck isn't in code but in network latency between two availability zones. Sometimes adding an index makes writes slower.
-
-**Need to measure first to know. AI can't measure.**
-
-### 7. Security review and threat modeling
-
-AI can scan code for SQL injection or XSS. But real threat modeling is: *"If attacker gets user A's session token, can they access user B's data? If internal service B is compromised, what's the blast radius?"*
-
-This requires understanding overall architecture and adversarial thinking that AI doesn't have enough depth for.
-
-### 8. Deciding when to stop and ship
-
-This is a skill no AI can teach. Is code "good enough"? Should we refactor more or ship first then iterate? Is this technical debt temporarily acceptable?
-
-This is a **judgment** problem based on deadlines, risk appetite, team capacity — all human factors.
-
-### 9. Onboarding new team members to codebase
-
-Explaining to newcomers: *"This code looks weird because historically it was like this, requirements were different then, team discussed 3 times and decided to keep it because cost of change was too high."*
-
-This context lives in people's heads, not in code or documents. AI reading code can explain the **what**, but can't explain the **why**.
-
-### 10. Designing migration plans for running systems
-
-Migrating from monolith to microservice, from on-prem to cloud, from one database to another — while the system must keep running, users are still using it.
-
-This is *"changing airplane engine while flying."* Need to understand dependencies at extremely detailed level, need rollback plan for each step, need coordination across many teams.
-
-AI can help write migration scripts for small steps, but **the big picture must be drawn by humans**.
+And the biggest task Minh is preparing for: **migrating from monolith to microservices**. System must keep running, users still using it. *"Changing airplane engine while flying."* Understanding dependencies at extremely detailed level, rollback plan for each step, coordinating across many teams. AI can help write migration scripts for small steps, but **the big picture must be drawn by humans**.
 
 ![System Design](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
 

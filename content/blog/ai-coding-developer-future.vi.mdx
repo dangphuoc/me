@@ -90,79 +90,29 @@ Nếu câu trả lời là 80%, thì bạn cần thay đổi. Không phải thay
 
 ## Hãy để AI gánh những việc này
 
-Đừng cố gắng chứng minh mình giỏi hơn AI ở những task sau — bạn sẽ thua. Thay vào đó, hãy để nó làm, còn bạn đi làm việc khác có giá trị hơn:
+Đừng cố chứng minh mình giỏi hơn AI ở những task này — bạn sẽ thua. Thay vào đó, để nó làm, còn bạn đi làm việc có giá trị hơn.
 
-### 1. Scaffold project mới
+---
 
-Bạn cần tạo một microservice mới với Quarkus, kèm Docker, CI/CD pipeline, basic auth, health check endpoint. Thay vì copy từ project cũ rồi sửa, AI sinh toàn bộ skeleton trong vài phút. Bạn review rồi customize cho phù hợp.
+Sáng thứ Hai, Minh cần tạo microservice mới. Với Quarkus, Docker, CI/CD, health check, basic auth. Trước đây anh sẽ copy từ project cũ rồi sửa — mất nửa ngày. Giờ thì **scaffold project mới** bằng AI, 15 phút xong skeleton, review rồi customize. Nửa ngày thành nửa tiếng.
 
-**Tiết kiệm:** Nửa ngày.
+Chiều thứ Hai, team có một đống legacy code không ai dám refactor — vì không có test. Mà không ai viết test — vì code quá rối. Vòng luẩn quẩn. AI phá vỡ nó bằng cách **sinh test cho legacy code**. Không perfect, nhưng đủ để tạo safety net. Từ 0% lên 60% coverage trong vài ngày thay vì vài tháng.
 
-### 2. Viết test cho legacy code không có test
+Thứ Ba, task là migrate callback hell sang async/await. **Convert code giữa các paradigm** — mechanical nhưng tốn thời gian và dễ sai. AI xử lý rất tốt vì pattern rõ ràng. Tương tự với chuyển class component sang hooks, đổi REST sang GraphQL.
 
-Đây là pain lớn nhất của mọi team. Legacy code không ai dám refactor vì không có test, không ai viết test vì code quá phức tạp. AI đọc code rồi sinh test — không perfect nhưng đủ để tạo safety net ban đầu.
+Thứ Tư, cần một cái query phức tạp — 5 bảng JOIN, subquery, window function. Minh biết muốn lấy gì nhưng viết SQL thì mất thời gian. Nói cho AI: *"top 10 khách hàng order nhiều nhất Q3, loại cancelled, group theo region"* — **sinh SQL query phức tạp** xong trong 30 giây. Verify trên staging, done.
 
-**Từ 0% coverage lên 60% coverage trong vài ngày thay vì vài tháng.**
+Thứ Năm, gặp một cái regex. Không ai nhớ regex syntax cả. Thay vì mở regex101 thử sai 20 lần, nói với AI cần parse gì — nó **viết regex và parsing logic** chính xác hơn hầu hết dev viết tay.
 
-### 3. Convert code giữa các paradigm
+Cũng thứ Năm, cần implement retry with exponential backoff. Biết pattern nhưng lười viết boilerplate. Nói context cho AI, nó **implement design pattern** đúng idiom, sẵn sàng plug vào codebase.
 
-Migrate callback hell sang async/await. Chuyển class component sang functional component. Đổi REST sang GraphQL schema. Những task này mechanical nhưng tốn thời gian và dễ sai khi làm manually.
+Thứ Sáu, trước khi merge PR, paste code vào AI: *"review giùm, focus vào performance và error handling."* Nó chỉ ra: query trong loop nên batch, exception đang bị swallow, biến có thể null mà không check. **AI review code** không thay thế đồng nghiệp, nhưng bổ sung rất tốt.
 
-AI xử lý rất tốt vì pattern rõ ràng.
+Commit xong, cần viết message. Nhiều dev viết kiểu *"fix bug"* — vô nghĩa. AI đọc diff rồi **sinh commit message và PR description** meaningful. Nhỏ nhưng tích lũy thành documentation chất lượng.
 
-### 4. Sinh SQL query phức tạp
+Cuối tuần, cần integrate một API mới. Thay vì đọc docs 2 tiếng, hỏi AI: *"gửi email SendGrid trong Node.js, có attachment, có template, retry nếu fail."* Nó cho example sát use case hơn bất kỳ trang doc nào. **Explore API library mới** nhanh hơn 10x.
 
-Developer biết muốn lấy data gì nhưng viết SQL với 5 bảng JOIN, subquery, window function thì mất thời gian. Mô tả bằng ngôn ngữ tự nhiên cho AI:
-
-> "Lấy top 10 khách hàng có tổng đơn hàng cao nhất trong Q3, loại bỏ đơn đã cancel, group theo region."
-
-AI sinh query, bạn verify trên staging, xong.
-
-### 5. Viết regex và parsing logic
-
-Không ai nhớ regex syntax. Thay vì mở regex101 rồi thử sai 20 lần, nói với AI:
-
-> "Parse email này, lấy ra sender, subject, và body, handle cả trường hợp có attachment."
-
-AI viết regex hoặc parsing code chính xác hơn hầu hết developer viết bằng tay.
-
-### 6. Implement design pattern theo context cụ thể
-
-Bạn biết cần dùng Strategy pattern nhưng lười viết boilerplate. Hoặc cần implement retry with exponential backoff. Hoặc circuit breaker.
-
-Nói cho AI context cụ thể, nó sinh code đúng pattern, đúng language idiom, sẵn sàng plug vào codebase.
-
-### 7. Review và suggest cải thiện cho code đã viết
-
-Paste một đoạn code vào, hỏi AI:
-
-> "Review giùm, focus vào performance và error handling."
-
-AI chỉ ra: *"Đoạn này query trong loop, nên batch lại,"* *"Exception này đang bị swallow, nên log hoặc rethrow,"* *"Biến này có thể null nhưng không check."*
-
-Không thay thế code review của đồng nghiệp, nhưng bổ sung rất tốt.
-
-### 8. Viết commit message và PR description
-
-Nhiều developer viết commit message kiểu *"fix bug"* hoặc *"update code."* AI đọc diff rồi sinh message meaningful:
-
-> "Fix race condition in payment processing by adding mutex lock on balance update. Closes JIRA-1234."
-
-Nhỏ nhưng tích lũy lại cải thiện đáng kể chất lượng documentation.
-
-### 9. Explore API hoặc library mới
-
-Thay vì đọc docs 2 tiếng, hỏi AI:
-
-> "Tôi cần gửi email bằng SendGrid trong Node.js, có attachment, có template, cần retry nếu fail."
-
-AI cho code example sát use case hơn bất kỳ trang doc nào. Bạn chạy thử, hiểu cách API hoạt động, rồi customize.
-
-### 10. Viết data transformation và ETL script
-
-Nhận file CSV lộn xộn, cần clean data, map sang schema mới, validate business rule, output ra JSON. Mô tả rule cho AI, nó sinh script.
-
-Những task này lặp lại, khác nhau ở detail nhưng giống nhau ở structure — rất phù hợp với AI.
+Và những lúc nhận file CSV lộn xộn cần clean, map schema, validate — AI **viết data transformation script** trong vài phút. Task lặp lại, khác detail nhưng giống structure — rất phù hợp với AI.
 
 ![Coding with AI](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800)
 
@@ -170,73 +120,29 @@ Những task này lặp lại, khác nhau ở detail nhưng giống nhau ở str
 
 ## Còn những việc này? Não bạn phải tự lo
 
-Đây là lãnh thổ mà AI không nên bước vào — không phải vì nó không muốn, mà vì nó không đủ khả năng. Và nếu bạn outsource những việc này cho AI, bạn sẽ trả giá đắt:
+Đây là lãnh thổ AI không nên bước vào — không phải vì nó không muốn, mà vì nó không đủ khả năng. Outsource những việc này cho AI, bạn sẽ trả giá đắt.
 
-### 1. Thiết kế database schema cho domain mới
+---
 
-Schema quyết định mọi thứ. Normalize đến đâu, index thế nào, relationship giữa các entity ra sao — tất cả phụ thuộc vào hiểu biết sâu về business domain và access pattern tương lai.
+Tuần trước, team bắt đầu một domain mới. Câu hỏi đầu tiên: **thiết kế database schema**. Normalize đến đâu? Index gì? Relationship giữa các entity ra sao? AI có thể suggest, nhưng nó không biết rằng 6 tháng nữa team sẽ query theo time range rất nhiều, hoặc table này sẽ có 100 triệu row. Sai schema thì migrate đau đớn lắm.
 
-AI có thể suggest schema nhưng nó không biết rằng 6 tháng sau team sẽ cần query theo time range rất nhiều, hoặc table này sẽ có 100 triệu row.
+Cùng tuần, team Payment cần expose API mới cho team Mobile. **Thiết kế API contract** không chỉ là viết endpoint — nó là thỏa thuận giữa người với người. Versioning strategy, backward compatibility, pagination approach. Phải ngồi thảo luận, hiểu use case thật của họ. AI không tham gia cuộc hội thoại đó được.
 
-**Sai ở đây thì trả giá rất đắt.**
+Tháng trước, startup mới hỏi tôi **nên chọn technical stack gì**. Framework nào? Database nào? Hosting ở đâu? Mỗi quyết định đều có trade-off dài hạn — team có kinh nghiệm gì, hiring pool thế nào, budget bao nhiêu, vendor lock-in có chấp nhận được không. AI liệt kê được options, nhưng không cân nhắc được tất cả yếu tố organizational này.
 
-### 2. Thiết kế API contract giữa các team
+Thứ Ba, production có bug lạ — chỉ xảy ra khi load cao, và không ai reproduce được. **Debug race condition** đòi hỏi hiểu thread model, memory model, locking mechanism ở mức rất sâu. Phải đọc code rồi tưởng tượng hai thread chạy đan xen nhau. AI gợi ý *"có thể race condition ở đây"* — nhưng quá trình chứng minh và fix, nó thường hallucinate.
 
-API contract là thỏa thuận giữa người và người, không chỉ giữa code và code. Nó liên quan đến versioning strategy, backward compatibility policy, error handling convention, pagination approach.
+Đầu quý, CTO hỏi: **error handling strategy** của hệ thống thế nào? Không phải try/catch từng function, mà là chiến lược toàn cục. Error nào retry? Error nào fail fast? Log format ra sao? Đây là architectural decision ảnh hưởng mọi service — cần consistency và hiểu biết cross-cutting.
 
-Cần ngồi thảo luận với team consume API, hiểu use case thật của họ, rồi mới quyết định. **AI không tham gia cuộc hội thoại đó được.**
+App chậm. PM hỏi **tối ưu performance** được không. AI nói chung chung: *"dùng cache, thêm index, batch query."* Nhưng optimization thực sự đòi hỏi profiling, đo đạc, hiểu data distribution cụ thể. Có khi bottleneck không ở code mà ở network latency giữa hai AZ. Có khi thêm index lại làm write chậm hơn. Cần đo rồi mới biết — AI không đo được.
 
-### 3. Quyết định technical stack cho project mới
+Security audit đến. **Threat modeling** không chỉ là scan SQL injection. Mà là: *"Nếu attacker có session token của user A, họ access được data user B không? Nếu service B bị compromise, blast radius là gì?"* Đây đòi hỏi hiểu kiến trúc tổng thể và tư duy adversarial.
 
-Chọn framework, database, message queue, hosting — mỗi quyết định đều có trade-off dài hạn. Team có kinh nghiệm gì, hiring pool ở market này thế nào, budget bao nhiêu, timeline ra sao, vendor lock-in có chấp nhận được không.
+Thứ Sáu, deadline áp lực. **Quyết định khi nào nên dừng và ship** — code đã "đủ tốt" chưa? Refactor thêm hay ship trước rồi iterate? Technical debt này có chấp nhận được tạm thời không? Đây là judgment dựa trên deadline, risk appetite, team capacity — toàn yếu tố con người.
 
-AI có thể liệt kê options nhưng không thể cân nhắc tất cả yếu tố organizational này.
+Team có người mới. **Onboard họ vào codebase** — giải thích: *"Đoạn code này trông weird vì lịch sử nó thế này, requirement lúc đó khác, team thảo luận 3 lần và quyết định giữ lại vì cost of change quá lớn."* Context này sống trong đầu người, không sống trong code. AI giải thích được **what**, nhưng không giải thích được **why**.
 
-### 4. Debug race condition và concurrency issue
-
-Loại bug mà bạn không reproduce được bằng cách chạy lại code. Cần hiểu thread model, memory model, locking mechanism ở mức rất sâu. Cần đọc code rồi tưởng tượng hai thread chạy đan xen nhau.
-
-AI có thể gợi ý *"có thể race condition ở đây"* nhưng quá trình chứng minh và fix đòi hỏi reasoning mà AI thường hallucinate.
-
-### 5. Viết error handling strategy cho cả hệ thống
-
-Không phải try/catch từng function, mà là chiến lược toàn cục: error nào retry, error nào fail fast, error nào cần human intervention, error message trả về user thế nào, log format ra sao để dễ debug.
-
-Đây là **architectural decision** ảnh hưởng mọi service, cần consistency và hiểu biết cross-cutting.
-
-### 6. Performance optimization cho bottleneck cụ thể
-
-AI có thể nói chung chung *"dùng cache, thêm index, batch query."* Nhưng optimization thực sự đòi hỏi profiling, đo đạc, hiểu data distribution cụ thể.
-
-Có khi bottleneck không ở code mà ở network latency giữa hai availability zone. Có khi thêm index lại làm write chậm hơn.
-
-**Cần đo rồi mới biết. AI không đo được.**
-
-### 7. Security review và threat modeling
-
-AI có thể scan code tìm SQL injection hay XSS. Nhưng threat modeling thực sự là: *"Nếu attacker có được session token của user A, họ có thể access data của user B không? Nếu internal service B bị compromise, blast radius là gì?"*
-
-Đây là bài toán đòi hỏi hiểu kiến trúc tổng thể và tư duy adversarial mà AI không đủ depth.
-
-### 8. Quyết định khi nào nên dừng và ship
-
-Đây là kỹ năng mà không AI nào dạy được. Code đã "đủ tốt" chưa? Có nên refactor thêm hay ship trước rồi iterate? Technical debt này có chấp nhận được tạm thời không?
-
-Đây là bài toán **judgment** dựa trên deadline, risk appetite, team capacity — toàn yếu tố con người.
-
-### 9. Onboard team member mới vào codebase
-
-Giải thích cho người mới: *"Đoạn code này trông weird vì lịch sử nó thế này, requirement lúc đó khác bây giờ, team đã thảo luận 3 lần và quyết định giữ lại vì cost of change quá lớn."*
-
-Context này sống trong đầu người, không sống trong code hay document. AI đọc code thì giải thích được cái **what**, nhưng không giải thích được cái **why**.
-
-### 10. Thiết kế migration plan cho hệ thống đang chạy
-
-Migrate từ monolith sang microservice, từ on-prem sang cloud, từ database này sang database khác — trong khi hệ thống vẫn phải chạy, user vẫn đang dùng.
-
-Đây là bài toán *"thay động cơ máy bay trong lúc đang bay."* Cần hiểu dependency ở mức cực kỳ chi tiết, cần plan rollback cho mỗi bước, cần coordinate giữa nhiều team.
-
-AI có thể giúp viết migration script cho từng bước nhỏ, nhưng **bức tranh lớn phải do người vẽ**.
+Và dự án lớn nhất năm: **migration từ monolith sang microservice**. Hệ thống vẫn phải chạy, user vẫn đang dùng. Đây là *"thay động cơ máy bay trong lúc đang bay."* Cần hiểu dependency chi tiết, plan rollback mỗi bước, coordinate nhiều team. AI viết được migration script cho từng bước nhỏ — nhưng **bức tranh lớn phải do người vẽ**.
 
 ![System Design](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
 
