@@ -16,69 +16,83 @@ thumbnail: https://images.unsplash.com/photo-1552664730-d307ca884978?w=800
 
 # Process Tax: When Agile Teams Are Busy With Rituals Instead of Work
 
-## 4 PM Friday, and my ticket still hasn't been reviewed
+## 4 PM Friday, and the ticket still isn't done
 
 Minh — a developer on my team — just pinged me on Google Chat.
 
-*"Hey, the checkout flow ticket I finished Wednesday morning. I commented on Jira, tagged Huong, sent a demo video. But still no PO review. I don't know if she's seen it or just busy. And QC is waiting too, not sure if they should test first..."*
+*"Hey, the checkout flow ticket I started at the beginning of the week. An finished testing yesterday, I fixed the bugs this morning, now An retested and it passed. But Linh hasn't done acceptance yet. I don't know if she's seen it or just busy..."*
 
 I look at the clock. Friday, almost end of day.
 
-A simple ticket, coded in half a day, stuck for 2 days because... nobody knows who's waiting for whom.
+A simple ticket, coded on Tuesday, stuck for 3 days because everyone is waiting for someone.
 
-Sound familiar? If you've worked in Agile teams long enough, you've definitely lived through this — either as Minh, or as Huong the PO drowning in 47 notifications not knowing which one to handle first.
+Sound familiar? If you've worked in Agile teams long enough, you've definitely lived through this — either as Minh waiting for QC, or as An the QC waiting for Dev to fix bugs, or as Linh the PO drowning in 47 other things and forgetting there's a ticket to accept.
 
 ![Process](https://images.unsplash.com/photo-1552664730-d307ca884978?w=800)
 
-## The spiral everyone sees but no one stops
+## The spiral where everyone is stuck, everyone has their struggles
 
 Let's zoom in on what's actually happening.
 
-**Wednesday morning, 10:30.**
+**Tuesday, 10:30.**
 
-Minh finishes coding. Opens Jira, moves ticket to "Ready for QC". Then thinks: *"Huong often misses Jira notifications, better send a message too."*
+Minh finishes coding. Opens Jira, moves ticket to "Ready for QC". Then thinks: *"An often misses Jira notifications, better send a message too."*
 
-Opens Google Chat, types: *"Hey Huong, ticket ABC-123 is done. Here's the demo video..."* Attaches 3-minute video. Send.
-
-**11:15.**
-
-Huong is in a meeting with stakeholders. Sees notification blinking but can't check immediately. *"I'll look later."*
+Opens Google Chat: *"Hey An, ticket ABC-123 is done. Here's the demo video..."* Attaches 3-minute video. Send.
 
 **14:00.**
 
-Meeting ends. Huong opens Google Chat, sees 23 unread messages. Scrolls through, sees Minh's message but there are more urgent things. *"I'll get to it."*
+An — the team's QC — is testing 4 other tickets simultaneously. Sees Minh's message but not free yet. *"I'll get to it, let me finish these first."*
+
+**17:30.**
+
+An starts testing Minh's ticket. Finds 2 bugs. Writes quickly to Google Chat because she's in a hurry to leave: *"Minh, checkout fails when cart is empty, and the pay button overlaps the text."*
+
+**Wednesday, 9:00.**
+
+Minh reads the message but doesn't understand clearly. *"What does 'fails when cart is empty' mean? What message shows? Which step?"*
+
+Replies asking for clarification. An is in a meeting. 2 hours later she finally answers. Minh can finally start fixing.
+
+**14:00.**
+
+Minh finishes the fix. Moves ticket back to "Ready for QC". Sends message: *"Hey An, I fixed it, please retest."*
+
+An is testing another ticket, sprint is almost over and there are still 6 tickets untested. *"OK let me finish this one first."*
+
+**Thursday, 11:00.**
+
+An retests, passes. Moves ticket to "Ready for PO Review". Sends message to Linh: *"Hey Linh, ticket ABC-123 passed QC, please do acceptance."*
+
+**14:00.**
+
+Linh — the team's PO — is in a meeting with stakeholders about Q2 roadmap. Sees notification blinking but can't check. Her mind is thinking about 5 new features that need requirements written.
 
 **17:00.**
 
-Day ends. Huong forgets Minh's message because it got pushed down by 15 other messages.
+Meeting ends. Linh opens Google Chat, sees 31 unread messages. Scrolls through, sees An's message but there are more urgent things — stakeholder just sent an email that needs immediate reply. *"I'll look tomorrow."*
 
-**Thursday, 9:30.**
+**Friday, 10:00.**
 
-Minh checks Jira, ticket still "Ready for QC". QC is waiting for PO review first. *"Should I remind her?"*
+Linh remembers there's a ticket to review. Opens Jira, doesn't see staging link. Opens Google Chat to ask: *"An, which environment did you test on?"*
 
-Sends another message: *"Hey Huong, can you check the ticket I sent yesterday?"*
+An is in standup meeting. 1 hour later she replies. By then Linh is in another call.
 
-**10:00.**
-
-Huong sees it, opens the demo video. Has some feedback. Types right into Google Chat: *"Minh, this button should be blue, and this flow doesn't handle the case when user isn't logged in."*
-
-**10:30.**
-
-Minh reads feedback. *"Right, but I need to copy this to Jira for tracking, otherwise I'll forget."* Opens Jira, pastes feedback into comment, tags Huong to confirm.
-
-**11:00.**
-
-Lan — the team's QC — sees ticket still "Ready for QC" with no updates. *"Has PO reviewed? Should I just test first?"*
-
-She decides to wait, worried she'll have to retest if PO requests changes.
-
-**Friday, 16:00.**
+**16:00.**
 
 Minh pings me.
 
 ---
 
-Do you see it? **Nobody did anything wrong.** Everyone's trying to follow the process. But the process itself is creating friction.
+Do you see it?
+
+**Minh** waited for An to test, then waited for An to retest, then waited for Linh to accept. 3 days for a ticket that took half a day to code.
+
+**An** is testing 6 tickets at once, getting interrupted by Devs asking for bug details, having to remind PO to do acceptance.
+
+**Linh** has 47 things on her mind: roadmap, stakeholders, new requirements, 5 tickets to accept, 3 meetings every day.
+
+**Nobody did anything wrong.** Everyone's trying to follow the process. But the process itself is creating friction.
 
 I call this **"process tax"** — the hidden cost teams pay every day, but nobody measures because it's scattered across dozens of small tasks.
 
@@ -90,11 +104,11 @@ That's what I heard in next week's retro.
 
 Sounds reasonable. Very "2026". But something felt off to me.
 
-I asked: *"If AI writes the message, will Huong read it faster?"*
+I asked: *"If AI writes the message, will Linh read it faster?"*
 
 Silence.
 
-*"Is the problem that messages aren't well-written, or that Huong doesn't know which one to read first?"*
+*"Is the problem that messages aren't well-written, or that Linh doesn't know which one to read first?"*
 
 More silence.
 
@@ -112,11 +126,11 @@ Most teams jump straight to AI or automation while skipping convention. Like bui
 
 ### Layer 1: Convention — The foundation everyone ignores
 
-Back to Minh and Huong's story.
+Back to the story of Minh, An and Linh.
 
 The real problem isn't lack of AI to write messages. The problem is **nobody knows where information lives**.
 
-Minh comments on Jira, then sends Google Chat, then attaches a separate video. Huong doesn't know where to look first. Lan the QC doesn't know if PO has reviewed because feedback is on Chat not Jira.
+Minh comments on Jira, then sends Google Chat, then attaches a separate video. An doesn't know if Dev has fixed bugs because info is scattered everywhere. Linh doesn't know if QC has finished testing. Everyone opens Chat to ask.
 
 Solution? No code needed. Just have the team sit for 30 minutes and agree:
 
@@ -128,9 +142,7 @@ When Minh moves ticket to "Ready for QC", he fills in the template already in Ji
 - Main changes: 3 lines description
 - Demo video: Google Drive link
 
-Huong opens Jira, everything's there. No need to read Chat. No need to ask back. No need for separate video through message.
-
-Lan QC also knows exactly where to find information, and can immediately see if PO has commented.
+An opens Jira, sees staging URL, test account, change description right away. No need to ask. Linh also knows exactly where to find information when it's time for acceptance.
 
 **Cost: $0. Time: 30-minute meeting.**
 
@@ -138,7 +150,7 @@ Reduces 80% of messages like *"hey where's the staging link?"*, *"what's the tes
 
 ### Layer 2: Automation — Eliminating the "reminding each other"
 
-OK, team now has convention. But Huong can still forget to check Jira because she's busy.
+OK, team now has convention. But An can still forget to check Jira because she's testing other tickets. Linh can still miss things because of 31 notifications.
 
 This is where automation comes in — but simple automation, not AI.
 
@@ -146,15 +158,15 @@ This is where automation comes in — but simple automation, not AI.
 
 When Minh moves ticket to "Ready for QC", Jira automatically sends message to team's Google Chat space:
 
-> *"🔔 Ticket ABC-123 is Ready for QC. Assignee: @Lan. [Jira Link]*"
+> *"🔔 Ticket ABC-123 is Ready for QC. Assignee: @An. [Jira Link]*"
 
 Minh doesn't need to type anything. System does it.
 
 **Timer + Reminder:**
 
-If ticket is in "Ready for PO Review" for over 24 hours with no action from Huong, bot auto-sends reminder:
+If ticket is in "Ready for PO Review" for over 24 hours with no action from Linh, bot auto-sends reminder:
 
-> *"⏰ Ticket ABC-123 waiting for PO review over 24h. @Huong*"
+> *"⏰ Ticket ABC-123 waiting for PO review over 24h. @Linh*"
 
 Over 48 hours? Escalate to shared channel and tag Scrum Master too.
 
@@ -186,15 +198,15 @@ And what should AI do? Not mechanical things like notify or remind. But things t
 
 Monday, grooming session.
 
-Huong presents a new user story: *"User can filter products by price, brand, rating, and color. Can select multiple filters at once."*
+Linh presents a new user story: *"User can filter products by price, brand, rating, and color. Can select multiple filters at once."*
 
-Sounds simple. But Lan QC starts getting a headache.
+Sounds simple. But An QC starts getting a headache.
 
 *"How many price ranges? If user selects 2 different price ranges, then what? Do brand and rating filters conflict? If no products match, what displays? Performance with 100,000 products?"*
 
 Writing test cases for this feature could take 2-3 days.
 
-This is where AI is truly useful. Lan pastes the user story, AI generates draft 47 test cases — happy path, edge case, combination case, performance case. Lan reviews in 2 hours, adjusts a few things, done.
+This is where AI is truly useful. An pastes the user story, AI generates draft 47 test cases — happy path, edge case, combination case, performance case. An reviews in 2 hours, adjusts a few things, done.
 
 **Saves 60-70% of test case writing time.**
 
@@ -202,15 +214,15 @@ This is where AI is truly useful. Lan pastes the user story, AI generates draft 
 
 *"Bug: checkout doesn't work."*
 
-This is the bug report Minh received from... Lan herself, on a day when deadline was crushing.
+This is the bug report Minh received from... An herself, on a day when deadline was crushing.
 
-*"Lan, what does 'doesn't work' mean? Which step? What environment? What error?"*
+*"An, what does 'doesn't work' mean? Which step? What environment? What error?"*
 
 *"Sorry Minh, I'm testing 5 tickets at once, no time to write details."*
 
-Neither is wrong. Lan is under pressure. Minh needs information.
+Neither is wrong. An is under pressure. Minh needs information.
 
-AI can help here. Lan just describes briefly or sends screenshot, AI generates fully formatted bug report:
+AI can help here. An just describes briefly or sends screenshot, AI generates fully formatted bug report:
 
 > **Title:** Checkout fails when cart has more than 10 items
 > **Steps to reproduce:** 1. Login as test@email.com 2. Add 11 items to cart 3. Click Checkout 4. Enter shipping info 5. Click "Place Order"
@@ -219,13 +231,13 @@ AI can help here. Lan just describes briefly or sends screenshot, AI generates f
 > **Environment:** Staging, Chrome 120, MacOS
 > **Severity:** High — blocks all large orders
 
-Lan reviews 30 seconds, submits. Minh reads and knows exactly what to do.
+An reviews 30 seconds, submits. Minh reads and knows exactly what to do.
 
 **Story 3: "AC #3 conflicts with current policy"**
 
 This is the sentence I wish I'd heard sooner — before Dev coded for 3 days and then discovered it.
 
-Huong writes requirement for new feature: *"User can delete paid orders within 24 hours."*
+Linh writes requirement for new feature: *"User can delete paid orders within 24 hours."*
 
 Sounds reasonable. Dev starts working.
 

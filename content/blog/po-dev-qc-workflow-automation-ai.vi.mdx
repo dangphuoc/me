@@ -16,69 +16,83 @@ thumbnail: https://images.unsplash.com/photo-1552664730-d307ca884978?w=800
 
 # Thuế Quy Trình: Khi Team Agile Bận Rộn Với Nghi Lễ Thay Vì Công Việc
 
-## 4 giờ chiều thứ Sáu, và tôi vẫn chưa được nghiệm thu
+## 4 giờ chiều thứ Sáu, và ticket vẫn chưa xong
 
 Minh — một developer trong team tôi — vừa ping tôi trên Google Chat.
 
-*"Anh ơi, ticket checkout flow em làm xong từ sáng thứ Tư. Em đã comment trên Jira, tag chị Hương, gửi cả video demo. Nhưng giờ vẫn chưa thấy PO review. Em không biết chị ấy đã xem chưa hay bận gì. Mà QC cũng đang chờ, không biết có nên test trước không..."*
+*"Anh ơi, ticket checkout flow em làm từ đầu tuần. Chị An test xong hôm qua, em fix bug sáng nay, giờ chị An retest pass rồi. Nhưng chị Linh chưa nghiệm thu. Em không biết chị ấy đã thấy chưa hay bận gì..."*
 
 Tôi nhìn đồng hồ. Thứ Sáu, gần hết ngày.
 
-Một ticket đơn giản, code xong trong nửa ngày, đang bị treo 2 ngày vì... không ai biết ai đang chờ ai.
+Một ticket đơn giản, code xong từ thứ Ba, đang bị treo 3 ngày vì ai cũng đang chờ ai đó.
 
-Câu chuyện này quen không? Nếu bạn đã làm việc trong team Agile đủ lâu, chắc chắn bạn đã sống qua cảnh này — hoặc chính là Minh, hoặc là chị Hương PO đang ngập trong 47 notification mà không biết cái nào cần xử lý trước.
+Câu chuyện này quen không? Nếu bạn đã làm việc trong team Agile đủ lâu, chắc chắn bạn đã sống qua cảnh này — hoặc chính là Minh đang chờ QC, hoặc là chị An QC đang chờ Dev fix bug, hoặc là chị Linh PO đang ngập trong 47 thứ khác mà quên mất có ticket cần nghiệm thu.
 
 ![Process](https://images.unsplash.com/photo-1552664730-d307ca884978?w=800)
 
-## Vòng xoáy mà ai cũng biết nhưng không ai dừng lại
+## Vòng xoáy mà ai cũng vướng, ai cũng có nỗi khổ
 
 Hãy zoom vào xem thực sự chuyện gì đang xảy ra.
 
-**Sáng thứ Tư, 10:30.**
+**Thứ Ba, 10:30.**
 
-Minh code xong. Anh mở Jira, chuyển ticket sang "Ready for QC". Rồi nghĩ: *"Chị Hương hay bỏ lỡ notification Jira lắm, mình gửi thêm message cho chắc."*
+Minh code xong. Anh mở Jira, chuyển ticket sang "Ready for QC". Rồi nghĩ: *"Chị An hay bỏ lỡ notification Jira lắm, mình gửi thêm message cho chắc."*
 
-Mở Google Chat, type: *"Chị Hương ơi, ticket ABC-123 em làm xong rồi ạ. Đây là video demo..."* Đính kèm video 3 phút. Gửi.
-
-**11:15.**
-
-Chị Hương đang họp với stakeholder. Thấy notification nhấp nháy nhưng không thể check ngay. *"Lát xem."*
+Mở Google Chat: *"Chị An ơi, ticket ABC-123 em làm xong rồi ạ. Đây là video demo..."* Đính kèm video 3 phút. Gửi.
 
 **14:00.**
 
-Họp xong. Hương mở Google Chat, thấy 23 tin nhắn chưa đọc. Lướt qua, thấy tin của Minh nhưng còn mấy việc urgent hơn. *"Để tí nữa."*
+Chị An — QC của team — đang test 4 ticket khác cùng lúc. Thấy tin của Minh nhưng chưa rảnh. *"Để tí nữa, xong mấy cái này đã."*
+
+**17:30.**
+
+An bắt đầu test ticket của Minh. Tìm được 2 bug. Viết nhanh vào Google Chat vì đang vội về: *"Minh ơi, checkout bị lỗi khi cart trống, với cái nút thanh toán đè lên text."*
+
+**Thứ Tư, 9:00.**
+
+Minh đọc tin, nhưng không hiểu rõ. *"Lỗi khi cart trống là sao? Hiện message gì? Ở bước nào?"*
+
+Reply hỏi lại. An đang họp. 2 tiếng sau mới trả lời. Minh mới bắt đầu fix được.
+
+**14:00.**
+
+Minh fix xong. Chuyển ticket lại "Ready for QC". Gửi tin: *"Chị An ơi, em fix xong rồi, nhờ chị retest ạ."*
+
+An đang test ticket khác, sprint sắp hết mà còn 6 ticket chưa test. *"OK để chị xong cái này đã."*
+
+**Thứ Năm, 11:00.**
+
+An retest, pass. Chuyển ticket sang "Ready for PO Review". Gửi tin cho chị Linh: *"Chị Linh ơi, ticket ABC-123 QC pass rồi, nhờ chị nghiệm thu ạ."*
+
+**14:00.**
+
+Chị Linh — PO của team — đang họp với stakeholder về roadmap Q2. Thấy notification nhấp nháy nhưng không thể check. Trong đầu đang nghĩ về 5 feature mới cần viết requirement.
 
 **17:00.**
 
-Hết ngày. Hương quên mất tin của Minh vì nó đã bị đẩy xuống dưới 15 tin nhắn khác.
+Họp xong. Linh mở Google Chat, thấy 31 tin nhắn chưa đọc. Lướt qua, thấy tin của An nhưng còn mấy việc urgent hơn — stakeholder vừa gửi email cần reply gấp. *"Để mai xem."*
 
-**Thứ Năm, 9:30.**
+**Thứ Sáu, 10:00.**
 
-Minh check Jira, thấy ticket vẫn "Ready for QC". QC thì đang chờ PO review trước. *"Hay mình nhắc lại?"*
+Linh nhớ ra có ticket cần review. Mở Jira, không thấy link staging. Mở Google Chat hỏi: *"An ơi, test trên môi trường nào vậy?"*
 
-Gửi thêm một message: *"Chị Hương ơi, chị xem ticket hôm qua em gửi được không ạ?"*
+An đang họp standup. 1 tiếng sau mới reply. Linh lúc đó lại đang trong cuộc gọi khác.
 
-**10:00.**
-
-Hương thấy, mở video demo xem. Có vài chỗ cần feedback. Cô ấy gõ ngay vào Google Chat: *"Minh ơi, cái nút này nên đổi màu xanh, với flow này chưa handle case user chưa login."*
-
-**10:30.**
-
-Minh đọc feedback. *"Ờ nhỉ, nhưng mình phải copy cái này sang Jira để track, không thì tí nữa lại quên."* Mở Jira, paste feedback vào comment, tag lại Hương để confirm.
-
-**11:00.**
-
-Lan — QC của team — nhìn ticket vẫn "Ready for QC" mà không thấy ai update gì. *"PO đã review chưa nhỉ? Hay mình cứ test trước?"*
-
-Cô ấy quyết định chờ, vì sợ test xong lại phải test lại nếu PO yêu cầu đổi.
-
-**Thứ Sáu, 16:00.**
+**16:00.**
 
 Minh ping tôi.
 
 ---
 
-Bạn có thấy không? **Không ai làm sai cả.** Mọi người đều cố gắng làm đúng quy trình. Nhưng chính quy trình đang tạo ra friction.
+Bạn có thấy không?
+
+**Minh** chờ An test, rồi chờ An retest, rồi chờ Linh nghiệm thu. 3 ngày cho một ticket nửa ngày code.
+
+**An** đang test 6 ticket cùng lúc, vừa test vừa bị interrupt bởi Dev hỏi bug details, vừa phải nhắc PO nghiệm thu.
+
+**Linh** có 47 thứ trong đầu: roadmap, stakeholder, requirement mới, 5 ticket cần nghiệm thu, 3 cuộc họp mỗi ngày.
+
+**Không ai làm sai cả.** Mọi người đều cố gắng làm đúng quy trình. Nhưng chính quy trình đang tạo ra friction.
 
 Tôi gọi đây là **"thuế quy trình"** — cái giá ẩn mà team trả mỗi ngày, nhưng không ai đo đếm vì nó nằm rải rác trong hàng chục task nhỏ.
 
@@ -90,11 +104,11 @@ Tôi gọi đây là **"thuế quy trình"** — cái giá ẩn mà team trả m
 
 Nghe hợp lý. Rất "2026". Nhưng có gì đó khiến tôi không thoải mái.
 
-Tôi hỏi: *"Nếu AI viết message, liệu chị Hương có đọc nhanh hơn không?"*
+Tôi hỏi: *"Nếu AI viết message, liệu chị Linh có đọc nhanh hơn không?"*
 
 Im lặng.
 
-*"Vấn đề có phải là message viết không hay, hay là chị Hương không biết cái nào cần đọc trước?"*
+*"Vấn đề có phải là message viết không hay, hay là chị Linh không biết cái nào cần đọc trước?"*
 
 Thêm im lặng.
 
@@ -112,11 +126,11 @@ Hầu hết team nhảy thẳng vào AI hoặc automation mà bỏ qua conventio
 
 ### Tầng 1: Convention — Cái móng mà ai cũng bỏ qua
 
-Quay lại câu chuyện của Minh và Hương.
+Quay lại câu chuyện của Minh, An và Linh.
 
 Vấn đề thực sự không phải là thiếu AI viết message. Vấn đề là **không ai biết thông tin nằm ở đâu**.
 
-Minh comment trên Jira, rồi gửi thêm Google Chat, rồi đính kèm video riêng. Hương không biết nên xem ở đâu trước. Lan QC không biết PO đã review chưa vì feedback nằm trên Chat chứ không phải Jira.
+Minh comment trên Jira, rồi gửi thêm Google Chat, rồi đính kèm video riêng. An không biết Dev đã fix bug chưa vì info nằm rải rác. Linh không biết QC đã test xong chưa. Ai cũng mở Chat hỏi lại.
 
 Giải pháp? Không cần code gì cả. Chỉ cần team ngồi 30 phút và thống nhất:
 
@@ -128,9 +142,7 @@ Khi Minh chuyển ticket sang "Ready for QC", anh phải điền vào template c
 - Thay đổi chính: 3 dòng mô tả
 - Video demo: link Google Drive
 
-Hương mở Jira, mọi thứ đã ở đó. Không cần đọc Chat. Không cần hỏi lại. Không cần video riêng gửi qua message.
-
-Lan QC cũng biết chính xác nơi để tìm thông tin, và có thể thấy ngay PO đã comment hay chưa.
+An mở Jira, thấy ngay staging URL, test account, mô tả thay đổi. Không cần hỏi lại. Linh cũng biết chính xác nơi để tìm thông tin khi cần nghiệm thu.
 
 **Cost: 0 đồng. Time: 30 phút họp.**
 
@@ -138,7 +150,7 @@ Mà giảm được 80% message kiểu *"bạn ơi link staging đâu?"*, *"test
 
 ### Tầng 2: Automation — Loại bỏ việc "nhắc nhau"
 
-OK, giờ team đã có convention. Nhưng Hương vẫn có thể quên check Jira vì cô ấy bận.
+OK, giờ team đã có convention. Nhưng An vẫn có thể quên check Jira vì đang test ticket khác. Linh vẫn có thể bỏ lỡ vì 31 notification.
 
 Đây là lúc automation vào cuộc — nhưng là automation đơn giản, không phải AI.
 
@@ -146,15 +158,15 @@ OK, giờ team đã có convention. Nhưng Hương vẫn có thể quên check J
 
 Khi Minh chuyển ticket sang "Ready for QC", Jira tự động gửi message vào Google Chat space của team:
 
-> *"🔔 Ticket ABC-123 đã Ready for QC. Assignee: @Lan. [Link Jira]*"
+> *"🔔 Ticket ABC-123 đã Ready for QC. Assignee: @An. [Link Jira]*"
 
 Không cần Minh type gì cả. Hệ thống tự làm.
 
 **Timer + Reminder:**
 
-Nếu ticket ở "Ready for PO Review" quá 24 giờ mà Hương chưa action, bot tự gửi reminder:
+Nếu ticket ở "Ready for PO Review" quá 24 giờ mà Linh chưa action, bot tự gửi reminder:
 
-> *"⏰ Ticket ABC-123 đang chờ PO review hơn 24h. @Hương*"
+> *"⏰ Ticket ABC-123 đang chờ PO review hơn 24h. @Linh*"
 
 Quá 48 giờ? Escalate lên channel chung và tag cả Scrum Master.
 
@@ -186,15 +198,15 @@ Và AI nên làm gì? Không phải việc mechanical như notify hay remind. M�
 
 Thứ Hai, grooming session.
 
-Hương trình bày user story mới: *"User có thể filter sản phẩm theo giá, brand, rating, và màu sắc. Có thể chọn nhiều filter cùng lúc."*
+Linh trình bày user story mới: *"User có thể filter sản phẩm theo giá, brand, rating, và màu sắc. Có thể chọn nhiều filter cùng lúc."*
 
-Nghe đơn giản. Nhưng Lan QC bắt đầu đau đầu.
+Nghe đơn giản. Nhưng An QC bắt đầu đau đầu.
 
 *"Filter giá có mấy khoảng? Nếu user chọn 2 khoảng giá khác nhau thì sao? Filter brand với rating có conflict không? Nếu không có sản phẩm nào match thì hiển thị gì? Performance khi có 100,000 sản phẩm?"*
 
 Viết test case cho feature này có thể mất 2-3 ngày.
 
-Đây là lúc AI thực sự hữu ích. Lan paste user story vào, AI sinh ra draft 47 test case — happy path, edge case, combination case, performance case. Lan review trong 2 tiếng, adjust một số chỗ, done.
+Đây là lúc AI thực sự hữu ích. An paste user story vào, AI sinh ra draft 47 test case — happy path, edge case, combination case, performance case. An review trong 2 tiếng, adjust một số chỗ, done.
 
 **Tiết kiệm 60-70% thời gian viết test case.**
 
@@ -202,15 +214,15 @@ Viết test case cho feature này có thể mất 2-3 ngày.
 
 *"Bug: checkout không work."*
 
-Đây là bug report mà Minh nhận được từ... chính Lan, vào một ngày deadline đang đè nặng.
+Đây là bug report mà Minh nhận được từ... chính An, vào một ngày deadline đang đè nặng.
 
-*"Lan ơi, 'không work' là sao? Bước nào? Môi trường nào? Lỗi gì?"*
+*"An ơi, 'không work' là sao? Bước nào? Môi trường nào? Lỗi gì?"*
 
 *"Sorry Minh, em đang test 5 ticket cùng lúc, không có thời gian viết chi tiết."*
 
-Cả hai đều không sai. Lan bị áp lực. Minh cần thông tin.
+Cả hai đều không sai. An bị áp lực. Minh cần thông tin.
 
-AI có thể giúp ở đây. Lan chỉ cần mô tả ngắn hoặc gửi screenshot, AI sinh ra bug report đầy đủ format:
+AI có thể giúp ở đây. An chỉ cần mô tả ngắn hoặc gửi screenshot, AI sinh ra bug report đầy đủ format:
 
 > **Title:** Checkout fails when cart has more than 10 items
 > **Steps to reproduce:** 1. Login as test@email.com 2. Add 11 items to cart 3. Click Checkout 4. Enter shipping info 5. Click "Place Order"
@@ -219,13 +231,13 @@ AI có thể giúp ở đây. Lan chỉ cần mô tả ngắn hoặc gửi scree
 > **Environment:** Staging, Chrome 120, MacOS
 > **Severity:** High — blocks all large orders
 
-Lan review 30 giây, submit. Minh đọc và biết chính xác phải làm gì.
+An review 30 giây, submit. Minh đọc và biết chính xác phải làm gì.
 
 **Câu chuyện 3: "AC số 3 mâu thuẫn với policy hiện tại"**
 
 Đây là câu mà tôi ước mình được nghe sớm hơn — trước khi Dev code 3 ngày rồi mới phát hiện.
 
-Hương viết requirement cho feature mới: *"User có thể xóa order đã thanh toán trong vòng 24 giờ."*
+Linh viết requirement cho feature mới: *"User có thể xóa order đã thanh toán trong vòng 24 giờ."*
 
 Nghe reasonable. Dev bắt tay làm.
 
