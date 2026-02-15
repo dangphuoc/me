@@ -156,30 +156,15 @@ This is where automation comes in — but simple automation, not AI.
 
 **Webhook + Bot:**
 
-When Minh moves ticket to "Ready for QC", Jira automatically sends message to team's Google Chat space:
-
-> *"🔔 Ticket ABC-123 is Ready for QC. Assignee: @An. [Jira Link]*"
-
-Minh doesn't need to type anything. System does it.
+When Minh moves ticket to "Ready for QC", Jira automatically sends message to team's Google Chat space: *"🔔 Ticket ABC-123 is Ready for QC. Assignee: @An."* Minh doesn't need to type anything. System does it.
 
 **Timer + Reminder:**
 
-If ticket is in "Ready for PO Review" for over 24 hours with no action from Linh, bot auto-sends reminder:
-
-> *"⏰ Ticket ABC-123 waiting for PO review over 24h. @Linh*"
-
-Over 48 hours? Escalate to shared channel and tag Scrum Master too.
+If ticket is in "Ready for PO Review" for over 24 hours with no action from Linh, bot auto-sends reminder. Over 48 hours? Escalate to shared channel and tag Scrum Master too.
 
 **Daily Summary:**
 
-Every morning at 8:30, bot posts to Chat:
-
-> *"📊 Sprint Status:*
-> *- 3 tickets Ready for QC*
-> *- 2 tickets Ready for PO Review (1 overdue)*
-> *- 1 ticket Blocked*"
-
-Team reads 5 minutes before standup, standup only discusses blockers instead of everyone reading status again.
+Every morning at 8:30, bot aggregates from Jira then posts to Chat: how many tickets Ready for QC, how many waiting for PO, which ones are overdue, which are blocked. Team reads 5 minutes before standup, standup only discusses blockers instead of everyone reading status again.
 
 **Cost:** 1-2 days developer webhook setup.
 **ROI:** Saves 20-30 hours overhead per sprint.
@@ -222,16 +207,7 @@ This is the bug report Minh received from... An herself, on a day when deadline 
 
 Neither is wrong. An is under pressure. Minh needs information.
 
-AI can help here. An just describes briefly or sends screenshot, AI generates fully formatted bug report:
-
-> **Title:** Checkout fails when cart has more than 10 items
-> **Steps to reproduce:** 1. Login as test@email.com 2. Add 11 items to cart 3. Click Checkout 4. Enter shipping info 5. Click "Place Order"
-> **Expected:** Order confirmation page
-> **Actual:** Error 500, console shows "Array index out of bounds"
-> **Environment:** Staging, Chrome 120, MacOS
-> **Severity:** High — blocks all large orders
-
-An reviews 30 seconds, submits. Minh reads and knows exactly what to do.
+AI can help here. An just describes briefly or sends screenshot, AI generates fully formatted bug report — clear title, detailed steps to reproduce, expected vs actual, environment, severity. An reviews 30 seconds, submits. Minh reads and knows exactly what to do.
 
 **Story 3: "AC #3 conflicts with current policy"**
 
@@ -245,9 +221,7 @@ Sounds reasonable. Dev starts working.
 
 Goes back to ask PO. Clarify. Re-design. Loses another 2 days.
 
-AI could catch this **before Dev starts coding**. It reads the new requirement, compares with all existing features and policies in the system, then flags:
-
-> *"⚠️ Potential conflict: AC #3 allows deleting paid orders, but Refund Policy (DOC-456) states paid orders can only be cancelled, not deleted. Please clarify with PO before development."*
+AI could catch this **before Dev starts coding**. It reads the new requirement, compares with all existing features and policies in the system, then flags: *"AC #3 allows deleting paid orders, but Refund Policy says only cancel is allowed. Please clarify with PO."*
 
 This is something usually only senior developers or experienced BAs catch. AI can do it because it can read all documentation in seconds.
 

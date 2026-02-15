@@ -156,30 +156,15 @@ OK, giờ team đã có convention. Nhưng An vẫn có thể quên check Jira v
 
 **Webhook + Bot:**
 
-Khi Minh chuyển ticket sang "Ready for QC", Jira tự động gửi message vào Google Chat space của team:
-
-> *"🔔 Ticket ABC-123 đã Ready for QC. Assignee: @An. [Link Jira]*"
-
-Không cần Minh type gì cả. Hệ thống tự làm.
+Khi Minh chuyển ticket sang "Ready for QC", Jira tự động gửi message vào Google Chat space của team: *"🔔 Ticket ABC-123 đã Ready for QC. Assignee: @An."* Không cần Minh type gì cả. Hệ thống tự làm.
 
 **Timer + Reminder:**
 
-Nếu ticket ở "Ready for PO Review" quá 24 giờ mà Linh chưa action, bot tự gửi reminder:
-
-> *"⏰ Ticket ABC-123 đang chờ PO review hơn 24h. @Linh*"
-
-Quá 48 giờ? Escalate lên channel chung và tag cả Scrum Master.
+Nếu ticket ở "Ready for PO Review" quá 24 giờ mà Linh chưa action, bot tự gửi reminder. Quá 48 giờ? Escalate lên channel chung và tag cả Scrum Master.
 
 **Daily Summary:**
 
-Mỗi sáng 8:30, bot post lên Chat:
-
-> *"📊 Sprint Status:*
-> *- 3 tickets Ready for QC*
-> *- 2 tickets Ready for PO Review (1 overdue)*
-> *- 1 ticket Blocked*"
-
-Team đọc trước standup 5 phút, standup chỉ cần thảo luận blocker thay vì mỗi người đọc lại status.
+Mỗi sáng 8:30, bot tổng hợp từ Jira rồi post lên Chat: bao nhiêu ticket Ready for QC, bao nhiêu đang chờ PO, cái nào overdue, cái nào blocked. Team đọc trước standup 5 phút, standup chỉ cần thảo luận blocker thay vì mỗi người đọc lại status.
 
 **Cost:** 1-2 ngày developer setup webhook.
 **ROI:** Tiết kiệm 20-30 giờ overhead mỗi sprint.
@@ -222,16 +207,7 @@ Viết test case cho feature này có thể mất 2-3 ngày.
 
 Cả hai đều không sai. An bị áp lực. Minh cần thông tin.
 
-AI có thể giúp ở đây. An chỉ cần mô tả ngắn hoặc gửi screenshot, AI sinh ra bug report đầy đủ format:
-
-> **Title:** Checkout fails when cart has more than 10 items
-> **Steps to reproduce:** 1. Login as test@email.com 2. Add 11 items to cart 3. Click Checkout 4. Enter shipping info 5. Click "Place Order"
-> **Expected:** Order confirmation page
-> **Actual:** Error 500, console shows "Array index out of bounds"
-> **Environment:** Staging, Chrome 120, MacOS
-> **Severity:** High — blocks all large orders
-
-An review 30 giây, submit. Minh đọc và biết chính xác phải làm gì.
+AI có thể giúp ở đây. An chỉ cần mô tả ngắn hoặc gửi screenshot, AI sinh ra bug report đầy đủ format — title rõ ràng, steps to reproduce chi tiết, expected vs actual, environment, severity. An review 30 giây, submit. Minh đọc và biết chính xác phải làm gì.
 
 **Câu chuyện 3: "AC số 3 mâu thuẫn với policy hiện tại"**
 
@@ -245,9 +221,7 @@ Nghe reasonable. Dev bắt tay làm.
 
 Quay lại hỏi PO. Clarify. Re-design. Mất thêm 2 ngày.
 
-AI có thể bắt điều này **trước khi Dev bắt đầu code**. Nó đọc requirement mới, so sánh với tất cả feature và policy đang có trong hệ thống, rồi flag:
-
-> *"⚠️ Potential conflict: AC #3 allows deleting paid orders, but Refund Policy (DOC-456) states paid orders can only be cancelled, not deleted. Please clarify with PO before development."*
+AI có thể bắt điều này **trước khi Dev bắt đầu code**. Nó đọc requirement mới, so sánh với tất cả feature và policy đang có trong hệ thống, rồi flag: *"AC #3 cho phép xóa order đã thanh toán, nhưng Refund Policy quy định chỉ được cancel. Cần clarify với PO."*
 
 Đây là thứ thường chỉ senior developer hoặc BA có kinh nghiệm mới bắt được. AI làm được vì nó có thể đọc toàn bộ documentation trong vài giây.
 
