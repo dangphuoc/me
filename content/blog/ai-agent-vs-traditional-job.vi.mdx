@@ -17,21 +17,21 @@ thumbnail: https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800
 
 ## Câu chuyện bắt đầu từ một buổi review
 
-Tuần trước, trong buổi review thiết kế, một bạn developer trình bày giải pháp cho một task tưởng chừng đơn giản: **tổng hợp báo cáo doanh thu hàng ngày từ nhiều nguồn, rồi gửi email cho sếp.**
+Tuần trước, trong buổi review thiết kế, một bạn developer trình bày giải pháp cho một task tưởng chừng đơn giản: **mỗi sáng tổng hợp sprint metrics từ Jira, CI/CD status từ Jenkins, rồi post summary lên Google Chat cho team.**
 
 Bạn ấy đề xuất dùng AI Agent.
 
-"Agent sẽ đọc data từ các nguồn, tự quyết định cách tổng hợp, rồi sinh ra email với insights thông minh."
+"Agent sẽ đọc data từ các nguồn, phân tích xem sprint có healthy không, rồi viết summary với insights thông minh."
 
 Nghe rất hay. Rất "2026". Nhưng radar "over-engineering" trong đầu tôi bắt đầu kêu bíp bíp.
 
-Tôi hỏi: "Data format có thay đổi không?"
+Tôi hỏi: "Metrics có thay đổi không? Hôm nay đo velocity, mai đo cycle time?"
 
-"Không, luôn là CSV cùng schema."
+"Không, luôn là: tickets done, tickets in progress, blocked tickets, build status."
 
-"Cách tổng hợp có thay đổi không? Ví dụ tuần này tính theo region, tuần sau tính theo product?"
+"Cách tổng hợp có thay đổi không?"
 
-"Không, luôn là sum theo ngày, group theo category."
+"Không, luôn là count và list ra."
 
 "Vậy... tại sao cần AI Agent?"
 
@@ -47,7 +47,7 @@ Tâm lý rất dễ hiểu: **sợ bị lạc hậu**. Nếu không dùng AI, c�
 
 Nhưng thực tế tôi quan sát thì ngược lại: **những team mạnh nhất không phải team dùng nhiều AI nhất, mà là team biết đặt AI đúng chỗ.**
 
-Một cái cron job chạy SQL tổng hợp báo cáo mỗi sáng, với schema cố định, logic cố định, output cố định — **không có lý do gì phải gọi LLM cả.** Chi phí cao hơn. Latency cao hơn. Output không deterministic. Và debug thì... chúc may mắn.
+Một cái cron job query Jira API và Jenkins API mỗi sáng, format thành message cố định, post lên Chat — **không có lý do gì phải gọi LLM cả.** Chi phí cao hơn. Latency cao hơn. Output không deterministic. Và debug thì... chúc may mắn.
 
 ## Vậy ranh giới nằm ở đâu?
 
@@ -59,9 +59,9 @@ Và có hai loại không chắc chắn rất khác nhau mà nhiều người ha
 
 Dữ liệu thay đổi, nhưng **cách xử lý không đổi**.
 
-Ví dụ: mỗi ngày số lượng đơn hàng khác nhau. Hôm nay 1,000 đơn, ngày mai 50,000 đơn. Dữ liệu "biến động." Nhưng cách tổng hợp báo cáo thì vẫn y nguyên: sum revenue, group by category, calculate growth rate.
+Ví dụ: mỗi ngày số lượng tickets khác nhau. Hôm nay 5 tickets done, ngày mai 20 tickets. Build hôm nay fail 3 lần, hôm qua không fail lần nào. Dữ liệu "biến động." Nhưng cách tổng hợp thì vẫn y nguyên: count tickets by status, list blocked items, show build status.
 
-Nhiều người thấy dữ liệu "phức tạp" thì nghĩ cần AI. **Nhưng phức tạp không đồng nghĩa với mơ hồ.** Dù data có 100 triệu rows, nếu cách xử lý là deterministic, thì job truyền thống là đủ.
+Nhiều người thấy dữ liệu "nhiều nguồn" thì nghĩ cần AI. **Nhưng nhiều nguồn không đồng nghĩa với mơ hồ.** Dù pull từ 10 APIs khác nhau, nếu cách xử lý là deterministic, thì job truyền thống là đủ.
 
 ### Loại 2: Không chắc chắn về logic xử lý
 

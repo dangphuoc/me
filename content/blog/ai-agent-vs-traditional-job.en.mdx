@@ -17,21 +17,21 @@ thumbnail: https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800
 
 ## It started in a design review
 
-Last week, during a design review session, a developer presented a solution for what seemed like a simple task: **aggregate daily revenue reports from multiple sources, then email them to the boss.**
+Last week, during a design review session, a developer presented a solution for what seemed like a simple task: **every morning, aggregate sprint metrics from Jira, CI/CD status from Jenkins, then post a summary to Google Chat for the team.**
 
 They proposed using an AI Agent.
 
-"The Agent will read data from various sources, decide how to aggregate it, then generate an email with intelligent insights."
+"The Agent will read data from various sources, analyze whether the sprint is healthy, then write a summary with intelligent insights."
 
 Sounds great. Very "2026." But my "over-engineering" radar started beeping.
 
-I asked: "Does the data format ever change?"
+I asked: "Do the metrics ever change? Today velocity, tomorrow cycle time?"
 
-"No, always CSV with the same schema."
+"No, always: tickets done, tickets in progress, blocked tickets, build status."
 
-"Does the aggregation method change? Like this week by region, next week by product?"
+"Does the aggregation method change?"
 
-"No, always sum by day, group by category."
+"No, always count and list them."
 
 "So... why do we need an AI Agent?"
 
@@ -47,7 +47,7 @@ The psychology is understandable: **fear of being left behind.** If you're not u
 
 But what I've observed in practice is the opposite: **the strongest teams aren't the ones using the most AI, but the ones who know where to place AI.**
 
-A cron job running SQL to aggregate reports every morning, with fixed schema, fixed logic, fixed output — **there's no reason to call an LLM.** Higher cost. Higher latency. Non-deterministic output. And debugging? Good luck.
+A cron job querying Jira API and Jenkins API every morning, formatting into a fixed message, posting to Chat — **there's no reason to call an LLM.** Higher cost. Higher latency. Non-deterministic output. And debugging? Good luck.
 
 ## So where's the line?
 
@@ -59,9 +59,9 @@ And there are two very different types of uncertainty that people often confuse.
 
 Data changes, but **the processing logic doesn't.**
 
-Example: daily order volume varies. Today 1,000 orders, tomorrow 50,000 orders. Data "fluctuates." But the way you aggregate the report stays the same: sum revenue, group by category, calculate growth rate.
+Example: daily ticket count varies. Today 5 tickets done, tomorrow 20 tickets. Build failed 3 times today, zero yesterday. Data "fluctuates." But the way you aggregate stays the same: count tickets by status, list blocked items, show build status.
 
-Many people see "complex" data and think they need AI. **But complex doesn't mean ambiguous.** Even with 100 million rows, if the processing is deterministic, traditional jobs are enough.
+Many people see "multiple sources" and think they need AI. **But multiple sources doesn't mean ambiguous.** Even pulling from 10 different APIs, if the processing is deterministic, traditional jobs are enough.
 
 ### Type 2: Uncertainty in processing logic
 
