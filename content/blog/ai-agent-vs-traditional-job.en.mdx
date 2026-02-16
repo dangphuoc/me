@@ -141,15 +141,24 @@ After wrestling with this question many times, I realized the boundary isn't abo
 
 **The boundary is about the nature of ambiguity.**
 
-Imagine you hire a smart intern who knows nothing about the domain.
+I use a simple test: **"Can I write step-by-step instructions that anyone could follow correctly?"**
 
-**If you can write a one-page SOP detailed enough for them to do it 100% correctly** - that's a cron job's work. Write the code. If/else is cheaper, faster, much easier to debug.
+For Dung's task, I could write:
+1. Call Jira API, get ticket count where status = "Done"
+2. Call Jira API, get ticket count where status = "In Progress"
+3. Call Jenkins API, get status of last 3 builds
+4. Format as template: "Done: X, In Progress: Y, Build: Z"
+5. Post to Google Chat channel #team-daily
 
-**If you can't write an SOP** because the task requires judgment, contextual understanding, or handling situations never seen before - that's where AI Agent belongs.
+An intern who knows nothing about the project could read these 5 steps and do it 100% correctly. No thinking needed. No judgment required. Just follow the steps. **That's a cron job's work.**
 
-Example with Dung's task: "Every morning, query Jira API for ticket counts by status, query Jenkins for build status, format according to this template, post to this channel." An intern could read this and do it 100% correctly. **Cron job.**
+Khanh's task is different. Try writing instructions:
+1. Read bug report from user
+2. Understand what problem they're facing
+3. Assess severity level
+4. Assign to the appropriate team
 
-Example with Khanh's task: "Read bug reports from users, understand what problem they're facing, assess severity, assign to the appropriate team." Every report is different. Can't write an SOP for every case. **AI Agent.**
+Steps 2, 3, 4 all require **understanding context**. User writes "app doesn't work" - is it crashing? Loading slowly? UI bug? Every report is different. Can't list all possible cases. **That's AI Agent's work.**
 
 ---
 

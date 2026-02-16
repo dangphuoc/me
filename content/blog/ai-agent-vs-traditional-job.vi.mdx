@@ -141,15 +141,24 @@ Sau nhiều lần vật lộn với câu hỏi này, tôi nhận ra ranh giới 
 
 **Ranh giới nằm ở bản chất của sự mơ hồ.**
 
-Hãy tưởng tượng bạn thuê một thực tập sinh thông minh nhưng chưa biết gì về domain.
+Tôi hay dùng một phép thử đơn giản: **"Liệu tôi có thể viết hướng dẫn từng bước để ai làm cũng đúng không?"**
 
-**Nếu bạn có thể viết một trang SOP đủ chi tiết để người đó làm đúng 100%** - đó là việc của cron job. Viết code đi. If/else rẻ hơn, nhanh hơn, dễ debug hơn rất nhiều.
+Với task của Dũng, tôi có thể viết:
+1. Gọi Jira API, lấy số tickets có status = "Done"
+2. Gọi Jira API, lấy số tickets có status = "In Progress"
+3. Gọi Jenkins API, lấy status của 3 build gần nhất
+4. Format theo template: "Done: X, In Progress: Y, Build: Z"
+5. Post lên Google Chat channel #team-daily
 
-**Nếu bạn không thể viết SOP** vì task đòi hỏi phán đoán, đọc hiểu ngữ cảnh, hoặc xử lý tình huống chưa từng gặp - đó là chỗ cho AI Agent.
+Một bạn thực tập chưa biết gì về project, đọc xong 5 bước này cũng làm được đúng 100%. Không cần suy nghĩ. Không cần phán đoán. Chỉ cần làm theo. **Đó là việc của cron job.**
 
-Ví dụ với task của Dũng: "Mỗi sáng, query Jira API lấy số tickets theo status, query Jenkins lấy build status, format theo template này, post lên channel này." Một thực tập sinh đọc xong có thể làm đúng 100%. **Cron job.**
+Với task của Khánh thì khác. Thử viết hướng dẫn xem:
+1. Đọc bug report từ user
+2. Hiểu họ đang gặp vấn đề gì
+3. Đánh giá mức độ nghiêm trọng
+4. Assign cho team phù hợp
 
-Ví dụ với task của Khánh: "Đọc bug report từ user, hiểu họ đang gặp vấn đề gì, đánh giá mức độ nghiêm trọng, assign cho team phù hợp." Mỗi report khác nhau. Không thể viết SOP cho mọi trường hợp. **AI Agent.**
+Bước 2, 3, 4 đều cần **hiểu ngữ cảnh**. User viết "app không chạy" - là crash? Là load chậm? Là lỗi UI? Mỗi report một kiểu. Không thể liệt kê hết các trường hợp. **Đó là việc của AI Agent.**
 
 ---
 
