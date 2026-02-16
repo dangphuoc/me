@@ -29,9 +29,9 @@ Yet in the software world, I see people doing this **every day**.
 
 Last Tuesday. Design review meeting.
 
-Dung - a fairly senior dev on our team - was presenting his solution for what seemed like a simple task: **every morning, aggregate sprint metrics from Jira, get CI/CD status from Jenkins, then post a summary to Google Chat for the team.**
+Minh - a fairly senior dev on our team - was presenting his solution for what seemed like a simple task: **every morning, aggregate sprint metrics from Jira, get CI/CD status from Jenkins, then post a summary to Google Chat for the team.**
 
-"I'll use an AI Agent," Dung said confidently.
+"I'll use an AI Agent," Minh said confidently.
 
 I raised an eyebrow. "AI Agent?"
 
@@ -53,9 +53,9 @@ But something felt off.
 
 Silence.
 
-Dung looked at me. I looked at Dung. The whole team looked at each other.
+Minh looked at me. I looked at Minh. The whole team looked at each other.
 
-That was the moment I realized: **Dung was holding a scalpel to peel an apple.**
+That was the moment I realized: **Minh was holding a scalpel to peel an apple.**
 
 ---
 
@@ -81,11 +81,11 @@ Higher cost. Higher latency. Non-deterministic output - today it writes one way,
 
 To understand the boundary between AI Agent and cron job, let me tell three real stories from our team.
 
-### Story 1: Khanh and the right scalpel
+### Story 1: An and the right scalpel
 
-Khanh is our QC lead. She had a pain point: every week she had to read hundreds of bug reports from users to classify severity and assign to the right team.
+An is our QC lead. She had a pain point: every week she had to read hundreds of bug reports from users to classify severity and assign to the right team.
 
-Khanh proposed: "How about we build an AI Agent to auto-classify bugs?"
+An proposed: "How about we build an AI Agent to auto-classify bugs?"
 
 Makes sense. Users report bugs in natural language, everyone expresses differently. Someone writes "app crashes when I tap the payment button," someone else writes "I can't buy anything." Agent reads, understands intent, classifies severity, assigns to the right team.
 
@@ -93,33 +93,33 @@ Team spent 3 weeks building. LangChain, prompt engineering, evaluation sets, a c
 
 Result? **Worked beautifully.**
 
-92% accuracy. Classification time dropped from 2 hours/week to 15 minutes of review. Khanh happy. Team happy.
+92% accuracy. Classification time dropped from 2 hours/week to 15 minutes of review. An happy. Team happy.
 
 This is **using a scalpel for surgery**. Right tool, right job.
 
-### Story 2: Dung and the scalpel peeling apples
+### Story 2: Minh and the scalpel peeling apples
 
-Back to Dung and his sprint metrics bot.
+Back to Minh and his sprint metrics bot.
 
-After the review, Dung rewrote it as a cron job. Python script, 80 lines. Runs every morning at 6am. Queries Jira API, queries Jenkins API, formats into a fixed message template, posts to Google Chat.
+After the review, Minh rewrote it as a cron job. Python script, 80 lines. Runs every morning at 6am. Queries Jira API, queries Jenkins API, formats into a fixed message template, posts to Google Chat.
 
 No LLM. No Agent. No "intelligent."
 
 Result? **Running stable for 4 months now.** No bugs. No maintenance needed. Cost nearly zero.
 
-What if Dung had used an AI Agent as originally planned?
+What if Minh had used an AI Agent as originally planned?
 
 Daily LLM costs. Inconsistent output - today it writes "Sprint is healthy," tomorrow "Team is doing well," next day "Velocity is stable." Same data but different messages, making it hard for the team to compare trends.
 
 This is **almost using a scalpel to peel an apple**. Good thing he stopped in time.
 
-### Story 3: Hang and two knives in the right places
+### Story 3: Nhi and two knives in the right places
 
-Hang is the tech lead for our platform team. She had a more complex problem: **processing e-commerce orders**.
+Nhi is the tech lead for our platform team. She had a more complex problem: **processing e-commerce orders**.
 
 Pipeline has 10 steps: validate input, check inventory, calculate price, classify special customer requests, apply discount, update database, generate invoice, write response email, send notification, log audit.
 
-Hang didn't pick one tool for everything. She **broke it down and chose the right knife for each task.**
+Nhi didn't pick one tool for everything. She **broke it down and chose the right knife for each task.**
 
 First 8 steps? Cron job and traditional code. Validate input with if/else. Check inventory with database queries. Calculate price with fixed formulas. Deterministic. Testable. Reliable.
 
@@ -143,7 +143,7 @@ After wrestling with this question many times, I realized the boundary isn't abo
 
 I use a simple test: **"Can I write step-by-step instructions that anyone could follow correctly?"**
 
-For Dung's task, I could write:
+For Minh's task, I could write:
 1. Call Jira API, get ticket count where status = "Done"
 2. Call Jira API, get ticket count where status = "In Progress"
 3. Call Jenkins API, get status of last 3 builds
@@ -152,7 +152,7 @@ For Dung's task, I could write:
 
 An intern who knows nothing about the project could read these 5 steps and do it 100% correctly. No thinking needed. No judgment required. Just follow the steps. **That's a cron job's work.**
 
-Khanh's task is different. Try writing instructions:
+An's task is different. Try writing instructions:
 1. Read bug report from user
 2. Understand what problem they're facing
 3. Assess severity level
@@ -222,7 +222,7 @@ These tasks require **understanding semantics**, not just processing data. Each 
 
 ## Pattern: Hybrid done right
 
-Most good production systems will be **hybrid** - like Hang's pipeline. But "hybrid" doesn't mean mixing randomly.
+Most good production systems will be **hybrid** - like Nhi's pipeline. But "hybrid" doesn't mean mixing randomly.
 
 How I think about it: envision the pipeline as a series of steps. At each step, ask: **"Does this step require reasoning?"**
 
@@ -235,11 +235,11 @@ Don't turn the whole pipeline into one "mega agent." Expensive. Slow. Hard to de
 
 ## Closing thoughts
 
-Back to the review meeting with Dung.
+Back to the review meeting with Minh.
 
-After discussing, Dung decided to write a cron job. 80 lines of Python. Runs at 6am. No drama.
+After discussing, Minh decided to write a cron job. 80 lines of Python. Runs at 6am. No drama.
 
-A month later, Dung proposed using an AI Agent again - but this time for something else: **automatically summarizing and categorizing feedback from user surveys**. Every survey response is written differently. Different sentiments. Different topics.
+A month later, Minh proposed using an AI Agent again - but this time for something else: **automatically summarizing and categorizing feedback from user surveys**. Every survey response is written differently. Different sentiments. Different topics.
 
 This time the team approved immediately. Because that was **the right job for the right tool**.
 

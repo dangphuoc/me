@@ -29,9 +29,9 @@ Nhưng trong thế giới phần mềm, tôi thấy người ta làm điều nà
 
 Thứ Ba tuần trước. Buổi review thiết kế.
 
-Dũng - một bạn dev khá senior trong team - trình bày giải pháp cho một task nghe rất bình thường: **mỗi sáng tổng hợp sprint metrics từ Jira, lấy CI/CD status từ Jenkins, rồi post summary lên Google Chat cho team.**
+Minh - một bạn dev khá senior trong team - trình bày giải pháp cho một task nghe rất bình thường: **mỗi sáng tổng hợp sprint metrics từ Jira, lấy CI/CD status từ Jenkins, rồi post summary lên Google Chat cho team.**
 
-"Em sẽ dùng AI Agent," Dũng nói với vẻ tự tin.
+"Em sẽ dùng AI Agent," Minh nói với vẻ tự tin.
 
 Tôi nhướng mày. "AI Agent?"
 
@@ -53,9 +53,9 @@ Nhưng có gì đó sai sai.
 
 Im lặng.
 
-Dũng nhìn tôi. Tôi nhìn Dũng. Cả team nhìn nhau.
+Minh nhìn tôi. Tôi nhìn Minh. Cả team nhìn nhau.
 
-Đó là khoảnh khắc tôi nhận ra: **Dũng đang cầm dao mổ để gọt táo.**
+Đó là khoảnh khắc tôi nhận ra: **Minh đang cầm dao mổ để gọt táo.**
 
 ---
 
@@ -81,11 +81,11 @@ Chi phí cao hơn. Latency cao hơn. Output không deterministic - hôm nay vi�
 
 Để hiểu ranh giới giữa AI Agent và cron job, tôi sẽ kể ba câu chuyện thực tế từ team.
 
-### Câu chuyện 1: Khánh và con dao mổ gọt táo
+### Câu chuyện 1: An và con dao mổ gọt táo
 
-Khánh là QC lead. Bạn ấy có một pain point: mỗi tuần phải đọc hàng trăm bug report từ user để phân loại severity và assign cho đúng team.
+An là QC lead. Bạn ấy có một pain point: mỗi tuần phải đọc hàng trăm bug report từ user để phân loại severity và assign cho đúng team.
 
-Khánh đề xuất: "Hay là mình build AI Agent để tự động phân loại bug?"
+An đề xuất: "Hay là mình build AI Agent để tự động phân loại bug?"
 
 Nghe hợp lý. User report bug bằng ngôn ngữ tự nhiên, mỗi người diễn đạt khác nhau. Có người viết "app bị crash khi bấm nút thanh toán," có người viết "tôi không mua được hàng." Agent đọc hiểu ý, phân loại severity, gán đúng team.
 
@@ -93,33 +93,33 @@ Team dành 3 tuần build. LangChain, prompt engineering, evaluation set, cả m
 
 Kết quả? **Hoạt động tuyệt vời.**
 
-Accuracy 92%. Thời gian phân loại từ 2 giờ/tuần xuống còn 15 phút review. Khánh happy. Team happy.
+Accuracy 92%. Thời gian phân loại từ 2 giờ/tuần xuống còn 15 phút review. An happy. Team happy.
 
 Đây là **dùng dao mổ để mổ**. Đúng tool, đúng việc.
 
-### Câu chuyện 2: Dũng và con dao mổ gọt táo
+### Câu chuyện 2: Minh và con dao mổ gọt táo
 
-Quay lại với Dũng và cái sprint metrics bot.
+Quay lại với Minh và cái sprint metrics bot.
 
-Sau buổi review, Dũng viết lại bằng cron job. Python script, 80 dòng. Chạy mỗi sáng lúc 6h. Query Jira API, query Jenkins API, format thành message template cố định, post lên Google Chat.
+Sau buổi review, Minh viết lại bằng cron job. Python script, 80 dòng. Chạy mỗi sáng lúc 6h. Query Jira API, query Jenkins API, format thành message template cố định, post lên Google Chat.
 
 Không LLM. Không Agent. Không "intelligent."
 
 Kết quả? **Chạy ổn định 4 tháng nay.** Không bug. Không cần maintain. Cost gần như bằng 0.
 
-Nếu Dũng dùng AI Agent như ban đầu định thì sao?
+Nếu Minh dùng AI Agent như ban đầu định thì sao?
 
 Mỗi ngày tốn tiền gọi LLM. Output không consistent - hôm nay viết "Sprint đang healthy," mai viết "Team đang làm tốt," mốt viết "Velocity ổn định." Cùng một data mà message khác nhau, team đọc cũng khó compare trend.
 
 Đây là **suýt dùng dao mổ để gọt táo**. May mà dừng kịp.
 
-### Câu chuyện 3: Hằng và hai con dao đúng chỗ
+### Câu chuyện 3: Nhi và hai con dao đúng chỗ
 
-Hằng là tech lead của team platform. Bạn ấy có một bài toán phức tạp hơn: **xử lý đơn hàng e-commerce**.
+Nhi là tech lead của team platform. Bạn ấy có một bài toán phức tạp hơn: **xử lý đơn hàng e-commerce**.
 
 Pipeline gồm 10 bước: validate input, check inventory, calculate price, phân loại yêu cầu đặc biệt của khách, apply discount, update database, generate invoice, viết email phản hồi, send notification, log audit.
 
-Hằng không chọn một tool cho tất cả. Bạn ấy **chia nhỏ và chọn đúng dao cho từng việc.**
+Nhi không chọn một tool cho tất cả. Bạn ấy **chia nhỏ và chọn đúng dao cho từng việc.**
 
 8 bước đầu tiên? Cron job và code truyền thống. Validate input thì if/else. Check inventory thì query database. Calculate price thì công thức cố định. Deterministic. Testable. Reliable.
 
@@ -143,7 +143,7 @@ Sau nhiều lần vật lộn với câu hỏi này, tôi nhận ra ranh giới 
 
 Tôi hay dùng một phép thử đơn giản: **"Liệu tôi có thể viết hướng dẫn từng bước để ai làm cũng đúng không?"**
 
-Với task của Dũng, tôi có thể viết:
+Với task của Minh, tôi có thể viết:
 1. Gọi Jira API, lấy số tickets có status = "Done"
 2. Gọi Jira API, lấy số tickets có status = "In Progress"
 3. Gọi Jenkins API, lấy status của 3 build gần nhất
@@ -152,7 +152,7 @@ Với task của Dũng, tôi có thể viết:
 
 Một bạn thực tập chưa biết gì về project, đọc xong 5 bước này cũng làm được đúng 100%. Không cần suy nghĩ. Không cần phán đoán. Chỉ cần làm theo. **Đó là việc của cron job.**
 
-Với task của Khánh thì khác. Thử viết hướng dẫn xem:
+Với task của An thì khác. Thử viết hướng dẫn xem:
 1. Đọc bug report từ user
 2. Hiểu họ đang gặp vấn đề gì
 3. Đánh giá mức độ nghiêm trọng
@@ -222,7 +222,7 @@ Những việc này đòi hỏi **hiểu ngữ nghĩa**, không chỉ xử lý d
 
 ## Pattern: Hybrid đúng cách
 
-Hầu hết hệ thống production tốt sẽ là **hybrid** - như pipeline của Hằng. Nhưng "hybrid" không có nghĩa là trộn lẫn lung tung.
+Hầu hết hệ thống production tốt sẽ là **hybrid** - như pipeline của Nhi. Nhưng "hybrid" không có nghĩa là trộn lẫn lung tung.
 
 Cách tôi hay nghĩ: hình dung pipeline như một chuỗi các bước. Ở từng bước, tự hỏi: **"Bước này có cần suy luận không?"**
 
@@ -235,11 +235,11 @@ Nếu không → Cron job / code truyền thống.
 
 ## Lời kết
 
-Quay lại buổi review với Dũng.
+Quay lại buổi review với Minh.
 
-Sau khi thảo luận, Dũng quyết định viết cron job. 80 dòng Python. Chạy lúc 6h sáng. Không drama.
+Sau khi thảo luận, Minh quyết định viết cron job. 80 dòng Python. Chạy lúc 6h sáng. Không drama.
 
-Một tháng sau, Dũng lại đề xuất dùng AI Agent - nhưng lần này cho việc khác: **tự động tóm tắt và categorize feedback từ user survey**. Mỗi survey response viết khác nhau. Sentiment khác nhau. Topic khác nhau.
+Một tháng sau, Minh lại đề xuất dùng AI Agent - nhưng lần này cho việc khác: **tự động tóm tắt và categorize feedback từ user survey**. Mỗi survey response viết khác nhau. Sentiment khác nhau. Topic khác nhau.
 
 Lần này team approve ngay. Vì đó là **đúng việc cho đúng tool**.
 
