@@ -1,9 +1,9 @@
 ---
-title: "Đừng Dùng AI Cho Việc Mà Cron Job Làm Tốt Hơn"
-title_vi: "Đừng Dùng AI Cho Việc Mà Cron Job Làm Tốt Hơn"
-title_en: "Don't Use AI For Tasks That Cron Jobs Do Better"
-excerpt_vi: "Khi nào dùng AI Agent, khi nào chỉ cần một cái cron job? Câu hỏi tưởng đơn giản nhưng đang khiến nhiều team đi sai hướng. Đây là cách tôi phân biệt."
-excerpt_en: "When to use AI Agent, when a simple cron job is enough? A seemingly simple question that's leading many teams astray. Here's how I tell the difference."
+title: "Đừng Dùng Dao Mổ Để Gọt Táo"
+title_vi: "Đừng Dùng Dao Mổ Để Gọt Táo"
+title_en: "Don't Use a Scalpel to Peel an Apple"
+excerpt_vi: "AI Agent là con dao mổ sắc bén. Cron job là con dao gọt hoa quả. Cả hai đều cắt được. Nhưng dùng sai chỗ thì một cái phí tiền, một cái mất mạng."
+excerpt_en: "AI Agent is a sharp scalpel. Cron job is a fruit knife. Both can cut. But use them wrong and one wastes money, the other costs lives."
 date: 2026-02-15
 tags:
   - AI
@@ -13,280 +13,235 @@ tags:
 thumbnail: https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800
 ---
 
-# Đừng Dùng AI Cho Việc Mà Cron Job Làm Tốt Hơn
+Trong phòng mổ, bác sĩ cầm con dao mổ cắt từng lớp da một cách chính xác. Sai một milimet là đứt mạch máu. Đúng vị trí thì cứu sống bệnh nhân.
 
-## Câu chuyện bắt đầu từ một buổi review
+Trong bếp, đầu bếp cầm con dao gọt táo tách vỏ khỏi thịt quả. Nhanh gọn. Đơn giản. Không cần độ chính xác đến từng milimet.
 
-Tuần trước, trong buổi review thiết kế, một bạn developer trình bày giải pháp cho một task tưởng chừng đơn giản: **mỗi sáng tổng hợp sprint metrics từ Jira, CI/CD status từ Jenkins, rồi post summary lên Google Chat cho team.**
+Cả hai đều là dao. Cả hai đều cắt được. Nhưng bạn có dùng dao mổ để gọt táo không?
 
-Bạn ấy đề xuất dùng AI Agent.
+Không ai làm vậy cả. Vì **phí**. Vì **không cần thiết**. Vì con dao gọt 20 nghìn làm được y chang con dao mổ 20 triệu.
 
-"Agent sẽ đọc data từ các nguồn, phân tích xem sprint có healthy không, rồi viết summary với insights thông minh."
+Nhưng trong thế giới phần mềm, tôi thấy người ta làm điều này **mỗi ngày**.
 
-Nghe rất hay. Rất "2026". Nhưng radar "over-engineering" trong đầu tôi bắt đầu kêu bíp bíp.
+---
 
-Tôi hỏi: "Metrics có thay đổi không? Hôm nay đo velocity, mai đo cycle time?"
+## "Em muốn dùng AI Agent"
 
-"Không, luôn là: tickets done, tickets in progress, blocked tickets, build status."
+Thứ Ba tuần trước. Buổi review thiết kế.
+
+Dũng - một bạn dev khá senior trong team - trình bày giải pháp cho một task nghe rất bình thường: **mỗi sáng tổng hợp sprint metrics từ Jira, lấy CI/CD status từ Jenkins, rồi post summary lên Google Chat cho team.**
+
+"Em sẽ dùng AI Agent," Dũng nói với vẻ tự tin.
+
+Tôi nhướng mày. "AI Agent?"
+
+"Vâng. Agent sẽ đọc data từ các nguồn, phân tích xem sprint có healthy không, rồi viết summary với insights thông minh. Kiểu như một con bot biết suy nghĩ."
+
+Nghe rất hay. Rất "2026". Cả team gật gù.
+
+Nhưng có gì đó sai sai.
+
+"Metrics có thay đổi không?" tôi hỏi. "Hôm nay đo velocity, mai đo cycle time?"
+
+"Không ạ. Luôn là: tickets done, tickets in progress, blocked tickets, build status."
 
 "Cách tổng hợp có thay đổi không?"
 
-"Không, luôn là count và list ra."
+"Không ạ. Luôn là count và list ra thôi."
 
 "Vậy... tại sao cần AI Agent?"
 
 Im lặng.
 
-![Thinking](https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800)
+Dũng nhìn tôi. Tôi nhìn Dũng. Cả team nhìn nhau.
 
-## Cái búa mới và mọi thứ thành đinh
+Đó là khoảnh khắc tôi nhận ra: **Dũng đang cầm dao mổ để gọt táo.**
 
-Đây không phải lần đầu tôi thấy chuyện này. Kể từ khi ChatGPT bùng nổ, "AI Agent" trở thành buzzword. Mọi proposal đều cố nhét AI vào. Mọi giải pháp đều có từ "intelligent" hoặc "autonomous."
+---
 
-Tâm lý rất dễ hiểu: **sợ bị lạc hậu**. Nếu không dùng AI, có vẻ như mình đang code kiểu "old-school." Nếu vẫn viết cron job như 10 năm trước, có vẻ như mình không theo kịp xu hướng.
+## Khi dao mổ trở thành trend
 
-Nhưng thực tế tôi quan sát thì ngược lại: **những team mạnh nhất không phải team dùng nhiều AI nhất, mà là team biết đặt AI đúng chỗ.**
+Kể từ khi ChatGPT bùng nổ, "AI Agent" trở thành từ khóa ma thuật. Mọi proposal đều cố nhét AI vào. Mọi giải pháp đều có từ "intelligent" hoặc "autonomous."
 
-Một cái cron job query Jira API và Jenkins API mỗi sáng, format thành message cố định, post lên Chat — **không có lý do gì phải gọi LLM cả.** Chi phí cao hơn. Latency cao hơn. Output không deterministic. Và debug thì... chúc may mắn.
+Tâm lý này tôi hiểu. **Sợ bị lạc hậu.**
+
+Nếu không dùng AI, có vẻ như mình đang code kiểu "old-school." Nếu vẫn viết cron job như 10 năm trước, có vẻ như mình không theo kịp xu hướng. Đi phỏng vấn mà nói "em viết cron job" nghe kém sexy hơn "em build AI Agent" rất nhiều.
+
+Nhưng thực tế tôi quan sát thì ngược lại hoàn toàn.
+
+**Những team mạnh nhất không phải team dùng nhiều AI nhất. Mà là team biết khi nào KHÔNG dùng AI.**
+
+Một cái cron job query Jira API và Jenkins API mỗi sáng, format thành message cố định, post lên Chat - **không có lý do gì phải gọi LLM cả.**
+
+Chi phí cao hơn. Latency cao hơn. Output không deterministic - hôm nay viết kiểu này, mai viết kiểu khác. Và debug thì... chúc may mắn.
+
+---
+
+## Ba câu chuyện về con dao
+
+Để hiểu ranh giới giữa AI Agent và cron job, tôi sẽ kể ba câu chuyện thực tế từ team.
+
+### Câu chuyện 1: Khánh và con dao mổ gọt táo
+
+Khánh là QC lead. Bạn ấy có một pain point: mỗi tuần phải đọc hàng trăm bug report từ user để phân loại severity và assign cho đúng team.
+
+Khánh đề xuất: "Hay là mình build AI Agent để tự động phân loại bug?"
+
+Nghe hợp lý. User report bug bằng ngôn ngữ tự nhiên, mỗi người diễn đạt khác nhau. Có người viết "app bị crash khi bấm nút thanh toán," có người viết "tôi không mua được hàng." Agent đọc hiểu ý, phân loại severity, gán đúng team.
+
+Team dành 3 tuần build. LangChain, prompt engineering, evaluation set, cả một hệ thống hoàn chỉnh.
+
+Kết quả? **Hoạt động tuyệt vời.**
+
+Accuracy 92%. Thời gian phân loại từ 2 giờ/tuần xuống còn 15 phút review. Khánh happy. Team happy.
+
+Đây là **dùng dao mổ để mổ**. Đúng tool, đúng việc.
+
+### Câu chuyện 2: Dũng và con dao mổ gọt táo
+
+Quay lại với Dũng và cái sprint metrics bot.
+
+Sau buổi review, Dũng viết lại bằng cron job. Python script, 80 dòng. Chạy mỗi sáng lúc 6h. Query Jira API, query Jenkins API, format thành message template cố định, post lên Google Chat.
+
+Không LLM. Không Agent. Không "intelligent."
+
+Kết quả? **Chạy ổn định 4 tháng nay.** Không bug. Không cần maintain. Cost gần như bằng 0.
+
+Nếu Dũng dùng AI Agent như ban đầu định thì sao?
+
+Mỗi ngày tốn tiền gọi LLM. Output không consistent - hôm nay viết "Sprint đang healthy," mai viết "Team đang làm tốt," mốt viết "Velocity ổn định." Cùng một data mà message khác nhau, team đọc cũng khó compare trend.
+
+Đây là **suýt dùng dao mổ để gọt táo**. May mà dừng kịp.
+
+### Câu chuyện 3: Hằng và hai con dao đúng chỗ
+
+Hằng là tech lead của team platform. Bạn ấy có một bài toán phức tạp hơn: **xử lý đơn hàng e-commerce**.
+
+Pipeline gồm 10 bước: validate input, check inventory, calculate price, phân loại yêu cầu đặc biệt của khách, apply discount, update database, generate invoice, viết email phản hồi, send notification, log audit.
+
+Hằng không chọn một tool cho tất cả. Bạn ấy **chia nhỏ và chọn đúng dao cho từng việc.**
+
+8 bước đầu tiên? Cron job và code truyền thống. Validate input thì if/else. Check inventory thì query database. Calculate price thì công thức cố định. Deterministic. Testable. Reliable.
+
+2 bước còn lại? AI Agent.
+
+**Phân loại yêu cầu đặc biệt của khách** - vì khách viết bằng ngôn ngữ tự nhiên, mỗi người một kiểu. "Giao trước 5h chiều nha," "Ship về quê cho mẹ tôi," "Đóng gói cẩn thận vì là quà." Không thể viết hết if/else.
+
+**Viết email phản hồi cá nhân hóa** - vì mỗi đơn hàng cần email khác nhau dựa trên context, không phải template cứng.
+
+Kết quả? Pipeline chạy mượt. Chi phí AI chỉ tập trung vào 2 node thực sự cần. 8 node còn lại rẻ, nhanh, và dễ debug.
+
+Đây là **biết khi nào cần dao mổ, khi nào cần dao gọt táo**.
+
+---
 
 ## Vậy ranh giới nằm ở đâu?
 
-Sau nhiều lần vật lộn với câu hỏi này, tôi nhận ra ranh giới không nằm ở công nghệ. **Nó nằm ở bản chất của sự không chắc chắn trong task.**
+Sau nhiều lần vật lộn với câu hỏi này, tôi nhận ra ranh giới không nằm ở độ phức tạp của task. Không nằm ở số lượng data source. Không nằm ở việc task có "quan trọng" hay không.
 
-Và có hai loại không chắc chắn rất khác nhau mà nhiều người hay nhầm lẫn.
+**Ranh giới nằm ở bản chất của sự mơ hồ.**
 
-### Loại 1: Không chắc chắn về dữ liệu
+Hãy tưởng tượng bạn thuê một thực tập sinh thông minh nhưng chưa biết gì về domain.
 
-Dữ liệu thay đổi, nhưng **cách xử lý không đổi**.
+**Nếu bạn có thể viết một trang SOP đủ chi tiết để người đó làm đúng 100%** - đó là việc của cron job. Viết code đi. If/else rẻ hơn, nhanh hơn, dễ debug hơn rất nhiều.
 
-Ví dụ: mỗi ngày số lượng tickets khác nhau. Hôm nay 5 tickets done, ngày mai 20 tickets. Build hôm nay fail 3 lần, hôm qua không fail lần nào. Dữ liệu "biến động." Nhưng cách tổng hợp thì vẫn y nguyên: count tickets by status, list blocked items, show build status.
+**Nếu bạn không thể viết SOP** vì task đòi hỏi phán đoán, đọc hiểu ngữ cảnh, hoặc xử lý tình huống chưa từng gặp - đó là chỗ cho AI Agent.
 
-Nhiều người thấy dữ liệu "nhiều nguồn" thì nghĩ cần AI. **Nhưng nhiều nguồn không đồng nghĩa với mơ hồ.** Dù pull từ 10 APIs khác nhau, nếu cách xử lý là deterministic, thì job truyền thống là đủ.
+Ví dụ với task của Dũng: "Mỗi sáng, query Jira API lấy số tickets theo status, query Jenkins lấy build status, format theo template này, post lên channel này." Một thực tập sinh đọc xong có thể làm đúng 100%. **Cron job.**
 
-### Loại 2: Không chắc chắn về logic xử lý
+Ví dụ với task của Khánh: "Đọc bug report từ user, hiểu họ đang gặp vấn đề gì, đánh giá mức độ nghiêm trọng, assign cho team phù hợp." Mỗi report khác nhau. Không thể viết SOP cho mọi trường hợp. **AI Agent.**
 
-Bạn **không thể biết trước bước tiếp theo** là gì cho đến khi thấy kết quả bước hiện tại. Và số lượng trường hợp quá lớn để viết rule.
+---
 
-Ví dụ: đọc một email khiếu nại của khách hàng, rồi quyết định nên:
-- Xin lỗi và giải thích policy?
-- Đề xuất hoàn tiền?
-- Chuyển sang bộ phận kỹ thuật?
-- Hay escalate lên manager?
+## Điều ít ai nói: Khi dao mổ cắt nhầm
 
-Mỗi email viết khác nhau. Tâm trạng khách khác nhau. Vấn đề khác nhau. Bạn **không thể viết hết if/else cho mọi tình huống**. Đây mới là lãnh thổ của Agent.
+Có một yếu tố mà các bài blog về AI ít đề cập: **chi phí khi hệ thống sai.**
 
-![Decision](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+Khi cron job sai, bạn biết nó sai ở đâu. Luồng là deterministic. Nhìn log, trace, rồi fix. Có thể mất vài giờ, nhưng bạn **biết đường đi.**
 
-> **Ghi nhớ:** Job xử lý sự biến đổi có cấu trúc. Agent xử lý sự mơ hồ không có cấu trúc.
+Khi AI Agent sai, đôi khi bạn **không biết tại sao nó sai**. Cùng một input có thể cho output khác nhau mỗi lần chạy. Debugging một hệ thống non-deterministic khó hơn rất nhiều.
 
-## Ba câu hỏi tôi hay dùng
+Tuần trước team payment gặp incident. Một AI Agent phân loại giao dịch đột nhiên classify một số transaction là "suspicious" dù không có gì bất thường. Tìm nguyên nhân mất 2 ngày vì không có log rõ ràng giải thích tại sao model quyết định như vậy.
 
-Trước khi quyết định dùng AI hay không, tôi thường tự hỏi ba câu này:
+Nếu đó là rule-based system với if/else, debug chắc mất 2 tiếng.
 
-**Câu 1: "Tôi có thể viết hết các rule bằng if/else không?"**
+Nên câu hỏi không chỉ là "Task này có cần AI không?" mà còn là:
 
-Nếu có — dùng job. If/else rẻ hơn, nhanh hơn, dễ debug hơn rất nhiều so với gọi LLM. Đừng để ego về "modern tech" che mờ common sense.
+**"Nếu AI sai ở task này thì hậu quả thế nào, và mình có phát hiện được không?"**
 
-**Câu 2: "Đầu vào có phải ngôn ngữ tự nhiên hoặc dữ liệu phi cấu trúc không?"**
+Nếu hậu quả nghiêm trọng và khó phát hiện - ví dụ tính sai số tiền trong hóa đơn - thì dù task có vẻ phức tạp, tôi vẫn nghiêng về dùng logic cứng với validation rõ ràng.
 
-Nếu đầu vào là text tự do, hình ảnh, tài liệu đa dạng mà cần **hiểu nội dung** — AI Agent hợp lý. Nếu đầu vào là JSON, CSV, số liệu cấu trúc sẵn — job thường là đủ.
+---
 
-**Câu 3: "Có cần ra quyết định linh hoạt giữa chừng không?"**
+## Những công việc của dao gọt táo
 
-Agent mạnh ở chỗ nó có thể tự quyết định: *"Dữ liệu này thiếu, để mình gọi thêm API kia bổ sung"* hoặc *"Trường hợp này ngoại lệ, mình xử lý khác."* Job truyền thống thì bạn phải define trước hết các nhánh đó.
+Trong team, có rất nhiều việc mà cron job làm tốt hơn AI Agent:
 
-## Góc nhìn ít người nói: Chi phí sai lầm
+**Backup database mỗi đêm** - dump, nén, upload S3, xóa bản cũ. Logic hoàn toàn deterministic.
 
-Có một yếu tố mà tôi thấy các paper và bài blog ít đề cập: **chi phí khi hệ thống sai.**
+**Rotate log file và dọn disk** - check dung lượng, compress file cũ, xóa file quá hạn. Toàn bộ là if/else.
 
-Khi job truyền thống sai, bạn biết nó sai ở đâu vì luồng là deterministic. Nhìn log, trace, rồi fix. Có thể mất vài giờ, nhưng bạn **biết đường đi.**
+**Health check services** - ping endpoint mỗi 5 phút, 3 lần fail thì restart và alert. Threshold đơn giản.
 
-Khi Agent sai, đôi khi bạn **không biết tại sao nó sai**. Cùng một input có thể cho output khác nhau mỗi lần chạy. Debugging một hệ thống non-deterministic khó hơn rất nhiều so với debugging một pipeline ETL.
+**Sync data giữa hai hệ thống** - pull từ CRM, map field, insert/update. Data thay đổi nhưng cách xử lý không đổi.
 
-Nên câu hỏi thực tế không chỉ là *"Task này có cần AI không?"* mà còn là:
+**Generate test coverage report** - chạy coverage tool, tổng hợp số, render HTML, gửi email. Đầu vào là số, đầu ra là bảng.
 
-> **"Nếu AI sai ở task này thì hậu quả thế nào, và mình có phát hiện được không?"**
+**Dọn branch cũ trên Git** - quét repo, tìm branch đã merge hơn 30 ngày, xóa. Rule rõ ràng.
 
-Nếu hậu quả nghiêm trọng và khó phát hiện — ví dụ tính sai số tiền trong hóa đơn — thì dù task có phức tạp, tôi vẫn nghiêng về dùng logic cứng với validation rõ ràng.
+Những việc này chạy hàng ngày, hàng tuần, hàng tháng. Âm thầm. Ổn định. Không cần "thông minh." Và đó chính là điểm mạnh của chúng.
 
-## Hybrid: Đáp án thực tế
+---
 
-Hầu hết hệ thống production tốt sẽ là **hybrid**. Nhưng "hybrid" không có nghĩa là trộn lẫn lung tung.
+## Những công việc của dao mổ
 
-Cách tôi hay nghĩ: hình dung pipeline như một chuỗi các node, mỗi node là một bước xử lý. Sau đó tự hỏi ở từng node: **"Node này có cần suy luận không?"**
+Ngược lại, có những việc mà chỉ AI Agent mới xử lý được:
 
-Nếu có → dùng AI ở đúng node đó.
-Nếu không → giữ nguyên logic truyền thống.
+**Code review tự động** - mỗi PR có code khác nhau, context khác nhau. Agent đọc diff, hiểu intent, suggest về logic và design smell. Linter chỉ bắt syntax.
 
-**Ví dụ cụ thể:**
+**Root cause analysis từ log** - khi production incident, log dài và lộn xộn. Agent đọc hàng nghìn dòng, correlate giữa services, tìm pattern bất thường.
 
-Một pipeline xử lý đơn hàng có thể gồm 10 bước:
+**Trả lời câu hỏi từ internal knowledge base** - dev mới hỏi "service A gọi service B qua giao thức gì?" Agent tìm trong wiki, Confluence, Slack history và trả lời với context cụ thể.
 
-| Bước | Công việc | Dùng AI? |
-|------|-----------|----------|
-| 1 | Validate input format | Không |
-| 2 | Check inventory | Không |
-| 3 | Calculate price | Không |
-| 4 | **Phân loại yêu cầu đặc biệt của khách** | **Có** |
-| 5 | Apply discount rules | Không |
-| 6 | Update database | Không |
-| 7 | Generate invoice | Không |
-| 8 | **Sinh email phản hồi cá nhân hóa** | **Có** |
-| 9 | Send notification | Không |
-| 10 | Log audit trail | Không |
+**Đánh giá impact của thay đổi database schema** - khi alter table, Agent phân tích codebase xem query nào đang phụ thuộc, đánh giá risk.
 
-8 node là code truyền thống. Chỉ 2 node dùng LLM. **Đừng biến cả pipeline thành một "mega agent."**
+**Phân tích security vulnerability** - khi Dependabot báo CVE, Agent đọc mô tả và check xem codebase có thực sự dùng function bị ảnh hưởng không.
 
-![Pipeline](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+Những việc này đòi hỏi **hiểu ngữ nghĩa**, không chỉ xử lý data. Mỗi lần input khác nhau thì cách xử lý cũng khác. Không thể viết hết if/else.
 
-## Phép thử "Thực tập sinh"
+---
 
-Trước khi quyết định dùng Agent cho một task, tôi hay dùng phép thử này:
+## Pattern: Hybrid đúng cách
 
-> **"Nếu tôi thuê một thực tập sinh thông minh nhưng không biết gì về domain, tôi có thể viết một trang SOP đủ chi tiết để người đó làm đúng 100% không?"**
+Hầu hết hệ thống production tốt sẽ là **hybrid** - như pipeline của Hằng. Nhưng "hybrid" không có nghĩa là trộn lẫn lung tung.
 
-- Nếu **có thể** — đó là job. Viết code đi.
-- Nếu **không thể**, vì task đòi hỏi phán đoán, đọc hiểu ngữ cảnh, hoặc xử lý tình huống chưa từng gặp — đó là chỗ cho Agent.
+Cách tôi hay nghĩ: hình dung pipeline như một chuỗi các bước. Ở từng bước, tự hỏi: **"Bước này có cần suy luận không?"**
 
-Phép thử này nghe đơn giản nhưng lọc được rất nhiều trường hợp mà team cứ tưởng cần AI nhưng thực ra chỉ cần viết rule cẩn thận hơn.
+Nếu có → AI Agent.
+Nếu không → Cron job / code truyền thống.
 
-## 20 ngữ cảnh thực tế để bạn dễ hình dung
+Đừng biến cả pipeline thành một "mega agent." Đắt. Chậm. Khó debug. Và thường không cần thiết.
 
-Lý thuyết thì hay, nhưng đi vào thực tế mới là quan trọng. Dưới đây là 20 ngữ cảnh sát với công việc hàng ngày của developer và QC để bạn dễ hình dung khi nào nên chọn cái gì.
-
-### 10 ngữ cảnh nên dùng AI Agent
-
-**1. Code Review tự động cho Pull Request**
-
-Mỗi PR có code khác nhau, ngữ cảnh khác nhau, convention khác nhau. Agent đọc diff, hiểu intent của thay đổi, rồi suggest: "đoạn này có potential race condition," "naming này không consistent với codebase." Linter chỉ bắt được syntax, còn Agent bắt được logic và design smell.
-
-**2. Phân loại và route bug report từ user**
-
-User report bug bằng ngôn ngữ tự nhiên, mỗi người diễn đạt khác nhau. Có người viết "app bị crash khi bấm nút thanh toán," có người viết "tôi không mua được hàng." Agent đọc hiểu ý, phân loại severity, gán đúng team (payment, UI, backend), và gợi ý ticket liên quan trong Jira.
-
-**3. Sinh test case từ requirement hoặc user story**
-
-Đưa cho Agent một user story kiểu "user có thể filter sản phẩm theo giá, brand, và rating," Agent sinh ra danh sách test case bao gồm cả happy path, edge case, và combination test. Mỗi story khác nhau nên không thể template hóa được.
-
-**4. Root cause analysis từ log**
-
-Khi production gặp incident, log thường rất dài và lộn xộn. Agent đọc hàng nghìn dòng log, correlate giữa các service, nhận ra pattern bất thường, rồi suggest: "request timeout bắt đầu tăng từ 14:32, trùng với lúc deploy service X version 2.3.1, khả năng cao lỗi ở connection pool config."
-
-**5. Viết và cập nhật API documentation**
-
-Code thay đổi liên tục, doc thì luôn outdated. Agent đọc source code, so sánh với doc hiện tại, phát hiện endpoint nào đã thay đổi parameter, response format, rồi tự draft bản cập nhật. Mỗi lần code đổi thì nội dung doc cần viết khác nhau, không template được.
-
-**6. Trả lời câu hỏi kỹ thuật từ internal knowledge base**
-
-Team có wiki, Confluence, Slack history chứa rất nhiều knowledge nhưng tìm thì rất khó. Agent đóng vai trợ lý nội bộ: dev mới hỏi "service A gọi service B qua giao thức gì, authentication như nào?" — Agent tìm trong knowledge base và trả lời với context cụ thể thay vì link một đống tài liệu.
-
-**7. Đánh giá impact của thay đổi database schema**
-
-Khi cần alter table, thêm column, đổi type — Agent phân tích codebase xem những query nào, service nào đang phụ thuộc vào schema này, rồi đánh giá risk. Mỗi lần thay đổi schema khác nhau nên không thể viết rule cố định.
-
-**8. Tự động triage flaky test**
-
-CI/CD có những test lúc pass lúc fail. Agent phân tích lịch sử chạy, đọc test code và log, rồi phân loại: "test này flaky do timing issue," "test này fail vì dependency service không stable," "test này thật sự catch được regression." QC không cần ngồi review từng flaky test nữa.
-
-**9. Sinh mock data thông minh cho testing**
-
-Thay vì viết fixture cứng, Agent đọc hiểu schema và business rule rồi sinh data sát thực tế — bao gồm cả edge case như tên có ký tự đặc biệt, địa chỉ nhiều dòng, số điện thoại format lạ. Mỗi project, mỗi domain cần data kiểu khác nhau.
-
-**10. Phân tích security vulnerability trong dependency**
-
-Khi Dependabot báo có CVE, Agent đọc mô tả CVE, rồi phân tích xem codebase của mình có thực sự dùng đúng function bị ảnh hưởng không, mức độ exploit thế nào trong context cụ thể của project. Thay vì cứ thấy CVE là hoảng, Agent giúp ưu tiên cái nào cần fix gấp, cái nào risk thấp.
-
-![AI Agent Use Cases](https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800)
-
-### 10 ngữ cảnh cron job là đủ
-
-**1. Chạy test suite regression hàng đêm**
-
-Mỗi đêm 2h sáng, trigger full regression test suite trên staging environment. Pass thì ghi log, fail thì gửi Slack notification kèm link report. Luồng cố định, không cần phán đoán gì.
-
-**2. Backup database theo lịch**
-
-Mỗi ngày dump database, nén, upload lên S3, xóa bản backup cũ hơn 30 ngày. Logic hoàn toàn deterministic, chạy hàng trăm lần vẫn y hệt.
-
-**3. Rotate log file và dọn disk**
-
-Mỗi tuần kiểm tra dung lượng log, compress file cũ hơn 7 ngày, xóa file cũ hơn 90 ngày. Nếu disk usage vượt 80% thì alert. Toàn bộ là if/else đơn giản.
-
-**4. Sync data giữa hai hệ thống**
-
-Mỗi giờ pull data từ CRM sang database nội bộ. Map field A sang field B, transform format ngày tháng, insert hoặc update. Data thay đổi nhưng cách xử lý không đổi.
-
-**5. Check SSL certificate expiry**
-
-Mỗi ngày kiểm tra danh sách domain, nếu cert còn dưới 30 ngày thì gửi email cảnh báo cho team DevOps. Logic là so sánh ngày, không có gì mơ hồ.
-
-**6. Generate báo cáo test coverage hàng tuần**
-
-Chạy coverage tool, tổng hợp số liệu theo module, so sánh với tuần trước, render thành HTML report rồi gửi email cho tech lead. Đầu vào là số, đầu ra là bảng, không cần hiểu ngữ nghĩa gì.
-
-**7. Dọn dẹp branch cũ trên Git**
-
-Mỗi tuần quét repo, tìm branch đã merge hơn 30 ngày, tự động xóa. Có thể thêm whitelist cho một số branch quan trọng. Rule rõ ràng, không cần suy luận.
-
-**8. Health check các service và restart nếu cần**
-
-Mỗi 5 phút ping health endpoint của từng service. Nếu 3 lần liên tiếp fail thì restart container và gửi alert. Đây là logic threshold đơn giản.
-
-**9. Refresh token hoặc rotate API key theo lịch**
-
-Mỗi 23 giờ gọi API lấy token mới, update vào secret manager. Hoàn toàn mechanical, không có yếu tố phán đoán.
-
-**10. Chạy database migration check trên staging**
-
-Mỗi khi có deployment mới lên staging, cron job tự chạy migration script, verify schema đúng expected state, rồi báo pass/fail. Luồng tuyến tính, kết quả binary.
-
-### Pattern chung
-
-Nhìn lại hai danh sách, bạn sẽ thấy ranh giới rất rõ:
-
-| | AI Agent | Cron Job |
-|---|----------|----------|
-| **Đầu vào** | Ngôn ngữ tự nhiên, phi cấu trúc | Dữ liệu có cấu trúc, format cố định |
-| **Luồng xử lý** | Phân nhánh theo ngữ nghĩa | Không phân nhánh, tuyến tính |
-| **Kết quả** | Có thể khác nhau mỗi lần | Deterministic |
-| **Test** | Evaluation set | Unit test cho mọi trường hợp |
-
-## Những paper đáng đọc
-
-Nếu bạn muốn đào sâu hơn về mặt học thuật, đây là một số paper quan trọng:
-
-**1. ReAct: Synergizing Reasoning and Acting in Language Models** (Yao et al., ICLR 2023)
-
-Paper định nghĩa mô hình "Thought → Action → Observation" — nền tảng kiến trúc cho mọi AI Agent hiện nay. Nó cho thấy rõ khi nào model chỉ cần suy luận nội bộ (giống job), và khi nào cần tương tác với môi trường bên ngoài.
-
-→ [arxiv.org/abs/2210.03629](https://arxiv.org/abs/2210.03629)
-
-**2. Toolformer: Language Models Can Teach Themselves to Use Tools** (Schick et al., NeurIPS 2023)
-
-Paper từ Meta AI. Model tự học rằng với phép tính đơn giản thì gọi calculator, với thông tin mới thì gọi search — còn những gì đã biết thì không cần tool. Đây chính là phiên bản học thuật của câu hỏi "khi nào dùng Agent, khi nào dùng job."
-
-→ [arxiv.org/abs/2302.04761](https://arxiv.org/abs/2302.04761)
-
-**3. A Survey on Large Language Model based Autonomous Agents** (Wang et al., 2024)
-
-Bài survey toàn diện, phân loại rõ ràng các loại agent và khả năng của chúng (planning, memory, tool use).
-
-→ [arxiv.org/abs/2308.11432](https://arxiv.org/abs/2308.11432)
+---
 
 ## Lời kết
 
-Quay lại buổi review thiết kế đầu bài.
+Quay lại buổi review với Dũng.
 
-Sau khi thảo luận, bạn developer đó quyết định: viết một cái cron job đơn giản. Python script, 80 dòng, chạy mỗi sáng lúc 6h. Không LLM, không Agent, không "intelligent."
+Sau khi thảo luận, Dũng quyết định viết cron job. 80 dòng Python. Chạy lúc 6h sáng. Không drama.
 
-Kết quả? Chạy ổn định 3 tháng nay. Không bug. Không cần maintain. Cost gần như bằng 0.
+Một tháng sau, Dũng lại đề xuất dùng AI Agent - nhưng lần này cho việc khác: **tự động tóm tắt và categorize feedback từ user survey**. Mỗi survey response viết khác nhau. Sentiment khác nhau. Topic khác nhau.
 
-Đó không phải là "old-school." Đó là **biết dùng đúng công cụ cho đúng việc.**
+Lần này team approve ngay. Vì đó là **đúng việc cho đúng tool**.
 
-AI Agent là công cụ mạnh. Nhưng công cụ mạnh nhất không phải là công cụ dùng được mọi nơi — mà là công cụ **được dùng đúng chỗ.**
+Dao mổ không tốt hơn dao gọt táo. Dao gọt táo không tốt hơn dao mổ. **Chúng tốt ở những việc khác nhau.**
 
-Lần tới khi bạn chuẩn bị đề xuất dùng AI Agent, hãy dừng lại một giây và tự hỏi: *"Một cái cron job có đủ không?"*
+AI Agent là công cụ mạnh. Nhưng công cụ mạnh nhất không phải là công cụ dùng được mọi nơi - mà là công cụ **được dùng đúng chỗ.**
 
-Đôi khi câu trả lời đơn giản nhất lại là câu trả lời đúng nhất.
+Lần tới khi bạn chuẩn bị đề xuất dùng AI Agent, hãy dừng lại một giây và tự hỏi:
 
-*Keep it simple. Keep it working.*
+*"Mình đang cầm dao mổ. Nhưng việc này... có cần mổ không?"*
+
+---
+
+*Đôi khi câu trả lời đơn giản nhất lại là câu trả lời đúng nhất.*

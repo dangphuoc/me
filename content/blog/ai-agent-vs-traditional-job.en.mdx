@@ -1,9 +1,9 @@
 ---
-title: "Don't Use AI For Tasks That Cron Jobs Do Better"
-title_vi: "Đừng Dùng AI Cho Việc Mà Cron Job Làm Tốt Hơn"
-title_en: "Don't Use AI For Tasks That Cron Jobs Do Better"
-excerpt_vi: "Khi nào dùng AI Agent, khi nào chỉ cần một cái cron job? Câu hỏi tưởng đơn giản nhưng đang khiến nhiều team đi sai hướng. Đây là cách tôi phân biệt."
-excerpt_en: "When to use AI Agent, when a simple cron job is enough? A seemingly simple question that's leading many teams astray. Here's how I tell the difference."
+title: "Don't Use a Scalpel to Peel an Apple"
+title_vi: "Đừng Dùng Dao Mổ Để Gọt Táo"
+title_en: "Don't Use a Scalpel to Peel an Apple"
+excerpt_vi: "AI Agent là con dao mổ sắc bén. Cron job là con dao gọt hoa quả. Cả hai đều cắt được. Nhưng dùng sai chỗ thì một cái phí tiền, một cái mất mạng."
+excerpt_en: "AI Agent is a sharp scalpel. Cron job is a fruit knife. Both can cut. But use them wrong and one wastes money, the other costs lives."
 date: 2026-02-15
 tags:
   - AI
@@ -13,280 +13,235 @@ tags:
 thumbnail: https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800
 ---
 
-# Don't Use AI For Tasks That Cron Jobs Do Better
+In the operating room, a surgeon holds a scalpel, cutting through layers of skin with precision. One millimeter off and you sever an artery. Hit the right spot and you save a life.
 
-## It started in a design review
+In the kitchen, a chef holds a paring knife, peeling skin from fruit. Quick. Simple. No millimeter precision needed.
 
-Last week, during a design review session, a developer presented a solution for what seemed like a simple task: **every morning, aggregate sprint metrics from Jira, CI/CD status from Jenkins, then post a summary to Google Chat for the team.**
+Both are knives. Both cut. But would you use a scalpel to peel an apple?
 
-They proposed using an AI Agent.
+Nobody does that. Because it's **wasteful**. Because it's **unnecessary**. Because a $2 paring knife does the same job as a $200 surgical blade.
 
-"The Agent will read data from various sources, analyze whether the sprint is healthy, then write a summary with intelligent insights."
+Yet in the software world, I see people doing this **every day**.
 
-Sounds great. Very "2026." But my "over-engineering" radar started beeping.
+---
 
-I asked: "Do the metrics ever change? Today velocity, tomorrow cycle time?"
+## "I want to use an AI Agent"
 
-"No, always: tickets done, tickets in progress, blocked tickets, build status."
+Last Tuesday. Design review meeting.
+
+Dung - a fairly senior dev on our team - was presenting his solution for what seemed like a simple task: **every morning, aggregate sprint metrics from Jira, get CI/CD status from Jenkins, then post a summary to Google Chat for the team.**
+
+"I'll use an AI Agent," Dung said confidently.
+
+I raised an eyebrow. "AI Agent?"
+
+"Yes. The Agent will read data from various sources, analyze whether the sprint is healthy, then write a summary with intelligent insights. Like a bot that can think."
+
+Sounds great. Very "2026". The whole team nodded along.
+
+But something felt off.
+
+"Do the metrics change?" I asked. "Today velocity, tomorrow cycle time?"
+
+"No. Always: tickets done, tickets in progress, blocked tickets, build status."
 
 "Does the aggregation method change?"
 
-"No, always count and list them."
+"No. Always just count and list."
 
-"So... why do we need an AI Agent?"
+"So... why do you need an AI Agent?"
 
 Silence.
 
-![Thinking](https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800)
+Dung looked at me. I looked at Dung. The whole team looked at each other.
 
-## The new hammer and everything becomes a nail
+That was the moment I realized: **Dung was holding a scalpel to peel an apple.**
 
-This wasn't the first time I'd seen this. Ever since ChatGPT exploded, "AI Agent" became the buzzword. Every proposal tries to squeeze AI in. Every solution has "intelligent" or "autonomous" in it.
+---
 
-The psychology is understandable: **fear of being left behind.** If you're not using AI, you seem "old-school." If you're still writing cron jobs like 10 years ago, you seem out of touch with trends.
+## When scalpels become trendy
 
-But what I've observed in practice is the opposite: **the strongest teams aren't the ones using the most AI, but the ones who know where to place AI.**
+Ever since ChatGPT exploded, "AI Agent" has become a magic keyword. Every proposal tries to squeeze AI in. Every solution has the word "intelligent" or "autonomous."
 
-A cron job querying Jira API and Jenkins API every morning, formatting into a fixed message, posting to Chat — **there's no reason to call an LLM.** Higher cost. Higher latency. Non-deterministic output. And debugging? Good luck.
+I understand this mindset. **Fear of being left behind.**
 
-## So where's the line?
+If you don't use AI, you seem to be coding "old-school." If you're still writing cron jobs like 10 years ago, you seem behind the trends. In interviews, saying "I wrote cron jobs" sounds far less sexy than "I built AI Agents."
 
-After wrestling with this question many times, I realized the boundary isn't about technology. **It's about the nature of uncertainty in the task.**
+But what I've observed is the complete opposite.
 
-And there are two very different types of uncertainty that people often confuse.
+**The strongest teams aren't the ones using the most AI. They're the ones who know when NOT to use AI.**
 
-### Type 1: Uncertainty in data
+A cron job that queries Jira API and Jenkins API every morning, formats into a fixed message template, posts to Chat - **there's no reason to call an LLM at all.**
 
-Data changes, but **the processing logic doesn't.**
+Higher cost. Higher latency. Non-deterministic output - today it writes one way, tomorrow another. And debugging... good luck.
 
-Example: daily ticket count varies. Today 5 tickets done, tomorrow 20 tickets. Build failed 3 times today, zero yesterday. Data "fluctuates." But the way you aggregate stays the same: count tickets by status, list blocked items, show build status.
+---
 
-Many people see "multiple sources" and think they need AI. **But multiple sources doesn't mean ambiguous.** Even pulling from 10 different APIs, if the processing is deterministic, traditional jobs are enough.
+## Three stories about knives
 
-### Type 2: Uncertainty in processing logic
+To understand the boundary between AI Agent and cron job, let me tell three real stories from our team.
 
-You **can't know the next step** until you see the result of the current step. And the number of cases is too large to write rules for.
+### Story 1: Khanh and the right scalpel
 
-Example: reading a customer complaint email, then deciding whether to:
-- Apologize and explain the policy?
-- Offer a refund?
-- Transfer to technical support?
-- Or escalate to a manager?
+Khanh is our QC lead. She had a pain point: every week she had to read hundreds of bug reports from users to classify severity and assign to the right team.
 
-Each email is written differently. Different customer moods. Different issues. You **can't write if/else for every situation.** This is Agent territory.
+Khanh proposed: "How about we build an AI Agent to auto-classify bugs?"
 
-![Decision](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+Makes sense. Users report bugs in natural language, everyone expresses differently. Someone writes "app crashes when I tap the payment button," someone else writes "I can't buy anything." Agent reads, understands intent, classifies severity, assigns to the right team.
 
-> **Remember:** Jobs handle structured variation. Agents handle unstructured ambiguity.
+Team spent 3 weeks building. LangChain, prompt engineering, evaluation sets, a complete system.
 
-## Three questions I always ask
+Result? **Worked beautifully.**
 
-Before deciding whether to use AI, I usually ask myself three questions:
+92% accuracy. Classification time dropped from 2 hours/week to 15 minutes of review. Khanh happy. Team happy.
 
-**Question 1: "Can I write all the rules with if/else?"**
+This is **using a scalpel for surgery**. Right tool, right job.
 
-If yes — use a job. If/else is cheaper, faster, and much easier to debug than calling an LLM. Don't let ego about "modern tech" cloud common sense.
+### Story 2: Dung and the scalpel peeling apples
 
-**Question 2: "Is the input natural language or unstructured data?"**
+Back to Dung and his sprint metrics bot.
 
-If the input is free-form text, images, diverse documents that require **understanding content** — AI Agent makes sense. If the input is JSON, CSV, pre-structured data — a job is usually enough.
+After the review, Dung rewrote it as a cron job. Python script, 80 lines. Runs every morning at 6am. Queries Jira API, queries Jenkins API, formats into a fixed message template, posts to Google Chat.
 
-**Question 3: "Does it need flexible decisions mid-process?"**
+No LLM. No Agent. No "intelligent."
 
-Agents are powerful because they can decide on their own: *"This data is incomplete, let me call another API to fill in"* or *"This case is exceptional, I'll handle it differently."* Traditional jobs require you to define all branches upfront.
+Result? **Running stable for 4 months now.** No bugs. No maintenance needed. Cost nearly zero.
 
-## A perspective rarely discussed: Cost of failure
+What if Dung had used an AI Agent as originally planned?
 
-There's one factor I find papers and blog posts rarely mention: **the cost when the system fails.**
+Daily LLM costs. Inconsistent output - today it writes "Sprint is healthy," tomorrow "Team is doing well," next day "Velocity is stable." Same data but different messages, making it hard for the team to compare trends.
 
-When a traditional job fails, you know where it failed because the flow is deterministic. Look at logs, trace, then fix. It might take hours, but you **know the path.**
+This is **almost using a scalpel to peel an apple**. Good thing he stopped in time.
 
-When an Agent fails, sometimes you **don't know why it failed**. The same input can produce different outputs each run. Debugging a non-deterministic system is much harder than debugging an ETL pipeline.
+### Story 3: Hang and two knives in the right places
 
-So the practical question isn't just *"Does this task need AI?"* but also:
+Hang is the tech lead for our platform team. She had a more complex problem: **processing e-commerce orders**.
 
-> **"If AI fails at this task, what are the consequences, and can I detect it?"**
+Pipeline has 10 steps: validate input, check inventory, calculate price, classify special customer requests, apply discount, update database, generate invoice, write response email, send notification, log audit.
 
-If consequences are severe and hard to detect — like miscalculating invoice amounts — then even if the task is complex, I lean toward hard-coded logic with clear validation.
+Hang didn't pick one tool for everything. She **broke it down and chose the right knife for each task.**
 
-## Hybrid: The practical answer
+First 8 steps? Cron job and traditional code. Validate input with if/else. Check inventory with database queries. Calculate price with fixed formulas. Deterministic. Testable. Reliable.
 
-Most good production systems will be **hybrid**. But "hybrid" doesn't mean mixing things randomly.
+Remaining 2 steps? AI Agent.
 
-How I think about it: imagine the pipeline as a chain of nodes, each node being a processing step. Then ask at each node: **"Does this node need reasoning?"**
+**Classify special customer requests** - because customers write in natural language, everyone different. "Deliver before 5pm please," "Ship to my mom's place in the countryside," "Package carefully, it's a gift." Can't write if/else for all of these.
 
-If yes → use AI at that specific node.
-If no → keep traditional logic.
+**Write personalized response emails** - because each order needs a different email based on context, not a rigid template.
 
-**Concrete example:**
+Result? Pipeline runs smoothly. AI costs focused only on the 2 nodes that actually need it. The other 8 nodes are cheap, fast, and easy to debug.
 
-An order processing pipeline might have 10 steps:
+This is **knowing when you need a scalpel, when you need a paring knife**.
 
-| Step | Task | Use AI? |
-|------|------|---------|
-| 1 | Validate input format | No |
-| 2 | Check inventory | No |
-| 3 | Calculate price | No |
-| 4 | **Classify special customer requests** | **Yes** |
-| 5 | Apply discount rules | No |
-| 6 | Update database | No |
-| 7 | Generate invoice | No |
-| 8 | **Generate personalized response email** | **Yes** |
-| 9 | Send notification | No |
-| 10 | Log audit trail | No |
+---
 
-8 nodes are traditional code. Only 2 nodes use LLM. **Don't turn the entire pipeline into a "mega agent."**
+## So where's the boundary?
 
-![Pipeline](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+After wrestling with this question many times, I realized the boundary isn't about task complexity. Not about the number of data sources. Not about whether the task is "important."
 
-## The "Intern Test"
+**The boundary is about the nature of ambiguity.**
 
-Before deciding to use an Agent for a task, I often use this test:
+Imagine you hire a smart intern who knows nothing about the domain.
 
-> **"If I hired a smart intern who knows nothing about the domain, could I write a one-page SOP detailed enough for them to do it correctly 100% of the time?"**
+**If you can write a one-page SOP detailed enough for them to do it 100% correctly** - that's a cron job's work. Write the code. If/else is cheaper, faster, much easier to debug.
 
-- If **yes** — it's a job. Write the code.
-- If **no**, because the task requires judgment, context understanding, or handling situations never seen before — that's where Agent belongs.
+**If you can't write an SOP** because the task requires judgment, contextual understanding, or handling situations never seen before - that's where AI Agent belongs.
 
-This test sounds simple but filters out many cases where teams think they need AI but actually just need to write rules more carefully.
+Example with Dung's task: "Every morning, query Jira API for ticket counts by status, query Jenkins for build status, format according to this template, post to this channel." An intern could read this and do it 100% correctly. **Cron job.**
 
-## 20 Real-World Scenarios to Help You Decide
+Example with Khanh's task: "Read bug reports from users, understand what problem they're facing, assess severity, assign to the appropriate team." Every report is different. Can't write an SOP for every case. **AI Agent.**
 
-Theory is great, but practical application matters. Here are 20 scenarios close to daily developer and QC work to help you visualize when to choose what.
+---
 
-### 10 Scenarios Where AI Agent Makes Sense
+## The thing few mention: When the scalpel cuts wrong
 
-**1. Automated Code Review for Pull Requests**
+There's one factor that AI blog posts rarely discuss: **the cost when the system fails.**
 
-Each PR has different code, different context, different conventions. Agent reads the diff, understands the intent of changes, then suggests: "this section has a potential race condition," "this naming isn't consistent with the codebase." Linters only catch syntax, while Agents catch logic and design smells.
+When a cron job fails, you know where it failed. The flow is deterministic. Check logs, trace, fix. Might take a few hours, but you **know the path.**
 
-**2. Classifying and Routing Bug Reports from Users**
+When an AI Agent fails, sometimes you **don't know why it failed**. The same input can produce different outputs each run. Debugging a non-deterministic system is much harder.
 
-Users report bugs in natural language, each expressing differently. One writes "app crashes when clicking the payment button," another writes "I can't buy anything." Agent understands the meaning, classifies severity, assigns to the right team (payment, UI, backend), and suggests related Jira tickets.
+Last week the payment team had an incident. An AI Agent classifying transactions suddenly flagged some as "suspicious" when nothing was abnormal. Finding the cause took 2 days because there were no clear logs explaining why the model decided that way.
 
-**3. Generating Test Cases from Requirements or User Stories**
+If it had been a rule-based system with if/else, debugging would have taken maybe 2 hours.
 
-Give the Agent a user story like "user can filter products by price, brand, and rating," Agent generates a list of test cases including happy paths, edge cases, and combination tests. Each story is different, so it can't be templated.
+So the question isn't just "Does this task need AI?" but also:
 
-**4. Root Cause Analysis from Logs**
+**"If AI fails on this task, what are the consequences, and can we detect it?"**
 
-When production faces an incident, logs are usually long and messy. Agent reads thousands of log lines, correlates between services, recognizes abnormal patterns, then suggests: "request timeout started increasing at 14:32, coinciding with service X version 2.3.1 deployment, likely issue in connection pool config."
+If consequences are severe and hard to detect - like calculating the wrong amount on an invoice - then even if the task seems complex, I lean toward hard logic with clear validation.
 
-**5. Writing and Updating API Documentation**
+---
 
-Code changes constantly, docs are always outdated. Agent reads source code, compares with current docs, detects which endpoints have changed parameters or response format, then drafts updates. Each code change requires different doc content, can't be templated.
+## Jobs for the paring knife
 
-**6. Answering Technical Questions from Internal Knowledge Base**
+On our team, there are many tasks where cron jobs beat AI Agents:
 
-Teams have wikis, Confluence, Slack history with lots of knowledge but hard to search. Agent acts as internal assistant: new dev asks "how does service A call service B, what protocol, what authentication?" — Agent searches the knowledge base and answers with specific context instead of linking piles of documents.
+**Database backup every night** - dump, compress, upload to S3, delete old backups. Completely deterministic logic.
 
-**7. Assessing Impact of Database Schema Changes**
+**Rotate log files and clean disk** - check disk space, compress old files, delete expired ones. All if/else.
 
-When you need to alter table, add column, change type — Agent analyzes the codebase to see which queries, which services depend on this schema, then assesses risk. Each schema change is different, so you can't write fixed rules.
+**Service health checks** - ping endpoints every 5 minutes, 3 consecutive fails triggers restart and alert. Simple thresholds.
 
-**8. Auto-Triaging Flaky Tests**
+**Sync data between two systems** - pull from CRM, map fields, insert/update. Data changes but processing method doesn't.
 
-CI/CD has tests that sometimes pass, sometimes fail. Agent analyzes run history, reads test code and logs, then classifies: "this test is flaky due to timing issue," "this test fails because dependency service isn't stable," "this test actually caught a regression." QC doesn't need to review each flaky test anymore.
+**Generate test coverage reports** - run coverage tool, aggregate numbers, render HTML, send email. Input is numbers, output is tables.
 
-**9. Generating Smart Mock Data for Testing**
+**Clean old Git branches** - scan repos, find branches merged over 30 days ago, delete. Clear rules.
 
-Instead of writing fixed fixtures, Agent understands schema and business rules then generates realistic data — including edge cases like names with special characters, multi-line addresses, unusual phone formats. Each project, each domain needs different data types.
+These tasks run daily, weekly, monthly. Silently. Stably. No "intelligence" needed. And that's exactly their strength.
 
-**10. Analyzing Security Vulnerabilities in Dependencies**
+---
 
-When Dependabot reports a CVE, Agent reads the CVE description, then analyzes whether your codebase actually uses the affected function, what the exploit risk is in your specific project context. Instead of panicking at every CVE, Agent helps prioritize what needs urgent fixing and what's low risk.
+## Jobs for the scalpel
 
-![AI Agent Use Cases](https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=800)
+Conversely, there are tasks only AI Agents can handle:
 
-### 10 Scenarios Where Cron Job is Enough
+**Automated code review** - every PR has different code, different context. Agent reads diffs, understands intent, suggests about logic and design smells. Linters only catch syntax.
 
-**1. Running Nightly Regression Test Suite**
+**Root cause analysis from logs** - during production incidents, logs are long and messy. Agent reads thousands of lines, correlates between services, finds abnormal patterns.
 
-Every night at 2am, trigger full regression test suite on staging environment. Pass then log, fail then send Slack notification with report link. Fixed flow, no judgment needed.
+**Answering questions from internal knowledge base** - new dev asks "what protocol does service A use to call service B?" Agent searches wiki, Confluence, Slack history and answers with specific context.
 
-**2. Scheduled Database Backup**
+**Assessing impact of database schema changes** - when altering tables, Agent analyzes codebase to see which queries depend on this schema, assesses risk.
 
-Every day dump database, compress, upload to S3, delete backups older than 30 days. Completely deterministic logic, runs hundreds of times identically.
+**Analyzing security vulnerabilities** - when Dependabot reports a CVE, Agent reads the description and checks if our codebase actually uses the affected function.
 
-**3. Log File Rotation and Disk Cleanup**
+These tasks require **understanding semantics**, not just processing data. Each different input needs different processing. Can't write all the if/else.
 
-Every week check log size, compress files older than 7 days, delete files older than 90 days. If disk usage exceeds 80% then alert. All simple if/else.
+---
 
-**4. Data Sync Between Two Systems**
+## Pattern: Hybrid done right
 
-Every hour pull data from CRM to internal database. Map field A to field B, transform date format, insert or update. Data changes but processing method doesn't.
+Most good production systems will be **hybrid** - like Hang's pipeline. But "hybrid" doesn't mean mixing randomly.
 
-**5. SSL Certificate Expiry Check**
+How I think about it: envision the pipeline as a series of steps. At each step, ask: **"Does this step require reasoning?"**
 
-Every day check domain list, if cert expires in under 30 days send warning email to DevOps team. Logic is date comparison, nothing ambiguous.
+If yes → AI Agent.
+If no → Cron job / traditional code.
 
-**6. Weekly Test Coverage Report Generation**
+Don't turn the whole pipeline into one "mega agent." Expensive. Slow. Hard to debug. And usually unnecessary.
 
-Run coverage tool, aggregate metrics by module, compare with last week, render to HTML report then email to tech lead. Input is numbers, output is tables, no semantic understanding needed.
-
-**7. Cleaning Up Old Git Branches**
-
-Every week scan repo, find branches merged over 30 days ago, auto-delete. Can add whitelist for important branches. Clear rules, no reasoning needed.
-
-**8. Service Health Check and Restart if Needed**
-
-Every 5 minutes ping health endpoint of each service. If 3 consecutive fails then restart container and send alert. Simple threshold logic.
-
-**9. Token Refresh or API Key Rotation on Schedule**
-
-Every 23 hours call API to get new token, update in secret manager. Completely mechanical, no judgment element.
-
-**10. Database Migration Check on Staging**
-
-Every time there's a new deployment to staging, cron job runs migration script, verifies schema matches expected state, reports pass/fail. Linear flow, binary result.
-
-### Common Pattern
-
-Looking at both lists, you'll see the boundary clearly:
-
-| | AI Agent | Cron Job |
-|---|----------|----------|
-| **Input** | Natural language, unstructured | Structured data, fixed format |
-| **Processing flow** | Branches based on semantics | No branching, linear |
-| **Result** | May differ each run | Deterministic |
-| **Testing** | Evaluation set | Unit test for all cases |
-
-## Papers worth reading
-
-If you want to dig deeper academically, here are some important papers:
-
-**1. ReAct: Synergizing Reasoning and Acting in Language Models** (Yao et al., ICLR 2023)
-
-This paper defines the "Thought → Action → Observation" model — the architectural foundation for all AI Agents today. It clearly shows when a model only needs internal reasoning (like a job), and when it needs to interact with the external environment.
-
-→ [arxiv.org/abs/2210.03629](https://arxiv.org/abs/2210.03629)
-
-**2. Toolformer: Language Models Can Teach Themselves to Use Tools** (Schick et al., NeurIPS 2023)
-
-Paper from Meta AI. The model learns that for simple calculations it calls a calculator, for new information it calls search — and for things it already knows, no tool needed. This is the academic version of the question "when to use Agent, when to use job."
-
-→ [arxiv.org/abs/2302.04761](https://arxiv.org/abs/2302.04761)
-
-**3. A Survey on Large Language Model based Autonomous Agents** (Wang et al., 2024)
-
-A comprehensive survey that clearly categorizes types of agents and their capabilities (planning, memory, tool use).
-
-→ [arxiv.org/abs/2308.11432](https://arxiv.org/abs/2308.11432)
+---
 
 ## Closing thoughts
 
-Back to the design review at the beginning.
+Back to the review meeting with Dung.
 
-After discussion, the developer decided: write a simple cron job. Python script, 80 lines, runs every morning at 6am. No LLM, no Agent, no "intelligent."
+After discussing, Dung decided to write a cron job. 80 lines of Python. Runs at 6am. No drama.
 
-Result? Running stable for 3 months now. No bugs. No maintenance needed. Cost nearly zero.
+A month later, Dung proposed using an AI Agent again - but this time for something else: **automatically summarizing and categorizing feedback from user surveys**. Every survey response is written differently. Different sentiments. Different topics.
 
-That's not "old-school." That's **using the right tool for the right job.**
+This time the team approved immediately. Because that was **the right job for the right tool**.
 
-AI Agent is a powerful tool. But the most powerful tool isn't one that works everywhere — it's one that's **used in the right place.**
+A scalpel isn't better than a paring knife. A paring knife isn't better than a scalpel. **They're good at different things.**
 
-Next time you're about to propose using an AI Agent, pause for a second and ask yourself: *"Would a cron job be enough?"*
+AI Agent is a powerful tool. But the most powerful tool isn't the one that can be used everywhere - it's the one **used in the right place.**
 
-Sometimes the simplest answer is the right answer.
+Next time you're about to propose using an AI Agent, pause for a second and ask yourself:
 
-*Keep it simple. Keep it working.*
+*"I'm holding a scalpel. But does this job... actually need surgery?"*
+
+---
+
+*Sometimes the simplest answer is the right answer.*
