@@ -32,6 +32,37 @@ Good question. And the answer is more complex than Minh thought.
 
 ---
 
+## The big picture: Generative AI
+
+Before diving deep, let's step back and look at the big picture.
+
+AI splits into two major branches:
+
+**Discriminative AI** - AI that recognizes, classifies. Takes input, classifies or predicts. This is the "old" AI, been around for a while.
+
+Real examples you encounter daily:
+- Unlock your phone with your face → AI recognizes that's you
+- Gmail automatically filters spam → AI classifies emails
+- YouTube recommends videos → AI predicts what you'll like
+- Uber/Grab calculates fare → AI predicts time and distance
+
+**Generative AI** - AI that creates. Takes input, **creates something new**. This is what's exploding now.
+
+And within Generative AI, there are many branches:
+- **Gen text** → LLM (Claude, ChatGPT) - write emails, code, answer questions
+- **Gen images** → Diffusion Model (Midjourney, DALL-E) - create posters, avatars, concept art
+- **Gen video** → Video Diffusion (Sora, Veo3) - create ads, TikTok clips
+- **Gen audio** → (ElevenLabs, Suno) - clone voices, create music
+- **Gen code** → also LLM - write functions, debug, refactor
+
+**ChatGPT, Claude, Midjourney, Sora - all are Generative AI.** They're siblings in the same family.
+
+LLM is just the most famous child, specializing in text. But Generative AI existed before LLM - GAN generating faces since 2014 was already Generative AI.
+
+Understanding this helps you see: everything exploding at once isn't coincidence. They're from the same family.
+
+---
+
 ## Before ChatGPT
 
 To understand why everything exploded at once, we need to rewind a bit.
@@ -40,9 +71,13 @@ In 2014, a new technique was born: **GAN** (Generative Adversarial Network). The
 
 GAN could generate human faces. But there was a big problem: **you couldn't tell it what you wanted**.
 
-Want "a blonde girl in a red dress"? Not possible. GAN didn't understand language. You had to adjust technical parameters or give it reference images. Very hard for regular people to use.
+Imagine hiring a deaf-mute painter. They paint beautifully, but you can't tell them "paint me a blonde girl in a red dress." You can only gesture with your hands, or show them reference images. Very hard to communicate.
 
-And the quality? Oh boy. Faces would get distorted. Extra teeth. Wrong fingers. Chaotic backgrounds. A few seconds of looking and you'd know it was fake.
+GAN was the same. Didn't understand language. Had to adjust technical parameters to get different results. Only tech people could use it.
+
+And the quality? Oh boy. You can Google "GAN face fail" to see. Distorted faces. Extra teeth or missing teeth. Eyes looking in different directions. Sometimes 6 fingers, sometimes 4. A few seconds of looking and you'd know it was fake.
+
+That's why you didn't see "AI images" going viral before 2022. It wasn't good enough yet.
 
 That was the world of AI image generation before 2021.
 
@@ -58,9 +93,11 @@ Imagine you have a translator. This person can look at an image and describe it 
 
 CLIP is that translator. It was trained on hundreds of millions of image-text pairs from the internet. See a beach photo, it knows that's "beach." Hear the word "sunset," it knows what that scene looks like.
 
+Think of CLIP like Google Translate, but instead of translating English to Vietnamese, it translates between "human language" and "pixel language." When you type "girl in red dress standing in rain," CLIP converts that sentence into a numeric form - a vector - that image generation models can understand.
+
 And CLIP was built on **Transformer** - the same architecture as GPT, Claude, and every modern LLM.
 
-This is the most important piece of the puzzle.
+This is the most important piece of the puzzle. It explains why advances in LLM also pull advances in image generation - they share the same "engine."
 
 ---
 
@@ -146,6 +183,14 @@ Sora. Veo3. Runway. Kling.
 
 Videos tens of seconds long. Smooth motion. Natural lighting. Accurate physics. And now - perfect lip-sync with voice.
 
+Where have you already seen AI video without knowing?
+- Short ads on Facebook/Instagram - many are now 100% AI-made
+- TikTok videos with "turn yourself into anime character" effects
+- Product review clips with virtual models
+- Music videos with MVs that no one actually filmed
+
+Things that used to require an entire film crew can now be done by one person with a laptop.
+
 Fundamentally, video generation is image generation extended with the time dimension.
 
 Instead of denoising into 1 image, the model denoises into a sequence of many consecutive frames. Instead of just learning "what beautiful images look like," the model must also learn "what natural movement looks like."
@@ -172,6 +217,10 @@ Looking back:
 
 **2025:** Veo3 released. Video with natural voice. Accurate lip-sync. Vivid facial expressions. Nearly indistinguishable from real.
 
+To put it in perspective: from "what is that, the hands are all messed up" to "wait, is this a real person or AI?" took only 3 years.
+
+Three years. The length of a college degree. The time to pay off a motorbike loan. And technology jumped from meme material to masterpiece.
+
 One leap every year. And the pace seems to be accelerating, not slowing.
 
 ![Technology evolution](https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800)
@@ -190,6 +239,8 @@ No one could answer that question.
 
 On one hand, the barrier to creation is nearly zero now. Before, making an ad clip required filming, actors, post-production - tens of thousands of dollars. Now one person sitting at home writing prompts can produce high-quality video.
 
+Online seller who doesn't know design? Now can create product posters in 30 seconds. Startup without marketing budget? Now can make ad videos without hiring an agency. Individual wanting to start YouTube? Now can create professional thumbnails without learning Photoshop.
+
 On the other hand, when everyone can do it, content floods everywhere. "Oversaturated" as Truong would say. Most of it looks the same. Lacking real creativity.
 
 And other issues:
@@ -206,6 +257,10 @@ Technology isn't good or bad. It's just a tool. But this tool is changing a lot 
 There's a trend forming: **multimodal**.
 
 GPT-4o can chat and generate images. Gemini understands text, images, video, audio. Claude can analyze images.
+
+Imagine this scenario: you chat with AI, say "create an ad video for my coffee shop." AI asks back "what style?" You snap a photo of your shop and send it. AI looks at the photo, understands the vintage aesthetic, then creates a video with soft jazz background music, with a voiceover describing the shop. All in one conversation.
+
+That's not distant future. GPT-4o already does part of it. Gemini 2.0 is getting closer.
 
 The boundary between LLM and image/video generation is blurring. The future might be a single model that does everything: understand language, create images, create video, create audio, interact in realtime.
 

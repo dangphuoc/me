@@ -32,6 +32,37 @@ Câu hỏi hay. Và câu trả lời phức tạp hơn Minh nghĩ.
 
 ---
 
+## Bức tranh toàn cảnh: Generative AI
+
+Trước khi đi sâu, hãy lùi lại nhìn bức tranh lớn.
+
+AI chia làm hai nhánh lớn:
+
+**Discriminative AI** - AI phân biệt, nhận dạng. Nhận input, phân loại hoặc dự đoán. Đây là mảng AI "cũ," đã có từ lâu.
+
+Ví dụ thực tế bạn gặp hàng ngày:
+- Mở điện thoại bằng khuôn mặt → AI nhận diện đó là bạn
+- Gmail tự động lọc spam → AI phân loại email
+- YouTube đề xuất video → AI dự đoán bạn thích gì
+- Grab tính giá cước → AI dự đoán thời gian và khoảng cách
+
+**Generative AI** - AI tạo sinh. Nhận input, **tạo ra thứ mới**. Đây là mảng đang bùng nổ.
+
+Và bên trong Generative AI, có nhiều nhánh con:
+- **Gen text** → LLM (Claude, ChatGPT) - viết email, code, trả lời câu hỏi
+- **Gen ảnh** → Diffusion Model (Midjourney, DALL-E) - tạo poster, avatar, concept art
+- **Gen video** → Video Diffusion (Sora, Veo3) - tạo quảng cáo, clip TikTok
+- **Gen âm thanh** → (ElevenLabs, Suno) - clone giọng nói, tạo nhạc
+- **Gen code** → cũng là LLM - viết function, debug, refactor
+
+**ChatGPT, Claude, Midjourney, Sora - tất cả đều là Generative AI.** Chúng là anh em trong cùng một gia đình.
+
+LLM chỉ là đứa con nổi tiếng nhất, chuyên về text. Còn Generative AI đã tồn tại từ trước LLM - GAN gen mặt người từ 2014 cũng là Generative AI rồi.
+
+Hiểu điều này giúp bạn thấy: mọi thứ bùng nổ cùng lúc không phải ngẫu nhiên. Chúng cùng một nhà.
+
+---
+
 ## Trước khi có ChatGPT
 
 Để hiểu tại sao mọi thứ bùng nổ cùng lúc, cần quay ngược thời gian một chút.
@@ -40,9 +71,13 @@ Năm 2014, một kỹ thuật mới ra đời: **GAN** (Generative Adversarial N
 
 GAN có thể tạo ra mặt người. Nhưng có một vấn đề lớn: **bạn không thể nói với nó bạn muốn gì**.
 
-Muốn "cô gái tóc vàng mặc áo đỏ"? Không được. GAN không hiểu ngôn ngữ. Bạn phải điều chỉnh bằng các tham số kỹ thuật, hoặc cho nó ảnh mẫu. Rất khó dùng cho người thường.
+Hãy tưởng tượng bạn thuê một họa sĩ câm điếc. Anh ta vẽ rất đẹp, nhưng bạn không thể nói "vẽ cho tôi cô gái tóc vàng mặc áo đỏ." Bạn chỉ có thể ra hiệu bằng tay, hoặc đưa ảnh mẫu. Rất khó giao tiếp.
 
-Và chất lượng? Ôi. Mặt người hay bị méo. Răng thừa. Ngón tay sai. Nền loạn xạ. Nhìn vài giây là biết giả ngay.
+GAN cũng vậy. Không hiểu ngôn ngữ. Muốn điều chỉnh phải dùng tham số kỹ thuật. Chỉ dân tech mới dùng được.
+
+Và chất lượng? Ôi. Bạn có thể Google "GAN face fail" để xem. Mặt người méo mó. Răng thừa răng thiếu. Hai mắt nhìn hai hướng. Ngón tay có khi 6, có khi 4. Nhìn vài giây là biết giả ngay.
+
+Đó là lý do bạn không thấy "ảnh AI" viral trước 2022. Nó chưa đủ tốt.
 
 Đó là thế giới gen ảnh AI trước năm 2021.
 
@@ -58,9 +93,11 @@ Hãy tưởng tượng bạn có một người phiên dịch. Người này có
 
 CLIP chính là người phiên dịch đó. Nó được train trên hàng trăm triệu cặp ảnh-text từ internet. Nhìn ảnh bãi biển, nó biết đó là "beach." Nghe từ "sunset," nó biết hình dung ra khung cảnh hoàng hôn.
 
+Bạn có thể hình dung CLIP như Google dịch, nhưng thay vì dịch Việt-Anh, nó dịch giữa "ngôn ngữ của con người" và "ngôn ngữ của pixel." Khi bạn gõ "cô gái mặc áo đỏ đứng trong mưa," CLIP chuyển câu đó thành một dạng mã số - vector - mà các model tạo ảnh có thể hiểu.
+
 Và CLIP được xây dựng trên **Transformer** - cùng kiến trúc với GPT, với Claude, với mọi LLM hiện đại.
 
-Đây là mảnh ghép quan trọng nhất.
+Đây là mảnh ghép quan trọng nhất. Nó giải thích tại sao những bước tiến trong LLM cũng kéo theo bước tiến trong gen ảnh - chúng dùng chung "động cơ."
 
 ---
 
@@ -146,6 +183,14 @@ Sora. Veo3. Runway. Kling.
 
 Video dài vài chục giây. Chuyển động mượt. Ánh sáng tự nhiên. Vật lý chính xác. Và bây giờ - lip-sync hoàn hảo với giọng nói.
 
+Bạn đã thấy AI video ở đâu mà không biết?
+- Quảng cáo ngắn trên Facebook/Instagram - nhiều cái giờ do AI làm hoàn toàn
+- Video TikTok với hiệu ứng "biến mình thành nhân vật anime"
+- Clip review sản phẩm với người mẫu ảo
+- Video nhạc với MV không có ai quay
+
+Những thứ trước đây cần cả một đoàn làm phim, giờ một người với laptop có thể làm được.
+
 Về cơ bản, gen video là gen ảnh mở rộng thêm chiều thời gian.
 
 Thay vì khử nhiễu thành 1 bức ảnh, model khử nhiễu thành chuỗi nhiều frame liên tiếp. Thay vì chỉ học "ảnh đẹp trông như thế nào," model còn phải học "chuyển động tự nhiên trông như thế nào."
@@ -172,6 +217,10 @@ Nhìn lại:
 
 **2025:** Veo3 ra đời. Video có giọng nói tự nhiên. Lip-sync chính xác. Biểu cảm khuôn mặt sống động. Gần như không phân biệt được thật giả.
 
+Để so sánh: từ "cái gì vậy, méo hết cả tay" đến "chờ đã, đây là người thật hay AI?" chỉ mất 3 năm.
+
+Ba năm. Bằng một kỳ đại học. Bằng thời gian trả góp chiếc xe máy. Mà công nghệ đã nhảy từ meme thành kiệt tác.
+
 Mỗi năm một bước nhảy. Và tốc độ có vẻ đang tăng, không giảm.
 
 ![Technology evolution](https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800)
@@ -190,6 +239,8 @@ Câu hỏi đó không ai trả lời được.
 
 Một mặt, rào cản sáng tạo gần như bằng 0 giờ. Trước đây làm một clip quảng cáo cần quay phim, diễn viên, hậu kỳ - tốn hàng chục triệu. Giờ một người ngồi nhà viết prompt là ra video chất lượng cao.
 
+Anh bán hàng online không biết thiết kế? Giờ có thể tạo poster sản phẩm trong 30 giây. Startup không có budget marketing? Giờ có thể làm video quảng cáo mà không cần thuê agency. Cá nhân muốn làm YouTube? Giờ có thể tạo thumbnail chuyên nghiệp mà không cần học Photoshop.
+
 Mặt khác, khi ai cũng làm được, content tràn ngập. "Bội thực" như Trường hay nói. Phần lớn na ná nhau. Thiếu sáng tạo thật sự.
 
 Và những vấn đề khác:
@@ -206,6 +257,10 @@ Công nghệ không tốt hay xấu. Nó chỉ là công cụ. Nhưng công cụ
 Có một xu hướng đang hình thành: **multimodal**.
 
 GPT-4o vừa chat vừa gen ảnh. Gemini hiểu text, ảnh, video, âm thanh. Claude có thể phân tích hình ảnh.
+
+Hãy tưởng tượng kịch bản này: bạn chat với AI, nói "tạo cho tôi video quảng cáo cho quán cà phê." AI hỏi lại "quán phong cách gì?" Bạn chụp ảnh quán gửi. AI nhìn ảnh, hiểu phong cách vintage, rồi tạo video với nhạc nền jazz nhẹ nhàng, có giọng đọc mô tả quán. Tất cả trong một cuộc trò chuyện.
+
+Đó không còn là tương lai xa. GPT-4o đã làm được một phần. Gemini 2.0 đang tiến gần hơn.
 
 Ranh giới giữa LLM và gen ảnh/video đang mờ dần. Tương lai có thể là một model duy nhất làm được mọi thứ: hiểu ngôn ngữ, tạo ảnh, tạo video, tạo âm thanh, tương tác realtime.
 
