@@ -54,6 +54,21 @@ Minh ngơ ngác: "Nhưng em chưa chọn framework nào mà?"
 
 ---
 
+## Building block: Augmented LLM
+
+Trước khi đi vào các pattern, cần hiểu một điều quan trọng: khi nói "LLM" trong context này, không phải là LLM trần (chỉ biết nhận text và trả text).
+
+Mà là **Augmented LLM** - LLM đã được trang bị sẵn:
+- **Retrieval (RAG)** - truy vấn knowledge base, database
+- **Tools** - gọi API, thực thi code, tương tác với hệ thống khác
+- **Memory** - nhớ thông tin qua các bước xử lý
+
+Mỗi ô "LLM" trong tất cả các sơ đồ workflow và agent đều đã là Augmented LLM. Workflow và Agent chỉ nói về **cách điều phối nhiều LLM call với nhau**, còn bản thân mỗi LLM call đã là một khối đầy đủ năng lực.
+
+Hiểu điều này rất quan trọng. Vì nếu không, bạn sẽ nghĩ workflow chỉ là "gọi LLM nhiều lần" - trong khi thực tế mỗi lần gọi đó đã có thể làm rất nhiều việc phức tạp.
+
+---
+
 ## Ba tầng tư duy: Bài toán → Pattern → Công cụ
 
 Đây là cách tôi sắp xếp mọi kiến thức về AI trong đầu. Ba tầng từ trừu tượng đến cụ thể.

@@ -54,6 +54,21 @@ Minh looked confused: "But I haven't chosen any framework yet?"
 
 ---
 
+## Building block: Augmented LLM
+
+Before diving into patterns, there's something important to understand: when we say "LLM" in this context, it's not a bare LLM (that only takes text in and outputs text).
+
+It's an **Augmented LLM** - an LLM already equipped with:
+- **Retrieval (RAG)** - query knowledge bases, databases
+- **Tools** - call APIs, execute code, interact with other systems
+- **Memory** - remember information across processing steps
+
+Every "LLM" box in all workflow and agent diagrams is already an Augmented LLM. Workflows and Agents are about **how to orchestrate multiple LLM calls together**, while each individual LLM call is already a fully capable unit.
+
+Understanding this is crucial. Otherwise, you might think workflows are just "calling LLM multiple times" - when in reality, each call can already do very complex things.
+
+---
+
 ## Three layers of thinking: Problem → Pattern → Tool
 
 This is how I organize all AI knowledge in my head. Three layers from abstract to concrete.
