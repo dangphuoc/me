@@ -24,275 +24,193 @@ The AI world is flooded with buzzwords. Every week there's a new framework. Ever
 
 But actually, if you know how to organize it, everything is much simpler than you think.
 
+![AI concepts](https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800)
+
 ---
 
-## The story of Minh and the CI/CD pipeline
+## The story of Minh and the pipeline
 
-Before diving into theory, let me tell a real story.
+Before diving into theory, let me tell a story.
 
-Minh had a problem: his team maintains a large Java monorepo. Every time they write new code, they need to write unit tests, commit, create a merge request, wait for the pipeline. If it fails, read the logs, fix the bug, commit again. Loop until it passes.
+Minh had a pain point: his team maintains a large Java monorepo. Every time they write new code, they need to write unit tests, commit, create a merge request, wait for the pipeline. If it fails, read the logs, fix the bug, commit again. Loop until it passes.
 
-Minh asked: "I want to use AI to automate this. But when I search, I see LangChain, ReAct, Agent... I don't know where to start."
+Boring work. Repetitive. Minh thought: "Maybe I should use AI to automate this?"
 
-I asked back: "Before thinking about tools, describe the problem. What does AI need to do?"
+Minh started Googling. And fell down the rabbit hole.
 
-Minh described:
-1. Write/fix unit tests
-2. Commit + push
-3. Create/update merge request
-4. Wait for pipeline to complete
-5. If passed → done
-6. If failed → read error logs → decide what to fix → back to step 1
+*"What's LangChain? How is CrewAI different from LangChain? Is ReAct a framework or a pattern? Is Claude Agent SDK similar to LangChain? What about Microsoft's AutoGen?"*
 
-"That's it," I said. "You already have the design. Now you just need to choose the right tool."
+The more he read, the more confused he got. Minh messaged me: "Hey, I searched and found LangChain, ReAct, Agent... I don't know where to start."
+
+I asked back a simple question: "You don't need to know what to use yet. Describe the problem first. What does AI need to do?"
+
+Minh paused. Thought. Then described:
+
+*"Write tests. Commit. Wait for pipeline. If it fails, read logs, fix, commit again. Loop until it passes."*
+
+"That's it," I said. "You already have the design."
 
 Minh looked confused: "But I haven't chosen any framework yet?"
 
-"You don't need a framework. Just a while loop and some APIs."
-
-![Developer planning](https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800)
+"You don't need a framework. Just a loop and some APIs."
 
 ---
 
-## Building block: Augmented LLM
+## Two construction workers
 
-Before diving into patterns, there's something important to understand: when we say "LLM" in this context, it's not a bare LLM (that only takes text in and outputs text).
+Let me tell another story.
 
-It's an **Augmented LLM** - an LLM already equipped with:
-- **Retrieval (RAG)** - query knowledge bases, databases
-- **Tools** - call APIs, execute code, interact with other systems
-- **Memory** - remember information across processing steps
+Two construction workers were given the same task: build a simple brick wall.
 
-Every "LLM" box in all workflow and agent diagrams is already an Augmented LLM. Workflows and Agents are about **how to orchestrate multiple LLM calls together**, while each individual LLM call is already a fully capable unit.
+The first worker arrived at the site, looked at the pile of bricks and cement. He started laying bricks one by one, applying cement, building the wall. Simple. Direct. Job done.
 
-Understanding this is crucial. Otherwise, you might think workflows are just "calling LLM multiple times" - when in reality, each call can already do very complex things.
+The second worker also arrived at the site. But instead of getting to work, he spent a week researching automated construction machines. Brick-laying robots. Smart cement mixers. AI-powered progress monitoring systems. He read reviews, compared specs, joined discussion forums.
 
-![AI Architecture](https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800)
+A week later, the wall still wasn't built. The second worker was still choosing machines.
 
----
+**Minh was being the second construction worker.**
 
-## Three layers of thinking: Problem → Pattern → Tool
+Minh's problem didn't need LangChain. Didn't need CrewAI. Didn't need any complex framework at all. Just needed to write a simple script: call an API, read the result, loop if needed.
 
-This is how I organize all AI knowledge in my head. Three layers from abstract to concrete.
+But Minh had spent a week researching tools instead of solving the problem.
 
-**Layer 1 - Problem: What does the LLM need to do?**
-
-This is the most important question, but many people skip it. They jump straight to "which framework to use" without asking "what does the problem need."
-
-There are three types of problems:
-
-*Simple tasks* → one LLM API call is enough. Example: summarize text, translate, answer simple questions. Nothing more needed.
-
-*Complex tasks with clear flow* → **Workflow**. Steps are predefined, LLM executes within that framework. Example: receive email → classify → route to appropriate department → generate response.
-
-*Open-ended tasks with unknown steps* → **Agent**. LLM decides the next step based on results from the environment. Example: debug a production bug when you don't know where the cause is.
-
-**Layer 2 - Pattern: How to design the processing flow?**
-
-After identifying the problem type, you choose the appropriate pattern.
-
-For **Workflow**, there are several common patterns:
-- *Prompt chaining* - output of one step is input for the next
-- *Routing* - classify then route to different handlers
-- *Parallelization* - run multiple tasks in parallel then aggregate
-- *Evaluator-Optimizer* - loop until meeting criteria
-
-For **Agent**, the most common pattern is *ReAct* (Reasoning + Acting):
-- Thought: LLM thinks
-- Action: call a tool
-- Observation: observe the result
-- Loop until done
-
-**Layer 3 - Tool: What to use for coding?**
-
-This is the last layer, but many people start here.
-
-Two choices:
-- *Direct API calls* (Anthropic, OpenAI...) - simple, transparent, easy to debug
-- *Use framework* (LangChain, Claude Agent SDK...) - more convenient, but adds abstraction
-
-Anthropic recommends: **start with direct API**. Most patterns can be implemented with just a few lines of code. Only use frameworks when truly needed.
+![Developer thinking](https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800)
 
 ---
 
-## Back to Minh
+## The brain already has limbs attached
 
-Applying three layers to Minh's problem:
+Something Minh didn't know: when engineers talk about "LLM" in the context of agentic systems, they're not talking about a bare LLM.
 
-**Layer 1 - Problem:** This is an open-ended task (unknown number of loops), but has a clear loop with "ground truth" from the environment (pipeline pass or fail).
+They're talking about **Augmented LLM** - a brain that already has limbs attached.
 
-→ Combine **Workflow** (Evaluator-Optimizer) and **Agent** (processing inside each iteration).
+Remember the article about Hands, Feet, Ears, Eyes, Mouth? Augmented LLM already has:
+- **Eyes** to read - query databases, search knowledge bases
+- **Hands** to act - call APIs, run code, interact with systems
+- **Memory** to remember - store information across steps
 
-**Layer 2 - Pattern:**
-- Evaluator-Optimizer as the backbone: loop until pipeline passes
-- ReAct inside: each time it fails, LLM reads logs → thinks → decides what to fix
+Every "LLM" box in every architecture diagram is already a complete body. Workflows and Agents are just about **how to orchestrate multiple bodies working together**.
 
-**Layer 3 - Tool:**
-- API to call LLM (Claude or GPT)
-- GitLab/GitHub API (commit, MR, read pipeline status)
-- Script to read/write files
-
-Actual code:
-
-```python
-while attempts < MAX_ATTEMPTS:
-    # Agent reads code, writes/fixes tests
-    changes = llm.generate_fix(code_context, error_log)
-    apply_changes(changes)
-
-    # Workflow: commit and wait for pipeline
-    git_commit_and_push()
-    create_or_update_mr()
-    status = wait_for_pipeline()
-
-    if status == "passed":
-        break
-    else:
-        error_log = get_pipeline_logs()
-        attempts += 1
-```
-
-No LangChain needed. No complex framework. Just a loop + API calls.
-
-Minh looked at the code, nodded: "Oh, that's it?"
-
-"That's it."
-
-![Coding](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800)
+Understanding this changes everything. Workflow isn't "calling LLM multiple times." Each call can already do very complex things.
 
 ---
 
-## So what are frameworks for?
+## The commander and the soldier
 
-Good question. Frameworks like LangChain, CrewAI... aren't useless. They help you avoid coding:
+The difference between Workflow and Agent is like the difference between two ways of commanding an army.
 
-- The ReAct loop (Thought → Action → Observation)
-- Parsing LLM output to know which tool it wants to call
-- Managing memory between steps
-- Error handling, retry, timeout...
+**Workflow** is like a general planning every detail before the battle.
 
-With LangChain, instead of coding the ReAct loop yourself, you just need:
+*"Team 1 attacks the left flank at 6am. Team 2 waits for the signal then strikes the right. Team 3 covers the rear after Teams 1 and 2 have advanced."*
 
-```python
-from langchain.agents import create_react_agent
+Every step is predetermined. Soldiers just need to follow the plan. No thinking required. No improvisation. If the plan is good, the battle is won.
 
-agent = create_react_agent(llm, tools, prompt)
-agent.invoke({"input": "Find and fix the pipeline bug"})
-```
+**Agent** is like a special forces team dropped into the jungle.
 
-Very convenient. But there's a trade-off.
+*"Mission: find and destroy the enemy base. How: up to you."*
 
-**The problem with frameworks:** when LangChain wraps everything in `create_react_agent()`, you can't see:
-- What prompt is actually being sent
-- What the LLM returns at each step
-- Why it chose this tool instead of that one
+No detailed plan. The team observes the terrain themselves, decides their own path, improvises when they encounter obstacles. They have an objective, but no fixed route.
 
-When there's a bug, debugging is very hard. Because you don't understand what's happening inside.
+Minh's problem - write tests, commit, wait for pipeline, fix if failed - looks like an Agent because there's a loop. But look closer, it's more like a Workflow. The steps are clear. The "ground truth" is clear (pipeline passes or fails). Just loop until the goal is reached.
 
-So the path Anthropic recommends is:
-
-1. **Code the pattern with direct API first** - understand how it works
-2. **Then if you need to scale**, use a framework - by then you understand what's underneath
-
-Like learning raw SQL before using an ORM. Not mandatory, but helps you debug much better.
+This is the **Evaluator-Optimizer** pattern - a Workflow with a loop. No complex Agent needed.
 
 ---
 
-## ReAct is not a framework
+## ReAct: An idea, not a product
 
-One thing Truong often confuses: ReAct is not a framework. It's a **pattern** - a design idea.
+Truong asked next: "So what's ReAct? I see people mention it all the time."
 
-ReAct = Reasoning + Acting. The idea is to have the LLM loop through:
+ReAct is not a framework. Not a library. Not a product you can install.
 
-**Thought** (thinking) → **Action** (acting) → **Observation** (observing) → back to Thought...
+**ReAct is an idea.** Like "recursion" is an idea, not a programming language.
 
-Example:
+The idea is simple: when solving problems, let AI **think before acting, then observe the result, then think again**.
 
-```
-Thought: "I need to find which file is causing the test error"
-Action: grep "AssertionError" logs/
-Observation: PaymentServiceTest.java:45
+Thought → Action → Observation → Thought → ...
 
-Thought: "Error at line 45 of PaymentServiceTest. Need to read that file"
-Action: read_file("PaymentServiceTest.java")
-Observation: [file contents]
+Just like how humans solve problems. You don't do everything in one go. You think. You try. You see the result. You adjust. You try again.
 
-Thought: "Ah, test expects 100 but code returns 99. Bug is in PaymentService"
-Action: read_file("PaymentService.java")
-...
-```
+You can implement this idea any way you want. Write raw code. Use LangChain. Use Claude API. Or even write on paper and copy-paste into ChatGPT.
 
-This is just an idea. You can implement it by:
-- Coding it yourself with raw API
-- Using LangChain
-- Using Claude Agent SDK
-- Or any other way
+**Pattern is the idea. Framework is the tool that implements the idea.**
 
-Pattern is the idea. Framework is the tool that implements the idea.
+Don't confuse these two.
 
 ![Problem solving](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
 
 ---
 
-## Common mistake: Starting from tools
+## The carpenter and the IKEA cabinet
 
-Hieu - a senior engineer on the team - once told me: "Juniors have a habit: they see new tech and want to use it immediately, then find problems to apply it to."
+Hieu - a senior engineer on the team - told me a story.
 
-This is the biggest mistake.
+*"Back in the day, if you wanted a cabinet, you'd find a carpenter. The carpenter would measure, choose wood, cut, plane, assemble. Takes a week. But the cabinet fits your house perfectly, exactly the dimensions you need.*
 
-When you start from tools:
-- "I want to use LangChain" → then find ways to fit it into the project
-- "I want to build an AI Agent" → even when the problem doesn't need an agent
+*Now, you go to IKEA and buy one. Assemble following instructions. Few hours and done. Much more convenient. But if your house has a slightly crooked corner, the cabinet doesn't fit. You don't know how to fix it because you don't understand the structure inside.*
 
-Result: over-engineering. Using a scalpel to peel an apple.
+*Frameworks are like IKEA cabinets. Convenient. Fast. But when there's a problem, you don't know where to fix it because you don't understand how it works inside."*
 
-When you start from the problem:
-- "I need to automate writing tests" → workflow or agent?
-- "I need a chatbot to answer FAQs" → just need one API call with retrieval
+LangChain wraps everything in `create_react_agent()`. Very convenient. But when there's a bug, you can't see:
+- What prompt is actually being sent
+- What the LLM returns at each step
+- Why it chose this tool instead of that one
 
-Result: right tool for the right job.
+You're standing in front of a black box. And black boxes are very hard to debug.
 
-Remember the article about **the soul controlling AI**? That soul isn't about knowing many frameworks. It's about **knowing what you need**.
+**The path Anthropic recommends:** be a carpenter first. Understand the wood. Understand the structure. Then if you need speed, buy IKEA. At least then if there's a problem, you know where to fix it.
 
-![Thinking developer](https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800)
-
----
-
-## Summary table
-
-To help Truong remember, I drew a table:
-
-| Concept | What is it | Example |
-|---------|------------|---------|
-| **Workflow** | Predefined processing flow | Email in → classify → route → response |
-| **Agent** | LLM decides next step itself | Debug bug when cause is unknown |
-| **ReAct** | Pattern for agents (Thought → Action → Observation) | Design idea, not code |
-| **LangChain** | Framework implementing many patterns | Tool, can use or not |
-| **Claude API** | Direct LLM API | Simplest approach |
-
-And the order of thinking is always:
-
-**Problem → Pattern → Tool**
-
-Never the other way around.
+Call the API directly first. Understand how it works. Then use a framework if you really need to.
 
 ---
 
-## Advice for Truong
+## Three questions before writing code
 
-I messaged Truong back:
+I told Truong: "Don't try to learn every framework. You'll never catch up. There's something new every week."
 
-*"Don't try to learn every framework. You'll never catch up - because there's something new every week.*
+"So what should I learn?"
 
-*Instead, learn to ask the right questions: 'What does this problem need?' Workflow or Agent? Which pattern fits?*
+"Learn to ask the right questions."
 
-*Once you have the answer, the tool will naturally appear. Maybe just a few lines of code + API. Maybe a framework. But that decision comes after, not before.*
+Three questions. In order. Never reversed.
 
-*The soul controlling AI isn't about knowing many tools. It's about knowing when you need what."*
+**One: What does the problem need?**
 
-Truong read it and replied:
+Simple (one LLM call is enough)? Workflow (clear, predefined steps)? Or Agent (open-ended, self-directing)?
 
-*"I get it now. So I'll start from real problems in my project, then find the right pattern."*
+Most problems are the first or second type. Agent is only truly needed when you don't know how many steps are required, and each step depends on the previous result in unpredictable ways.
+
+**Two: Which pattern fits?**
+
+If Workflow: chaining, routing, parallelization, or evaluator-optimizer?
+
+If Agent: ReAct is the most common choice.
+
+**Three: Which tool to implement?**
+
+Direct API? Or framework?
+
+Always start with direct API. Only use a framework when you truly need to save time and you already understand what's underneath.
+
+**Problem → Pattern → Tool.** Never the other way around.
+
+![Coding](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800)
+
+---
+
+## The end of Minh's story
+
+Minh didn't use LangChain. Didn't use CrewAI. Didn't use any framework.
+
+Minh wrote a simple Python script. Called Claude API to analyze code and generate tests. Called GitLab API to commit and monitor the pipeline. A while loop to repeat if it failed.
+
+Less than 100 lines of code total.
+
+Two weeks later, Minh messaged me: *"Hey, the script is running great. I'm saving several hours every week."*
+
+"Which framework?" I asked jokingly.
+
+*"No framework at all. Just a loop."*
 
 That's the right answer.
 
@@ -302,18 +220,14 @@ That's the right answer.
 
 The AI world will keep generating new buzzwords. Next week there might be a new framework, new pattern, new acronym.
 
-But if you grasp these three layers of thinking, you'll never be confused:
+But if you remember those three questions - Problem? Pattern? Tool? - you'll never be confused.
 
-1. **What does the problem need?** - Simple, workflow, or agent?
-2. **Which pattern fits?** - Chaining, routing, ReAct...?
-3. **Which tool to implement?** - Raw API or framework?
+And always remember: **start simple**. Most problems don't need complex frameworks. Just a loop, a few API calls, and someone who clearly understands what problem they're solving.
 
-And always remember: **start simple**. Call the API directly first. Only add complexity when truly needed.
+Remember the article about **the soul controlling AI**? That soul isn't about knowing many frameworks. It's about **knowing what you need**.
 
-Most problems don't need complex frameworks. Just a loop, a few API calls, and someone who clearly understands what problem they're solving.
+Don't let tools confuse you. Be the one who chooses the tool, not the one chosen by the tool.
 
 ---
 
 *Tools will change. Patterns will evolve. But the ability to ask the right questions - that never goes out of style.*
-
-*Don't let tools confuse you. Be the one who chooses the tool, not the one chosen by the tool.*
