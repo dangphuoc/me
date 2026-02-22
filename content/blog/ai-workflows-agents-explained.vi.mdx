@@ -1,0 +1,300 @@
+---
+title: "Workflows, Agents, Frameworks - Đừng Để Công Cụ Làm Bạn Hoang Mang"
+title_vi: "Workflows, Agents, Frameworks - Đừng Để Công Cụ Làm Bạn Hoang Mang"
+title_en: "Workflows, Agents, Frameworks - Don't Let Tools Confuse You"
+excerpt_vi: "LangChain, CrewAI, ReAct, Claude Agent SDK... Quá nhiều từ khóa bay vào đầu. Trường hỏi tôi: 'Em không biết lắp ráp vào não như thế nào.' Thực ra mọi thứ sắp xếp lại khá đơn giản."
+excerpt_en: "LangChain, CrewAI, ReAct, Claude Agent SDK... Too many buzzwords flying around. Truong asked me: 'I don't know how to organize all this in my head.' Actually, it's simpler than you think."
+date: 2025-10-20
+tags:
+  - AI
+  - LLM
+  - AI Agent
+  - Architecture
+  - Software Engineering
+thumbnail: https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800
+---
+
+Thứ Hai tuần trước, Trường nhắn cho tôi một tin dài.
+
+*"Anh ơi, em đọc xong bài về 'linh hồn điều khiển AI' rồi. Em hiểu phần não, tay chân, tai mắt miệng. Nhưng giờ em Google thêm thì thấy LangChain, CrewAI, ReAct, Claude Agent SDK, AutoGen... Quá nhiều thứ. Em không biết lắp ráp vào não như thế nào để ứng dụng vào công việc."*
+
+Tôi đọc xong, cười. Vì đây là cảm giác rất phổ biến.
+
+Thế giới AI đang tràn ngập buzzwords. Mỗi tuần có framework mới. Mỗi tháng có pattern mới. Đọc xong thấy mình lạc hậu. Không đọc thì sợ bỏ lỡ.
+
+Nhưng thực ra, nếu biết cách sắp xếp, mọi thứ đơn giản hơn bạn nghĩ rất nhiều.
+
+---
+
+## Câu chuyện về Minh và cái pipeline CI/CD
+
+Trước khi đi vào lý thuyết, để tôi kể một câu chuyện thực tế.
+
+Minh có một bài toán: team đang maintain một Java monorepo lớn. Mỗi khi viết code mới, cần viết unit test, commit, tạo merge request, chờ pipeline chạy. Nếu fail thì đọc log, fix bug, commit lại. Loop như vậy cho đến khi pass.
+
+Minh hỏi: "Em muốn dùng AI để tự động hóa cái này. Nhưng em search thì thấy nào là LangChain, nào là ReAct, nào là Agent... Em không biết bắt đầu từ đâu."
+
+Tôi hỏi lại: "Trước khi nghĩ đến công cụ, em mô tả lại bài toán đi. AI cần làm gì?"
+
+Minh mô tả:
+1. Viết/sửa unit test
+2. Commit + push
+3. Tạo/update merge request
+4. Chờ pipeline chạy xong
+5. Nếu pass → kết thúc
+6. Nếu fail → đọc log lỗi → quyết định sửa gì → quay lại bước 1
+
+"Vậy thôi," tôi nói. "Em đã có thiết kế rồi. Bây giờ chỉ cần chọn công cụ phù hợp."
+
+Minh ngơ ngác: "Nhưng em chưa chọn framework nào mà?"
+
+"Em không cần framework. Chỉ cần một vòng while loop và API."
+
+![Developer planning](https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800)
+
+---
+
+## Ba tầng tư duy: Bài toán → Pattern → Công cụ
+
+Đây là cách tôi sắp xếp mọi kiến thức về AI trong đầu. Ba tầng từ trừu tượng đến cụ thể.
+
+**Tầng 1 - Bài toán: LLM cần làm gì?**
+
+Đây là câu hỏi quan trọng nhất, nhưng nhiều người bỏ qua. Họ nhảy thẳng vào "dùng framework gì" mà không hỏi "bài toán cần gì."
+
+Có ba loại bài toán:
+
+*Tác vụ đơn giản* → gọi 1 lần LLM API là xong. Ví dụ: tóm tắt văn bản, dịch thuật, trả lời câu hỏi đơn giản. Không cần gì thêm.
+
+*Tác vụ phức tạp nhưng luồng rõ ràng* → **Workflow**. Các bước được định nghĩa trước, LLM thực thi trong khuôn khổ đó. Ví dụ: nhận email → phân loại → route đến bộ phận phù hợp → sinh response.
+
+*Tác vụ mở, không biết trước bao nhiêu bước* → **Agent**. LLM tự quyết định bước tiếp theo dựa trên kết quả từ môi trường. Ví dụ: debug một bug production mà chưa biết nguyên nhân ở đâu.
+
+**Tầng 2 - Pattern: Thiết kế luồng xử lý như thế nào?**
+
+Sau khi xác định loại bài toán, bạn chọn pattern phù hợp.
+
+Với **Workflow**, có mấy pattern phổ biến:
+- *Prompt chaining* - output bước này là input bước sau
+- *Routing* - phân loại rồi route đến xử lý khác nhau
+- *Parallelization* - chạy song song nhiều task rồi tổng hợp
+- *Evaluator-Optimizer* - loop cho đến khi đạt tiêu chuẩn
+
+Với **Agent**, pattern phổ biến nhất là *ReAct* (Reasoning + Acting):
+- Thought: LLM suy nghĩ
+- Action: gọi tool
+- Observation: quan sát kết quả
+- Loop lại cho đến khi xong
+
+**Tầng 3 - Công cụ: Dùng gì để code?**
+
+Đây là tầng cuối cùng, nhưng nhiều người lại bắt đầu từ đây.
+
+Có hai lựa chọn:
+- *Gọi thẳng API* (Anthropic, OpenAI...) - đơn giản, trong suốt, dễ debug
+- *Dùng framework* (LangChain, Claude Agent SDK...) - tiện hơn, nhưng thêm abstraction
+
+Anthropic khuyến nghị: **bắt đầu bằng API trực tiếp**. Phần lớn pattern có thể triển khai chỉ với vài dòng code. Chỉ dùng framework khi thực sự cần.
+
+---
+
+## Quay lại với Minh
+
+Áp dụng ba tầng vào bài toán của Minh:
+
+**Tầng 1 - Bài toán:** Đây là tác vụ mở (không biết trước bao nhiêu lần loop), nhưng có vòng lặp rõ ràng với "ground truth" từ môi trường (pipeline pass hay fail).
+
+→ Kết hợp **Workflow** (Evaluator-Optimizer) và **Agent** (xử lý bên trong mỗi iteration).
+
+**Tầng 2 - Pattern:**
+- Evaluator-Optimizer làm xương sống: loop cho đến khi pipeline pass
+- ReAct ở bên trong: mỗi lần fail, LLM đọc log → suy nghĩ → quyết định sửa gì
+
+**Tầng 3 - Công cụ:**
+- API gọi LLM (Claude hoặc GPT)
+- GitLab/GitHub API (commit, MR, đọc pipeline status)
+- Script đọc/ghi file
+
+Code thực tế:
+
+```python
+while attempts < MAX_ATTEMPTS:
+    # Agent đọc code, viết/sửa test
+    changes = llm.generate_fix(code_context, error_log)
+    apply_changes(changes)
+
+    # Workflow: commit và chờ pipeline
+    git_commit_and_push()
+    create_or_update_mr()
+    status = wait_for_pipeline()
+
+    if status == "passed":
+        break
+    else:
+        error_log = get_pipeline_logs()
+        attempts += 1
+```
+
+Không cần LangChain. Không cần framework phức tạp. Chỉ là một vòng loop + API calls.
+
+Minh nhìn code, gật đầu: "À, vậy thôi hả anh?"
+
+"Vậy thôi."
+
+![Coding](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800)
+
+---
+
+## Vậy framework để làm gì?
+
+Câu hỏi hay. Framework như LangChain, CrewAI... không phải vô dụng. Chúng giúp bạn không phải tự code:
+
+- Vòng lặp ReAct (Thought → Action → Observation)
+- Parse output của LLM để biết nó muốn gọi tool nào
+- Quản lý memory giữa các bước
+- Xử lý lỗi, retry, timeout...
+
+Với LangChain, thay vì tự code vòng ReAct, bạn chỉ cần:
+
+```python
+from langchain.agents import create_react_agent
+
+agent = create_react_agent(llm, tools, prompt)
+agent.invoke({"input": "Tìm và fix bug trong pipeline"})
+```
+
+Rất tiện. Nhưng có trade-off.
+
+**Vấn đề với framework:** khi LangChain gói hết vào `create_react_agent()`, bạn không thấy:
+- Prompt thực sự được gửi đi là gì
+- LLM trả về gì ở mỗi bước
+- Tại sao nó chọn tool này mà không phải tool kia
+
+Khi có bug, bạn rất khó debug. Vì bạn không hiểu bên trong nó đang làm gì.
+
+Nên con đường Anthropic khuyến nghị là:
+
+1. **Tự code pattern bằng API trước** - hiểu nó hoạt động thế nào
+2. **Sau đó nếu cần scale** thì mới dùng framework - lúc này bạn đã hiểu bên dưới
+
+Giống như học SQL thuần trước rồi mới dùng ORM. Không bắt buộc, nhưng giúp bạn debug tốt hơn nhiều.
+
+---
+
+## ReAct không phải framework
+
+Một điều Trường hay nhầm: ReAct không phải framework. Nó là **pattern** - một ý tưởng thiết kế.
+
+ReAct = Reasoning + Acting. Ý tưởng là cho LLM lặp qua vòng:
+
+**Thought** (suy nghĩ) → **Action** (hành động) → **Observation** (quan sát) → quay lại Thought...
+
+Ví dụ:
+
+```
+Thought: "Tôi cần tìm file nào đang gây lỗi test"
+Action: grep "AssertionError" logs/
+Observation: PaymentServiceTest.java:45
+
+Thought: "Lỗi ở dòng 45 của PaymentServiceTest. Cần đọc file đó"
+Action: read_file("PaymentServiceTest.java")
+Observation: [nội dung file]
+
+Thought: "À, test expect 100 nhưng code return 99. Bug ở PaymentService"
+Action: read_file("PaymentService.java")
+...
+```
+
+Đây chỉ là ý tưởng. Bạn có thể triển khai nó bằng:
+- Tự code với API thuần
+- Dùng LangChain
+- Dùng Claude Agent SDK
+- Hoặc bất kỳ cách nào khác
+
+Pattern là ý tưởng. Framework là công cụ hiện thực hóa ý tưởng đó.
+
+---
+
+## Sai lầm phổ biến: Bắt đầu từ công cụ
+
+Hiếu - senior engineer trong team - từng nói với tôi: "Bọn junior hay có một thói quen: thấy công nghệ mới là muốn dùng ngay, rồi mới tìm bài toán để áp vào."
+
+Đây là sai lầm lớn nhất.
+
+Khi bạn bắt đầu từ công cụ:
+- "Em muốn dùng LangChain" → rồi tìm cách áp vào project
+- "Em muốn build AI Agent" → dù bài toán không cần agent
+
+Kết quả: over-engineering. Dùng dao mổ gọt táo.
+
+Khi bạn bắt đầu từ bài toán:
+- "Em cần tự động hóa việc viết test" → workflow hay agent?
+- "Em cần chatbot trả lời FAQ" → chỉ cần 1 lần gọi API với retrieval
+
+Kết quả: đúng tool cho đúng việc.
+
+Nhớ bài về **linh hồn điều khiển AI** không? Linh hồn đó không phải là biết nhiều framework. Mà là **biết mình cần gì**.
+
+![Thinking developer](https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800)
+
+---
+
+## Bảng tóm tắt
+
+Để Trường dễ nhớ, tôi vẽ một bảng:
+
+| Khái niệm | Là gì | Ví dụ |
+|-----------|-------|-------|
+| **Workflow** | Luồng xử lý được định nghĩa trước | Email vào → phân loại → route → response |
+| **Agent** | LLM tự quyết định bước tiếp theo | Debug bug khi chưa biết nguyên nhân |
+| **ReAct** | Pattern cho agent (Thought → Action → Observation) | Ý tưởng thiết kế, không phải code |
+| **LangChain** | Framework triển khai nhiều pattern | Công cụ, có thể dùng hoặc không |
+| **Claude API** | API gọi LLM trực tiếp | Cách đơn giản nhất |
+
+Và thứ tự suy nghĩ luôn là:
+
+**Bài toán → Pattern → Công cụ**
+
+Không bao giờ ngược lại.
+
+---
+
+## Lời khuyên cho Trường
+
+Tôi nhắn lại cho Trường:
+
+*"Em đừng cố học hết mọi framework. Sẽ không bao giờ đủ - vì tuần nào cũng có cái mới.*
+
+*Thay vào đó, hãy học cách đặt câu hỏi đúng: 'Bài toán này cần gì?' Workflow hay Agent? Pattern nào phù hợp?*
+
+*Khi đã có câu trả lời, công cụ tự nhiên sẽ hiện ra. Có thể chỉ là vài dòng code + API. Có thể cần framework. Nhưng quyết định đó đến sau, không phải trước.*
+
+*Linh hồn điều khiển AI không nằm ở việc biết nhiều công cụ. Mà ở việc biết khi nào cần gì."*
+
+Trường đọc xong, reply:
+
+*"Em hiểu rồi. Vậy em sẽ bắt đầu từ bài toán thực tế trong project, rồi mới tìm pattern phù hợp."*
+
+Đó là câu trả lời đúng.
+
+---
+
+## Lời kết
+
+Thế giới AI sẽ tiếp tục sinh ra buzzwords mới. Tuần sau có thể có framework mới, pattern mới, acronym mới.
+
+Nhưng nếu bạn nắm vững ba tầng tư duy này, bạn sẽ không bao giờ bị hoang mang:
+
+1. **Bài toán cần gì?** - Đơn giản, workflow, hay agent?
+2. **Pattern nào phù hợp?** - Chaining, routing, ReAct...?
+3. **Công cụ nào để triển khai?** - API thuần hay framework?
+
+Và luôn nhớ: **bắt đầu đơn giản**. Gọi API trực tiếp trước. Chỉ thêm phức tạp khi thực sự cần.
+
+Phần lớn bài toán không cần framework phức tạp. Chỉ cần một vòng loop, vài lần gọi API, và một người hiểu rõ mình đang giải quyết vấn đề gì.
+
+---
+
+*Công cụ sẽ thay đổi. Pattern sẽ tiến hóa. Nhưng khả năng đặt câu hỏi đúng - đó là thứ không bao giờ lỗi thời.*
+
+*Đừng để công cụ làm bạn hoang mang. Hãy là người chọn công cụ, không phải để công cụ chọn bạn.*
