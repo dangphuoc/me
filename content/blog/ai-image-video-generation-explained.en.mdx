@@ -1,0 +1,234 @@
+---
+title: "From Prompt to Pixel: The Story Behind Viral AI Videos"
+title_vi: "Từ Prompt Đến Pixel: Câu Chuyện Đằng Sau Những Video AI Đang Viral"
+title_en: "From Prompt to Pixel: The Story Behind Viral AI Videos"
+excerpt_vi: "Mở TikTok thấy video AI đẹp như phim Hollywood. Mở YouTube thấy quảng cáo do AI làm hoàn toàn. Veo3, Sora, Midjourney... Tất cả bùng nổ cùng lúc với ChatGPT. Trùng hợp? Không hẳn."
+excerpt_en: "Open TikTok and see AI videos as beautiful as Hollywood films. Open YouTube and see ads made entirely by AI. Veo3, Sora, Midjourney... All exploding alongside ChatGPT. Coincidence? Not quite."
+date: 2025-10-25
+tags:
+  - AI
+  - Generative AI
+  - Video Generation
+  - Image Generation
+  - Technology
+thumbnail: https://images.unsplash.com/photo-1633412802994-5c058f151b66?w=800
+---
+
+Saturday night, Truong shared a video in our group chat.
+
+*"Everyone check this out. This video is 100% AI-made. No actors, no cameramen, nothing. Just a single prompt."*
+
+The video was 30 seconds long. A girl walking on a beach at sunset. Wind blowing through her hair. Sunlight shimmering on her skin. She turns to look at the camera and says: "Do you want to come with me?"
+
+Perfect lip-sync. Natural voice. If no one had said anything, I would have thought it was real.
+
+Hieu replied: *"Veo3 from Google, right? Just came out last week. Insane."*
+
+Minh chimed in: *"But I don't understand. Why did all this explode right when ChatGPT came out? What does LLM have to do with video generation?"*
+
+Good question. And the answer is more complex than Minh thought.
+
+![AI generated content](https://images.unsplash.com/photo-1633412802994-5c058f151b66?w=800)
+
+---
+
+## Before ChatGPT
+
+To understand why everything exploded at once, we need to rewind a bit.
+
+In 2014, a new technique was born: **GAN** (Generative Adversarial Network). The idea was simple but genius: two neural networks competing against each other. One tries to create fake images. The other tries to distinguish real from fake. They fight continuously, and both get better over time.
+
+GAN could generate human faces. But there was a big problem: **you couldn't tell it what you wanted**.
+
+Want "a blonde girl in a red dress"? Not possible. GAN didn't understand language. You had to adjust technical parameters or give it reference images. Very hard for regular people to use.
+
+And the quality? Oh boy. Faces would get distorted. Extra teeth. Wrong fingers. Chaotic backgrounds. A few seconds of looking and you'd know it was fake.
+
+That was the world of AI image generation before 2021.
+
+---
+
+## The translator appears
+
+In 2021, OpenAI released something called **CLIP**.
+
+CLIP doesn't create images. It does something else: **translates** between language and images.
+
+Imagine you have a translator. This person can look at an image and describe it in words. Conversely, you say a sentence, and they can imagine the corresponding image.
+
+CLIP is that translator. It was trained on hundreds of millions of image-text pairs from the internet. See a beach photo, it knows that's "beach." Hear the word "sunset," it knows what that scene looks like.
+
+And CLIP was built on **Transformer** - the same architecture as GPT, Claude, and every modern LLM.
+
+This is the most important piece of the puzzle.
+
+---
+
+## When the translator meets the artist
+
+Around the same time, another technique was rising: **Diffusion Model**.
+
+The idea behind Diffusion Model is strange: take a beautiful image, gradually add noise, until it becomes a mess of random pixels. Then train a model to go backwards - from noise to image.
+
+Like you have a lump of clay. You shape it into a cat. Then you smash it flat, roll it into a ball, turn it into a shapeless blob. The model learns to look at that shapeless blob and sculpt it back into a cat.
+
+Diffusion Model creates images much better than GAN. More detailed. Fewer errors. But it still had the same problem: **couldn't understand language**.
+
+Until someone thought: "Why not combine CLIP with Diffusion Model?"
+
+CLIP understands language. Diffusion Model creates beautiful images. What if we put them together?
+
+**DALL-E 2. Stable Diffusion. Midjourney.** All born from this idea.
+
+You write a prompt: "girl walking on beach at sunset."
+
+CLIP reads the prompt, converts it into a mathematical representation that machines understand. Diffusion Model receives that representation, then gradually "denoises" from random pixels into the image you described.
+
+For the first time, anyone could create images just by typing text.
+
+![Creative process](https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800)
+
+---
+
+## Why the explosion alongside ChatGPT?
+
+Minh asked the right question. Image generation isn't LLM. Diffusion Model isn't GPT. So why did they explode at the same time?
+
+**First: shared roots.**
+
+Transformer - the architecture behind GPT, Claude - is also the architecture behind CLIP. The text encoder in Stable Diffusion, in Midjourney, in Sora, all use Transformer. They're siblings, born from the same revolution.
+
+**Second: Scaling Law.**
+
+People discovered: keep increasing data, model size, compute, and quality increases. This discovery was true for LLM, and also true for image/video generation. When OpenAI proved this with GPT-3, the whole industry poured money into scaling everything up.
+
+**Third: the money flow.**
+
+ChatGPT went viral in late 2022. Hundreds of millions of users in weeks. For the first time, AI proved it had massive commercial potential.
+
+Investment money poured in. Billions of dollars. Not just into LLM, but into all of AI. Midjourney, Runway, Stability AI - all benefited. Money buys GPUs. GPUs train bigger models. Bigger models mean better quality.
+
+It wasn't coincidence. It was a domino effect.
+
+---
+
+## Why prompts matter
+
+Truong often shares videos of content creators talking about how this prompt is better than that prompt. Minh wondered: "Are prompts really that important? Or is it just marketing?"
+
+They really are important.
+
+Remember CLIP? The "translator" between language and images? The prompt is what you tell that translator.
+
+If you speak vaguely, the translator understands vaguely, miscommunicates to the artist, the image comes out wrong.
+
+If you speak in detail, clearly, in the "language" the translator is familiar with, they communicate accurately, the image comes out right.
+
+Example:
+
+*"Beautiful video"* → CLIP doesn't know what you want. Random result.
+
+*"Cinematic shot, golden hour, young woman walking barefoot on wet sand, waves in background, slow motion, shallow depth of field"* → CLIP understands every detail. Result close to what you wanted.
+
+Words like "cinematic," "golden hour," "shallow depth of field" - they appear very often in the data CLIP was trained on. So it understands their exact meaning.
+
+Vague words like "beautiful," "nice," "cool" - they could map to millions of different images in the data. So results are random.
+
+**Prompt engineering isn't marketing. It's how to communicate effectively with AI.**
+
+---
+
+## From images to video
+
+Image generation was impressive enough. But video is what's truly shocking now.
+
+Sora. Veo3. Runway. Kling.
+
+Videos tens of seconds long. Smooth motion. Natural lighting. Accurate physics. And now - perfect lip-sync with voice.
+
+Fundamentally, video generation is image generation extended with the time dimension.
+
+Instead of denoising into 1 image, the model denoises into a sequence of many consecutive frames. Instead of just learning "what beautiful images look like," the model must also learn "what natural movement looks like."
+
+Water must flow according to physics. Hair must blow in the wind direction. People walking must have correct center of gravity. Mouths speaking must match the audio.
+
+The model was trained on millions of videos from the internet. It learned all those rules. No one hardcoded them. It learned from data.
+
+And when the model is big enough, trained on enough data, with enough compute - it starts creating things indistinguishable from reality.
+
+---
+
+## The scary pace of development
+
+Hieu made a good observation: "Every year it jumps a terrifying level."
+
+Looking back:
+
+**2022:** Image generation still had warped hands, wrong fingers. Video barely existed.
+
+**2023:** Images were already very good. Video started appearing but was still jittery, wrong physics.
+
+**2024:** Video got smoother. But lip-sync was still off. Voices still sounded fake.
+
+**2025:** Veo3 released. Video with natural voice. Accurate lip-sync. Vivid facial expressions. Nearly indistinguishable from real.
+
+One leap every year. And the pace seems to be accelerating, not slowing.
+
+![Technology evolution](https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800)
+
+---
+
+## Things to think about
+
+That night, after watching the video, the whole group went quiet for a moment.
+
+Then An - the team's QC lead - spoke up:
+
+*"I just watched a video made by AI. Beautiful like a movie. But I'm wondering: if anyone can create content like this, does content still have value?"*
+
+No one could answer that question.
+
+On one hand, the barrier to creation is nearly zero now. Before, making an ad clip required filming, actors, post-production - tens of thousands of dollars. Now one person sitting at home writing prompts can produce high-quality video.
+
+On the other hand, when everyone can do it, content floods everywhere. "Oversaturated" as Truong would say. Most of it looks the same. Lacking real creativity.
+
+And other issues:
+- Deepfakes are becoming perfect, nearly undetectable
+- Copyright is still a gray area - model trained on others' work, who owns the output?
+- Many jobs are being genuinely affected: illustrators, motion designers, voice actors...
+
+Technology isn't good or bad. It's just a tool. But this tool is changing a lot of things, very fast.
+
+---
+
+## Convergence
+
+There's a trend forming: **multimodal**.
+
+GPT-4o can chat and generate images. Gemini understands text, images, video, audio. Claude can analyze images.
+
+The boundary between LLM and image/video generation is blurring. The future might be a single model that does everything: understand language, create images, create video, create audio, interact in realtime.
+
+And then, distinguishing "LLM" from "image generation" might no longer make sense. They'll just be different capabilities of the same AI.
+
+We're living in an interesting time. And a scary one. Simultaneously.
+
+---
+
+## Closing thoughts
+
+Minh asked: "What does LLM have to do with video generation?"
+
+The answer: a lot, and deeper than you'd think.
+
+They were born from the same revolution: Transformer. They grew up from the same discovery: Scaling Law. They exploded from the same wave: money pouring into AI after ChatGPT proved commercial value.
+
+LLM is the most famous child of the family. But image generation, video generation, audio generation - they're all siblings.
+
+And it seems like they're gradually merging into one.
+
+---
+
+*The prompt is the bridge between the idea in your head and the AI on the other side.*
+
+*Understanding how it works won't help you use it much better. But at least you'll know who you're talking to.*
