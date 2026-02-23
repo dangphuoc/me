@@ -302,3 +302,24 @@ Nhớ bài về **dao mổ và dao gọt táo** không? Agent cũng vậy. Một
 *Thất bại của agent không phải thất bại trong suy luận. Mà là thất bại trong việc chọn đúng tool.*
 
 *Giải pháp không phải model tốt hơn. Mà là ít tool hơn, được định nghĩa rõ hơn.*
+
+---
+
+## Phụ lục: Tài liệu tham khảo
+
+Bài viết này tổng hợp từ nhiều nghiên cứu và thực nghiệm trong ngành. Nếu bạn muốn đào sâu hơn:
+
+**Nghiên cứu về Tool Overload:**
+- [Benchmarking Single Agent Performance](https://blog.langchain.dev/benchmarking-single-agent-performance/) — LangChain (02/2025). Thực nghiệm về điểm "nghẹt thở" của agent khi quá nhiều tool.
+- [Towards a Science of Scaling Agent Systems](https://research.google/blog/towards-a-science-of-scaling-agent-systems/) — Google Research, DeepMind & MIT. Nghiên cứu 180 cấu hình agent, phát hiện tool-coordination trade-off.
+- [Evaluating AI Agents: Real-world Lessons](https://aws.amazon.com/ai/generative-ai/agents/) — Amazon AWS. Bài học thực tiễn từ xây dựng agentic systems.
+
+**Nghiên cứu về MCP Tool Overload:**
+- [Tool-space Interference in the MCP Era](https://www.microsoft.com/en-us/research/) — Microsoft Research. Phân tích tool space lớn làm giảm hiệu suất tới 85%.
+- [Solving the MCP Tool Overload Problem](https://redis.io/blog/solving-mcp-tool-overload/) — Redis. Case study giảm token từ 23K xuống 450, tăng accuracy từ 42% lên 85%.
+- [MCP and Context Overload](https://eclipsesource.com/blogs/2025/01/mcp-context-overload/) — Eclipse Source. Giải thích tại sao context quá tải tạo hành vi khó đoán.
+
+**Hướng dẫn kiến trúc:**
+- [Effective Context Engineering for AI Agents](https://www.anthropic.com/research/building-effective-agents) — Anthropic. Khuyến nghị về sub-agent, tool description, và minimal viable toolset.
+- [Agentic MCP Configuration](https://pulsemcp.com/blog/agentic-mcp-configuration/) — PulseMCP. Giải pháp để agent tự chọn MCP server phù hợp.
+- [AI Tool Overload: Why More Tools Mean Worse Performance](https://www.jenova.ai/blog/ai-tool-overload/) — Jenova AI. Tổng hợp về progressive disclosure và dynamic tool selection.

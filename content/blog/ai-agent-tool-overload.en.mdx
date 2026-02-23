@@ -302,3 +302,24 @@ Remember the article about **scalpels and paring knives**? Agents are the same. 
 *Agent failure isn't reasoning failure. It's tool selection failure.*
 
 *The solution isn't a better model. It's fewer tools, more clearly defined.*
+
+---
+
+## Appendix: References
+
+This article synthesizes findings from multiple industry research and experiments. If you want to dive deeper:
+
+**Research on Tool Overload:**
+- [Benchmarking Single Agent Performance](https://blog.langchain.dev/benchmarking-single-agent-performance/) — LangChain (02/2025). Experiments on the "choking point" of agents with too many tools.
+- [Towards a Science of Scaling Agent Systems](https://research.google/blog/towards-a-science-of-scaling-agent-systems/) — Google Research, DeepMind & MIT. Study of 180 agent configurations, discovering the tool-coordination trade-off.
+- [Evaluating AI Agents: Real-world Lessons](https://aws.amazon.com/ai/generative-ai/agents/) — Amazon AWS. Practical lessons from building agentic systems.
+
+**Research on MCP Tool Overload:**
+- [Tool-space Interference in the MCP Era](https://www.microsoft.com/en-us/research/) — Microsoft Research. Analysis showing large tool spaces can degrade performance by up to 85%.
+- [Solving the MCP Tool Overload Problem](https://redis.io/blog/solving-mcp-tool-overload/) — Redis. Case study reducing tokens from 23K to 450, increasing accuracy from 42% to 85%.
+- [MCP and Context Overload](https://eclipsesource.com/blogs/2025/01/mcp-context-overload/) — Eclipse Source. Explains why context overload creates unpredictable behavior.
+
+**Architecture Guidelines:**
+- [Effective Context Engineering for AI Agents](https://www.anthropic.com/research/building-effective-agents) — Anthropic. Recommendations on sub-agents, tool descriptions, and minimal viable toolset.
+- [Agentic MCP Configuration](https://pulsemcp.com/blog/agentic-mcp-configuration/) — PulseMCP. Solutions for agents to self-select appropriate MCP servers.
+- [AI Tool Overload: Why More Tools Mean Worse Performance](https://www.jenova.ai/blog/ai-tool-overload/) — Jenova AI. Overview of progressive disclosure and dynamic tool selection.
