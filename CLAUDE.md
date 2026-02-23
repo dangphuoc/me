@@ -427,6 +427,43 @@ Client ngây thơ không biết mình bị 'đá'..."
 
 ### Cấu trúc bài viết
 
+**QUAN TRỌNG: Bố cục phải mượt như một dòng chảy, không lan man.**
+
+Trước khi viết, hãy xác định rõ:
+- **Câu hỏi chính** của bài là gì? (ví dụ: "LLM có liên quan gì đến gen video?")
+- **Các tuyến truyện** cần tách biệt rõ ràng, không xen kẽ lộn xộn
+
+**Nguyên tắc sắp xếp:**
+1. Hoàn thành một tuyến trước khi sang tuyến khác
+2. Mỗi section phải dẫn tự nhiên đến section tiếp theo
+3. Nếu có section giải thích cơ chế (how it works), gom lại liền mạch
+4. Nếu có section giải thích nguyên nhân (why), gom lại liền mạch
+5. Không nhảy qua nhảy lại giữa "how" và "why"
+
+**Ví dụ bố cục tốt:**
+```
+HOOK & BỐI CẢNH
+├── Câu hỏi/vấn đề được đặt ra
+└── Bức tranh tổng quan
+
+CÔNG NGHỆ (how it works) - gom liền mạch
+├── Lịch sử/bối cảnh
+├── Thành phần A
+├── Thành phần B
+└── Thành phần C (mở rộng từ A+B)
+
+TẠI SAO (why) - gom liền mạch
+├── Lý do 1
+├── Lý do 2
+└── Mở rộng phạm vi
+
+HIỆN TẠI & TƯƠNG LAI
+├── Tốc độ phát triển
+├── Implications
+└── Kết luận (quay lại câu hỏi ban đầu)
+```
+
+**Cấu trúc cơ bản cho bài debugging/problem-solving:**
 1. **Hook** - Bối cảnh hấp dẫn (vấn đề thực tế)
 2. **Manh mối** - Xây dựng mystery
 3. **Kiến thức nền** - Giải thích kỹ thuật qua analogy
@@ -434,6 +471,19 @@ Client ngây thơ không biết mình bị 'đá'..."
 5. **Solution** - Code fix + giải thích
 6. **Lessons** - Bài học rút ra
 7. **Kết** - Wrap up câu chuyện
+
+**Cấu trúc cho bài giải thích concept/technology:**
+1. **Hook** - Câu hỏi/hiện tượng gây tò mò
+2. **Bức tranh lớn** - Overview, context
+3. **How it works** - Giải thích cơ chế (theo timeline hoặc logic flow)
+4. **Why it matters** - Tại sao quan trọng, tại sao bùng nổ
+5. **Implications** - Ảnh hưởng, tương lai
+6. **Kết** - Trả lời câu hỏi ban đầu
+
+**Lưu ý về tiêu đề section:**
+- KHÔNG dùng "Phần I, Phần II, Phần III" - quá cứng nhắc
+- Dùng tiêu đề tự nhiên, mô tả nội dung
+- Tiêu đề có thể dùng analogy hoặc câu hỏi để tạo tò mò
 
 ### Quy tắc ngôn ngữ
 
