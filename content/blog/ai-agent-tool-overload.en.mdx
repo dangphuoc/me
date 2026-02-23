@@ -1,0 +1,258 @@
+---
+title: "Less Is More: When AI Agents Choke on Too Many Tools"
+title_vi: "Ít Hơn Là Nhiều Hơn: Khi AI Agent Bị 'Nghẹt Thở' Vì Quá Nhiều Tool"
+title_en: "Less Is More: When AI Agents Choke on Too Many Tools"
+excerpt_vi: "Minh hào hứng: 'Em lắp 20 tool vào agent, nó sẽ làm được mọi thứ!' Hai tuần sau, agent đó không làm được gì cả. Hóa ra, có một quy luật mà cả Google, MIT và Anthropic đều đã chứng minh."
+excerpt_en: "Minh was excited: 'I'll add 20 tools to my agent, it'll do everything!' Two weeks later, that agent couldn't do anything. Turns out, there's a rule that Google, MIT, and Anthropic have all proven."
+date: 2025-10-28
+tags:
+  - AI
+  - AI Agent
+  - Architecture
+  - Software Engineering
+  - Best Practices
+thumbnail: https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800
+---
+
+After reading the article about Workflows and Agents, Minh eagerly started building his first agent.
+
+*"I'm going to make a super powerful agent. It'll have a tool to read files, write files, run tests, commit code, read Jira, send Slack messages, query databases, call APIs, search Google..."*
+
+Minh listed 20 tools.
+
+Two weeks later, Minh messaged me:
+
+*"Hey, my agent is... stupid. I tell it to commit code and it sends a Slack message instead. I tell it to read a file and it queries the database. I don't understand why."*
+
+I smiled. Because this is a lesson everyone who builds AI Agents has to pay for at least once.
+
+![Tool overload](https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800)
+
+---
+
+## The carpenter's toolbox
+
+Imagine you're a carpenter. You have a toolbox.
+
+Inside: hammer, pliers, saw, plane, chisel, ruler, pencil. 7 items. Whenever you need something, you open the box, glance through, grab exactly what you need. Fast. Accurate.
+
+Now, someone says: "A good carpenter needs lots of tools!"
+
+You start stuffing more in: drill, grinder, electric saw, 50 types of nails, 30 types of screws, 20 types of glue, 15 types of paint...
+
+The toolbox now has 200 items.
+
+Every time you need something, you open it... and freeze. Which one do I need? Nail type 7 or type 12? Wood glue or metal glue? Cordless drill or corded?
+
+**You spend more time choosing tools than actually working.**
+
+And sometimes, because of too many choices, you choose wrong. Use metal glue on wood. Use oversized nails on thin boards.
+
+AI Agents work exactly the same way. Exactly.
+
+---
+
+## The numbers don't lie
+
+LangChain ran an experiment in early 2025. Simple question: *"At what point does an agent start 'choking' from too many tools?"*
+
+Results?
+
+**GPT-4o dropped to 2% performance** when the number of domains (tool groups) increased to 7 or more.
+
+2%. Practically useless.
+
+Not because the model is dumb. But because **the decision space is too large**. With 20 tools, every time the agent acts, it has to "think": *"Out of these 20, which one is right?"* And the probability of choosing wrong increases exponentially.
+
+Google Research, DeepMind, and MIT had similar findings. They tested 180 different agent configurations. Discovered something called the **tool-coordination trade-off**: when tasks require more tools, coordination costs increase disproportionately.
+
+Simply put: **adding tools doesn't increase power linearly. It increases complexity exponentially.**
+
+![Complexity](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800)
+
+---
+
+## Agent failure is tool selection failure
+
+This is the most important insight I wanted Minh to understand.
+
+When an agent makes mistakes, most of the time it's not because the model isn't smart enough to reason. It's because **it chose the wrong tool**.
+
+Tell it to commit code, it calls the Slack tool. Why? Because in the prompt, both relate to "notifying the team." The agent sees the word "notify," sees the Slack tool's description says "send notifications," and picks it.
+
+Wrong logic? No. Its logic is perfectly reasonable - with the information it has.
+
+The problem is **too many tools with overlapping descriptions**. The agent doesn't know which one is correct in the specific context.
+
+Anthropic put it well in their Context Engineering article:
+
+*"If a human engineer cannot determine with certainty which tool should be used in a situation, then the AI agent cannot do better."*
+
+Read that sentence again. Slowly.
+
+If you - the system designer - look at a list of 20 tools and need 5 seconds to figure out which one to use, then the agent will choose wrong. Guaranteed.
+
+---
+
+## The golden number: 3-5 tools
+
+From practical experience and research, one number keeps appearing:
+
+**Agents work best with 3-5 tools.**
+
+Not 20. Not 10. 3-5.
+
+Why?
+
+Because with 3-5 tools, the decision space is small enough for the agent to understand each one clearly. Each tool has a distinct role, no overlap. The agent can "remember" exactly when to use which.
+
+Like a professional carpenter. They don't carry 200 items around. They bring exactly what's needed for today's job. 5-7 items. Enough to work with. Easy to choose.
+
+Minh asked: *"But what if I need more than 5 tools?"*
+
+Good question. And that's when real architecture begins.
+
+---
+
+## Solution 1: Divide and conquer
+
+Instead of one agent with 20 tools, split into multiple small agents.
+
+**Agent A:** specializes in code - has tools for reading files, writing files, running tests. 3 tools.
+
+**Agent B:** specializes in Jira - has tools for reading tickets, updating tickets, adding comments. 3 tools.
+
+**Agent C:** specializes in communication - has Slack tool, email tool. 2 tools.
+
+**Orchestrator Agent:** receives requests, decides which agent to delegate to.
+
+Each small agent has a clean context window, focusing only on its domain. No noise from irrelevant tools.
+
+This is the **Hierarchical Agents** pattern - and it works very well in practice.
+
+Anthropic recommends: *"Instead of one agent trying to maintain state across an entire project, specialized sub-agents handle focused tasks."*
+
+---
+
+## Solution 2: Dynamic tool loading
+
+Another approach: don't stuff all tools into the agent from the start.
+
+**Tool routing** - only load tools relevant to the current task.
+
+User says "commit code" → only load Git tools.
+User says "send Slack message" → only load Slack tool.
+User says "read Jira" → only load Jira tools.
+
+Like a carpenter arriving at the job site, looking at what today's work is, then getting the appropriate tools. Not hauling the entire toolbox around.
+
+This is more complex to implement, but keeps the agent always "light-headed."
+
+![Organized tools](https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800)
+
+---
+
+## Solution 3: Write tool descriptions like documentation
+
+Something many people overlook: **the tool description is as important as the tool code**.
+
+The agent reads descriptions to decide which tool to use. If descriptions are vague, the agent chooses wrong.
+
+**Bad description:**
+```
+"send_message": "Send a message"
+```
+
+Send a message where? Slack? Email? SMS? The agent doesn't know.
+
+**Good description:**
+```
+"send_slack_message": "Send a message to the team's Slack channel.
+Only use when you need to quickly notify the team about work progress
+or ask for opinions. DO NOT use for formal announcements - use email instead."
+```
+
+Clear. Specific. Even includes guidance on when NOT to use.
+
+Write tool descriptions like documentation for a new junior developer joining the team. Assume they know nothing. Explain everything.
+
+---
+
+## The Swiss Army knife story
+
+Hieu told a good story.
+
+*"Years ago I went camping, brought a Swiss Army knife. 20 functions in one: knife, scissors, pliers, screwdriver, bottle opener..."*
+
+*"Sounds great. But in practice? When I needed to cut rope, I had to flip through the 20 things to find the knife. When I needed to loosen a screw, it took forever to find the right screwdriver size. Every task took an extra 30 seconds finding the tool."*
+
+*"After that I switched to bringing separate knife, separate pliers, separate screwdriver. One of each, exactly the size I need. Much faster."*
+
+AI Agents are the same. A "multi-purpose" agent with 20 tools sounds powerful, but in practice it's slow and error-prone. Multiple specialized agents, each with a few tools, work much more effectively.
+
+**Less is more.**
+
+---
+
+## Minh rebuilds
+
+After our conversation, Minh redesigned the system.
+
+Instead of 1 agent with 20 tools, Minh created:
+
+- **CodeAgent**: read file, write file, run tests (3 tools)
+- **GitAgent**: commit, push, create PR (3 tools)
+- **JiraAgent**: read ticket, update status (2 tools)
+- **Orchestrator**: receives requests, distributes to appropriate agent
+
+Each agent small, focused, few tools.
+
+A week later, Minh messaged:
+
+*"Hey, it's working great now. Tell it to commit and it commits. Tell it to read Jira and it reads Jira. No more confusion."*
+
+*"And the best part is debugging is much easier. If GitAgent is wrong, I only need to look at its 3 tools, not dig through 20."*
+
+That's the power of good design.
+
+---
+
+## Rules to remember
+
+Before designing an AI Agent, ask yourself:
+
+**1. If I were the agent, looking at this list of tools, would I know which one to pick?**
+
+If you need to think for > 3 seconds, the agent will choose wrong. Reduce tools or rewrite descriptions.
+
+**2. Are there any tools with overlapping functions?**
+
+If 2 tools can both be used for the same task, the agent will be confused. Merge them or clearly differentiate.
+
+**3. Is the tool count over 5?**
+
+If yes, consider splitting into multiple specialized agents.
+
+**4. Is each tool's description clear enough?**
+
+Write like documentation. Assume the reader knows nothing about the system.
+
+---
+
+## Closing thoughts
+
+When building AI Agents, the natural instinct is to add more tools. More functions. More capabilities.
+
+But research from LangChain, Google, MIT, and Anthropic all point to the same thing: **adding tools doesn't make agents stronger. It makes them weaker.**
+
+This rule isn't just an opinion. It's been measured. GPT-4o dropped from high performance to 2% when tools became excessive. Numbers don't lie.
+
+Remember the article about **scalpels and paring knives**? Agents are the same. One sharp knife, right for the job, is better than 20 dull ones.
+
+**Less is more.**
+
+---
+
+*Agent failure isn't reasoning failure. It's tool selection failure.*
+
+*The solution isn't a better model. It's fewer tools, more clearly defined.*
