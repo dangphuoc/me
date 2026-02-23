@@ -194,6 +194,52 @@ AI Agents are the same. A "multi-purpose" agent with 20 tools sounds powerful, b
 
 ---
 
+## The MCP trap: "Connect and grab everything"
+
+Truong - the one who loves playing with new tech - asked me:
+
+*"Hey, I'm using MCP servers. I connected to several pre-built servers, each has dozens of tools. Total over 100 tools. Sounds powerful, but why is my agent slow and keeps making mistakes?"*
+
+This is an extremely common anti-pattern. And research from Microsoft Research shows clearly:
+
+**Large tool spaces can degrade performance by up to 85% in some models.**
+
+The largest surveyed MCP server had up to 256 tools. And even when fitting in the context window, overly long responses still degraded performance by up to 91%.
+
+A specific example from Redis: just 4 MCP servers created **167 tools**, consuming about **60,000 tokens** before the user even asked anything. In production, it's often 150,000+ tokens.
+
+Consequences?
+- **Accuracy drops** — model picks wrong tool, data gets overwritten in wrong places
+- **Cost increases** — all tool definitions load with every request, burning tokens before doing anything
+- **Latency increases** — model has to read through all tools before picking one
+
+And the paradox: trying to improve reliability by adding more detail to tool descriptions actually **backfires**. Because the longer the context, the more the model "gets lost."
+
+When Redis applied tool filtering instead of loading everything:
+- Tokens dropped from 23,000 to **450** per request
+- Response time dropped from 3.4 seconds to **under 400ms**
+- Accuracy increased from 42% to **85%**
+
+Cursor also understands this problem. They set a **hard limit of 40 tools** - no matter how many MCP servers you install, Cursor only sends the first 40 tools to the LLM.
+
+**The right solution isn't "grab everything." It's "right tools at the right time."**
+
+Several approaches work:
+
+**Lazy loading** — Add a `search_tools` tool so the agent can search for needed tools, then load only those. Like looking up a dictionary instead of memorizing the whole book.
+
+**Domain-driven MCP** — Don't create one MCP server for everything. Create small, specialized MCPs: MCP for Git, MCP for Jira, MCP for database. Agent picks the server first, then uses tools from that server.
+
+**Progressive disclosure** — Tools organized hierarchically. Agent picks a category first (e.g., "code"), then receives only tools from that category.
+
+Truong asked: *"So MCP has problems?"*
+
+No. MCP is a good protocol. The fault lies in the "load everything" implementation. MCP works well when combined with **smart tool selection systems** - dynamically managing which servers are active for which tasks.
+
+The principle remains the same: **less is more.**
+
+---
+
 ## Minh rebuilds
 
 After our conversation, Minh redesigned the system.

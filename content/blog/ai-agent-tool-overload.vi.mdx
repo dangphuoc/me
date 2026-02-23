@@ -194,6 +194,52 @@ AI Agent cũng vậy. Một agent "đa năng" với 20 tool nghe thì powerful, 
 
 ---
 
+## Cái bẫy MCP: "Connect rồi ôm hết"
+
+Trường - đứa hay nghịch công nghệ mới - hỏi tôi:
+
+*"Anh ơi, em đang dùng MCP server. Em connect vào mấy cái server có sẵn, mỗi cái có vài chục tool. Tổng cộng được hơn 100 tool. Nghe powerful lắm, nhưng sao agent của em lại chậm và hay sai?"*
+
+Đây là một anti-pattern cực kỳ phổ biến. Và nghiên cứu từ Microsoft Research đã chỉ ra rõ ràng:
+
+**Không gian tool lớn có thể làm giảm hiệu suất tới 85% ở một số model.**
+
+MCP server lớn nhất được khảo sát có tới 256 tool. Và ngay cả khi vừa context window, response quá dài vẫn làm giảm hiệu suất tới 91%.
+
+Một ví dụ cụ thể từ Redis: chỉ với 4 MCP server đã tạo ra **167 tool**, tiêu tốn khoảng **60,000 token** trước khi người dùng kịp hỏi câu gì. Trong production, con số thường là 150,000+ token.
+
+Hậu quả?
+- **Accuracy giảm** — model chọn sai tool, data bị ghi đè nhầm chỗ
+- **Cost tăng** — mọi tool definition load theo mỗi request, đốt token trước khi làm gì
+- **Latency tăng** — model phải đọc qua tất cả tool trước khi chọn một cái
+
+Và điều nghịch lý: cố cải thiện độ tin cậy bằng cách thêm chi tiết cho tool description lại **phản tác dụng**. Vì context càng dài, model càng "lạc."
+
+Khi Redis áp dụng tool filtering thay vì load hết:
+- Token giảm từ 23,000 xuống **450** mỗi request
+- Thời gian phản hồi giảm từ 3.4 giây xuống **dưới 400ms**
+- Accuracy tăng từ 42% lên **85%**
+
+Cursor cũng hiểu vấn đề này. Họ đặt **hard limit 40 tool** - bất kể bạn cài bao nhiêu MCP server, Cursor chỉ gửi 40 tool đầu tiên cho LLM.
+
+**Giải pháp đúng không phải "ôm hết." Mà là "chọn đúng tool cho đúng lúc."**
+
+Có vài cách tiếp cận:
+
+**Lazy loading** — Thêm một tool `search_tools` để agent tìm kiếm tool cần thiết, rồi mới load tool đó. Giống như tra từ điển thay vì đọc thuộc cả quyển.
+
+**Domain-driven MCP** — Không tạo một MCP server cho mọi thứ. Tạo các MCP nhỏ, chuyên biệt: MCP cho Git, MCP cho Jira, MCP cho database. Agent chọn server trước, rồi mới dùng tool của server đó.
+
+**Progressive disclosure** — Tool tổ chức theo phân cấp. Agent chọn danh mục trước (ví dụ: "code"), rồi mới nhận tool của danh mục đó.
+
+Trường hỏi: *"Vậy MCP có vấn đề à?"*
+
+Không. MCP là protocol tốt. Lỗi nằm ở cách triển khai "load everything." MCP hoạt động tốt khi kết hợp với **hệ thống chọn tool thông minh** - quản lý động server nào active cho tác vụ nào.
+
+Bản chất vẫn là quy luật cũ: **ít hơn là nhiều hơn.**
+
+---
+
 ## Minh làm lại
 
 Sau cuộc nói chuyện, Minh thiết kế lại hệ thống.
