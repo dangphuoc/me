@@ -72,7 +72,7 @@ export default function AboutPage() {
   const locale = (pathname.split('/')[1] || 'vi') as 'vi' | 'en';
 
   return (
-    <div className="min-h-screen gradient-bg py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -80,8 +80,8 @@ export default function AboutPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('title')}</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-6">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-th-heading">{t('title')}</h1>
+          <p className="text-lg text-th-secondary max-w-2xl mx-auto mb-6">
             {locale === 'vi'
               ? 'Đam mê công nghệ và phát triển con người'
               : 'Passionate about technology and people development'
@@ -91,7 +91,7 @@ export default function AboutPage() {
             href={`/${locale}/cv`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-600/25"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-th-accent text-th-strong font-medium transition-colors hover:bg-th-accent-hover"
           >
             <Download size={20} />
             {locale === 'vi' ? 'Xem CV' : 'View CV'}
@@ -105,15 +105,15 @@ export default function AboutPage() {
           transition={{ delay: 0.1 }}
           className="mb-16"
         >
-          <div className="glass-card p-8 md:p-12">
+          <div className="terminal-card p-8 md:p-12">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                <Users className="text-blue-600 dark:text-blue-400" size={24} />
+              <div className="p-3 bg-th-hover">
+                <Users className="text-th-secondary" size={24} />
               </div>
-              <h2 className="text-2xl font-bold">{t('bio')}</h2>
+              <h2 className="text-2xl font-bold text-th-strong">{t('bio')}</h2>
             </div>
-            <div className="prose dark:prose-invert max-w-none">
-              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            <div className="max-w-none">
+              <p className="text-lg text-th-primary leading-relaxed">
                 {locale === 'vi' ? (
                   <>
                     Xin chào! Tôi là Engineering Manager tại MoMo với hơn 8 năm kinh nghiệm
@@ -148,15 +148,15 @@ export default function AboutPage() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-              <Briefcase className="text-purple-600 dark:text-purple-400" size={24} />
+            <div className="p-3 bg-th-hover">
+              <Briefcase className="text-th-secondary" size={24} />
             </div>
-            <h2 className="text-2xl font-bold">{t('experience')}</h2>
+            <h2 className="text-2xl font-bold text-th-strong">{t('experience')}</h2>
           </div>
 
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-800" />
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-th-hover" />
 
             <div className="space-y-8">
               {experiences.map((exp, index) => (
@@ -169,16 +169,16 @@ export default function AboutPage() {
                   className="relative pl-20"
                 >
                   {/* Timeline dot */}
-                  <div className="absolute left-6 w-5 h-5 bg-blue-500 rounded-full border-4 border-white dark:border-gray-950" />
+                  <div className="absolute left-6 w-5 h-5 bg-th-accent rounded-full border-4 border-th-page" />
 
-                  <div className="glass-card p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="terminal-card p-6">
+                    <h3 className="text-xl font-semibold text-th-strong">
                       {exp.title[locale]}
                     </h3>
-                    <p className="text-blue-600 dark:text-blue-400 font-medium mb-2">
+                    <p className="text-th-secondary font-medium mb-2">
                       {exp.company}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    <div className="flex items-center gap-4 text-sm text-th-dim mb-3">
                       <span className="flex items-center gap-1">
                         <MapPin size={14} />
                         {exp.location}
@@ -188,7 +188,7 @@ export default function AboutPage() {
                         {exp.period}
                       </span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-th-secondary">
                       {exp.description[locale]}
                     </p>
                   </div>
@@ -206,18 +206,18 @@ export default function AboutPage() {
           className="mb-16"
         >
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-              <Target className="text-green-600 dark:text-green-400" size={24} />
+            <div className="p-3 bg-th-hover">
+              <Target className="text-th-secondary" size={24} />
             </div>
-            <h2 className="text-2xl font-bold">{t('skills')}</h2>
+            <h2 className="text-2xl font-bold text-th-strong">{t('skills')}</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Technical Skills */}
-            <div className="glass-card p-6">
+            <div className="terminal-card p-6">
               <div className="flex items-center gap-2 mb-6">
-                <Code2 size={20} className="text-blue-500" />
-                <h3 className="text-lg font-semibold">
+                <Code2 size={20} className="text-th-secondary" />
+                <h3 className="text-lg font-semibold text-th-strong">
                   {locale === 'vi' ? 'Kỹ năng kỹ thuật' : 'Technical Skills'}
                 </h3>
               </div>
@@ -231,18 +231,18 @@ export default function AboutPage() {
                     transition={{ delay: index * 0.1 }}
                   >
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-th-primary">
                         {skill.name}
                       </span>
-                      <span className="text-sm text-gray-500">{skill.level}%</span>
+                      <span className="text-sm text-th-dim">{skill.level}%</span>
                     </div>
-                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-th-hover rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: `${skill.level}%` }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: index * 0.1 }}
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                        className="h-full bg-th-accent rounded-full"
                       />
                     </div>
                   </motion.div>
@@ -251,10 +251,10 @@ export default function AboutPage() {
             </div>
 
             {/* Leadership Skills */}
-            <div className="glass-card p-6">
+            <div className="terminal-card p-6">
               <div className="flex items-center gap-2 mb-6">
-                <Users size={20} className="text-purple-500" />
-                <h3 className="text-lg font-semibold">
+                <Users size={20} className="text-th-secondary" />
+                <h3 className="text-lg font-semibold text-th-strong">
                   {locale === 'vi' ? 'Kỹ năng lãnh đạo' : 'Leadership Skills'}
                 </h3>
               </div>
@@ -268,18 +268,18 @@ export default function AboutPage() {
                     transition={{ delay: index * 0.1 }}
                   >
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-th-primary">
                         {skill.name}
                       </span>
-                      <span className="text-sm text-gray-500">{skill.level}%</span>
+                      <span className="text-sm text-th-dim">{skill.level}%</span>
                     </div>
-                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-th-hover rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: `${skill.level}%` }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: index * 0.1 }}
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                        className="h-full bg-th-accent rounded-full"
                       />
                     </div>
                   </motion.div>
@@ -296,56 +296,56 @@ export default function AboutPage() {
           transition={{ delay: 0.4 }}
         >
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl">
-              <GraduationCap className="text-yellow-600 dark:text-yellow-400" size={24} />
+            <div className="p-3 bg-th-hover">
+              <GraduationCap className="text-th-secondary" size={24} />
             </div>
-            <h2 className="text-2xl font-bold">{t('education')}</h2>
+            <h2 className="text-2xl font-bold text-th-strong">{t('education')}</h2>
           </div>
 
           <div className="space-y-4">
-            <div className="glass-card p-6">
+            <div className="terminal-card p-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                  <Award className="text-gray-600 dark:text-gray-400" size={24} />
+                <div className="p-3 bg-th-hover">
+                  <Award className="text-th-secondary" size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-xl font-semibold text-th-strong">
                     {locale === 'vi'
                       ? 'Kỹ sư Trắc địa - Bản đồ'
                       : 'Geomatic Engineer'
                     }
                   </h3>
-                  <p className="text-blue-600 dark:text-blue-400 font-medium">
+                  <p className="text-th-secondary font-medium">
                     {locale === 'vi'
                       ? 'Đại học Bách Khoa TP.HCM'
                       : 'Ho Chi Minh University of Technology (Bach Khoa)'
                     }
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    2011 - 2016 • GPA: 7.32/10
+                  <p className="text-sm text-th-dim mt-1">
+                    2011 - 2016 &bull; GPA: 7.32/10
                   </p>
                 </div>
               </div>
             </div>
-            <div className="glass-card p-6">
+            <div className="terminal-card p-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                  <Award className="text-gray-600 dark:text-gray-400" size={24} />
+                <div className="p-3 bg-th-hover">
+                  <Award className="text-th-secondary" size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="text-xl font-semibold text-th-strong">
                     {locale === 'vi'
                       ? 'Chứng chỉ Lập trình Java Web'
                       : 'Java Web Programming Certificate'
                     }
                   </h3>
-                  <p className="text-blue-600 dark:text-blue-400 font-medium">
+                  <p className="text-th-secondary font-medium">
                     {locale === 'vi'
                       ? 'Trung tâm CNTT - ĐH Khoa học Tự nhiên'
                       : 'IT Center - HCM University of Science'
                     }
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-th-dim mt-1">
                     2016
                   </p>
                 </div>

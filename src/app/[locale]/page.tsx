@@ -1,6 +1,5 @@
-import Hero from '@/components/home/Hero';
-import TechStack from '@/components/home/TechStack';
-import FeaturedPosts from '@/components/home/FeaturedPosts';
+import TerminalHero from '@/components/home/TerminalHero';
+import BlogGrid from '@/components/home/BlogGrid';
 import { getAllPosts } from '@/lib/mdx';
 
 interface Props {
@@ -10,15 +9,13 @@ interface Props {
 }
 
 export default function HomePage({ params }: Props) {
-  // Get latest 3 posts for featured section
   const allPosts = getAllPosts(params.locale);
-  const featuredPosts = allPosts.slice(0, 3);
+  const latestPosts = allPosts.slice(0, 6);
 
   return (
     <>
-      <Hero />
-      <FeaturedPosts posts={featuredPosts} />
-      <TechStack />
+      <TerminalHero />
+      <BlogGrid posts={latestPosts} />
     </>
   );
 }

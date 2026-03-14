@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Search, Calendar, Clock, Tag } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface Post {
   slug: string;
@@ -25,13 +25,13 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.04 },
   },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, x: -10 },
+  show: { opacity: 1, x: 0 },
 };
 
 export default function BlogListClient({ posts, locale }: BlogListClientProps) {
@@ -50,62 +50,61 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
   });
 
   return (
-    <div className="min-h-screen gradient-bg py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="mb-8"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('title')}</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            {t('subtitle')}
-          </p>
+          <div className="text-xs text-th-dim mb-2">
+            <span className="text-th-prompt">$</span> cat /var/log/blog.index
+          </div>
+          <h1 className="text-2xl font-bold text-th-heading mb-1">{t('title')}</h1>
+          <p className="text-sm text-th-dim">{t('subtitle')}</p>
         </motion.div>
 
-        {/* Search and Filter */}
+        {/* Search + Filter */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-12 space-y-6"
+          transition={{ delay: 0.05 }}
+          className="mb-8 space-y-4"
         >
-          {/* Search */}
-          <div className="relative max-w-xl mx-auto">
+          <div className="relative">
             <Search
-              size={20}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-th-accent-soft"
             />
             <input
               type="text"
               placeholder={t('search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-th-card border border-th-border text-sm text-th-primary placeholder-th-faint outline-none focus:border-th-accent transition-colors"
             />
           </div>
 
-          {/* Tags */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap gap-1.5 text-xs">
             <button
               onClick={() => setSelectedTag(null)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-2 py-1 border transition-colors ${
                 !selectedTag
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  ? 'border-th-accent text-th-accent'
+                  : 'border-th-border text-th-dim hover:text-th-accent'
               }`}
             >
-              {locale === 'vi' ? 'Tất cả' : 'All'}
+              *
             </button>
             {allTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-2 py-1 border transition-colors ${
                   selectedTag === tag
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'border-th-accent text-th-accent'
+                    : 'border-th-border text-th-dim hover:text-th-accent'
                 }`}
               >
                 {tag}
@@ -114,59 +113,52 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
           </div>
         </motion.div>
 
-        {/* Posts Grid */}
+        {/* Results count */}
+        <div className="text-[10px] text-th-faint mb-3">
+          {filteredPosts.length} {locale === 'vi' ? 'kết quả' : 'results'}
+          {selectedTag && <span> — [{selectedTag}]</span>}
+        </div>
+
+        {/* Posts */}
         {filteredPosts.length > 0 ? (
           <motion.div
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid md:grid-cols-2 gap-6"
+            className="border border-th-border divide-y divide-th-border"
           >
-            {filteredPosts.map((post) => (
-              <motion.article
-                key={post.slug}
-                variants={item}
-                whileHover={{ y: -4 }}
-                className="group"
-              >
-                <Link href={`/${locale}/blog/${post.slug}`}>
-                  <div className="h-full p-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 transition-all shadow-sm hover:shadow-lg">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {post.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-medium"
-                        >
-                          <Tag size={12} />
-                          {tag}
-                        </span>
-                      ))}
+            {filteredPosts.map((post, index) => (
+              <motion.article key={post.slug} variants={item}>
+                <Link
+                  href={`/${locale}/blog/${post.slug}`}
+                  className="group block px-4 py-4 hover:bg-th-hover transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-th-accent-soft text-xs mt-0.5 shrink-0 w-5 text-right">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-sm font-medium text-th-primary group-hover:text-th-accent transition-colors line-clamp-1">
+                        {post.title}
+                      </h2>
+                      <p className="text-xs text-th-dim mt-1 line-clamp-1">
+                        {post.excerpt}
+                      </p>
                     </div>
 
-                    {/* Title */}
-                    <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                      {post.title}
-                    </h2>
-
-                    {/* Excerpt */}
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                      {post.excerpt}
-                    </p>
-
-                    {/* Meta */}
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {new Date(post.date).toLocaleDateString(
-                          locale === 'vi' ? 'vi-VN' : 'en-US',
-                          { year: 'numeric', month: 'short', day: 'numeric' }
-                        )}
+                    <div className="hidden sm:flex items-center gap-3 text-[10px] text-th-faint shrink-0">
+                      {post.tags[0] && (
+                        <span className="text-th-accent-soft">[{post.tags[0]}]</span>
+                      )}
+                      <span>
+                        {new Date(post.date).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: '2-digit',
+                        })}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={14} />
-                        {post.readingTime}
-                      </span>
+                      <span>{post.readingTime}</span>
                     </div>
                   </div>
                 </Link>
@@ -174,13 +166,9 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
             ))}
           </motion.div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
-            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('noResults')}</p>
-          </motion.div>
+          <div className="text-center py-12 text-th-dim text-sm">
+            <span className="text-th-accent-soft">ERR:</span> {t('noResults')}
+          </div>
         )}
       </div>
     </div>
