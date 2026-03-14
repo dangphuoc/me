@@ -38,8 +38,18 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
   const t = useTranslations('blog');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showAllTags, setShowAllTags] = useState(false);
 
-  const allTags = Array.from(new Set(posts.flatMap((post) => post.tags)));
+  const MAX_VISIBLE_TAGS = 6;
+
+  // Sort tags by frequency (most used first)
+  const tagCounts = posts.flatMap((post) => post.tags).reduce((acc, tag) => {
+    acc[tag] = (acc[tag] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const allTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+  const visibleTags = showAllTags ? allTags : allTags.slice(0, MAX_VISIBLE_TAGS);
+  const hiddenCount = allTags.length - MAX_VISIBLE_TAGS;
 
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =
@@ -61,8 +71,8 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
           <div className="text-xs text-th-dim mb-2">
             <span className="text-th-prompt">$</span> cat /var/log/blog.index
           </div>
-          <h1 className="text-2xl font-bold text-th-heading mb-1">{t('title')}</h1>
-          <p className="text-sm text-th-dim">{t('subtitle')}</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-th-heading mb-1">{t('title')}</h1>
+          <p className="text-lg text-th-dim">{t('subtitle')}</p>
         </motion.div>
 
         {/* Search + Filter */}
@@ -97,7 +107,7 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
             >
               *
             </button>
-            {allTags.map((tag) => (
+            {visibleTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
@@ -110,6 +120,14 @@ export default function BlogListClient({ posts, locale }: BlogListClientProps) {
                 {tag}
               </button>
             ))}
+            {hiddenCount > 0 && (
+              <button
+                onClick={() => setShowAllTags(!showAllTags)}
+                className="px-2 py-1 border border-th-border text-th-faint hover:text-th-accent transition-colors"
+              >
+                {showAllTags ? '−' : `+${hiddenCount}`}
+              </button>
+            )}
           </div>
         </motion.div>
 

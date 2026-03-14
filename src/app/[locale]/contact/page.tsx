@@ -3,39 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import {
-  Mail,
-  Send,
-  Github,
-  Linkedin,
-  Twitter,
-  MapPin,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react';
 
-const socialLinks = [
-  {
-    icon: Github,
-    href: 'https://github.com',
-    label: 'GitHub',
-  },
-  {
-    icon: Linkedin,
-    href: 'https://linkedin.com',
-    label: 'LinkedIn',
-  },
-  {
-    icon: Twitter,
-    href: 'https://twitter.com',
-    label: 'Twitter',
-  },
-  {
-    icon: Mail,
-    href: 'mailto:dangphuocbk.93@gmail.com',
-    label: 'Email',
-  },
-];
+const FORMSPREE_ID = 'xkoonvob';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
@@ -47,8 +16,6 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const FORMSPREE_ID = 'xkoonvob';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
@@ -56,9 +23,7 @@ export default function ContactPage() {
     try {
       const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -78,41 +43,87 @@ export default function ContactPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
-    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="mb-10"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-th-heading">{t('title')}</h1>
-          <p className="text-lg text-th-secondary max-w-2xl mx-auto">
-            {t('subtitle')}
-          </p>
+          <div className="text-xs text-th-dim mb-2">
+            <span className="text-th-prompt">$</span> ping phuoc@dev
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-th-heading mb-2">{t('title')}</h1>
+          <p className="text-lg text-th-secondary">{t('subtitle')}</p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Contact Info - left */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="lg:col-span-2"
           >
-            <div className="terminal-card p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-th-primary mb-2"
+            <div className="text-xs text-th-dim mb-3">
+              <span className="text-th-prompt">$</span> cat contact.conf
+            </div>
+            <div className="border border-th-border bg-th-card p-5 space-y-4 text-sm">
+              <div>
+                <span className="text-th-dim">location</span>
+                <span className="text-th-faint mx-2">=</span>
+                <span className="text-th-primary">Ho Chi Minh City, Vietnam</span>
+              </div>
+              <div>
+                <span className="text-th-dim">email</span>
+                <span className="text-th-faint mx-2">=</span>
+                <a href="mailto:dangphuocbk.93@gmail.com" className="text-th-accent hover:text-th-accent-hover transition-colors">
+                  dangphuocbk.93@gmail.com
+                </a>
+              </div>
+              <div className="border-t border-th-border pt-4 mt-4">
+                <span className="text-xs text-th-dim block mb-3">// links</span>
+                <div className="space-y-2">
+                  <a
+                    href="https://github.com/dangphuoc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-th-secondary hover:text-th-accent transition-colors"
                   >
+                    <span className="text-th-accent-soft mr-2">→</span>github.com/dangphuoc
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/phuoc-nguyen-dang-016129159/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-th-secondary hover:text-th-accent transition-colors"
+                  >
+                    <span className="text-th-accent-soft mr-2">→</span>linkedin.com/in/phuoc-nguyen
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Form - right */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-3"
+          >
+            <div className="text-xs text-th-dim mb-3">
+              <span className="text-th-prompt">$</span> send --message
+            </div>
+            <div className="border border-th-border bg-th-card p-5 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="name" className="block text-xs text-th-dim mb-1.5">
                     {t('name')}
                   </label>
                   <input
@@ -122,15 +133,12 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-th-card border border-th-border focus:ring-1 focus:ring-th-accent focus:border-th-accent outline-none transition-all text-th-primary"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-th-primary mb-2"
-                  >
+                  <label htmlFor="email" className="block text-xs text-th-dim mb-1.5">
                     {t('email')}
                   </label>
                   <input
@@ -140,15 +148,12 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-th-card border border-th-border focus:ring-1 focus:ring-th-accent focus:border-th-accent outline-none transition-all text-th-primary"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-th-primary mb-2"
-                  >
+                  <label htmlFor="message" className="block text-xs text-th-dim mb-1.5">
                     {t('message')}
                   </label>
                   <textarea
@@ -158,105 +163,41 @@ export default function ContactPage() {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-th-card border border-th-border focus:ring-1 focus:ring-th-accent focus:border-th-accent outline-none transition-all resize-none text-th-primary"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors resize-none"
                   />
                 </div>
 
-                <motion.button
+                <button
                   type="submit"
                   disabled={status === 'loading'}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-th-accent text-th-strong disabled:opacity-50 font-medium transition-colors hover:bg-th-accent-hover"
+                  className="w-full py-2.5 text-sm border border-th-accent text-th-accent hover:bg-th-accent hover:text-th-strong disabled:opacity-50 transition-colors"
                 >
                   {status === 'loading' ? (
-                    <div className="w-5 h-5 border-2 border-th-secondary border-t-th-strong rounded-full animate-spin" />
+                    <span className="animate-pulse">sending...</span>
                   ) : (
-                    <>
-                      <Send size={20} />
-                      {t('send')}
-                    </>
+                    <>$ {t('send').toLowerCase()}</>
                   )}
-                </motion.button>
+                </button>
 
                 {status === 'success' && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-th-primary"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-th-accent"
                   >
-                    <CheckCircle size={20} />
-                    {t('success')}
+                    <span className="text-th-prompt mr-1">[OK]</span> {t('success')}
                   </motion.div>
                 )}
                 {status === 'error' && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-th-secondary"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-th-secondary"
                   >
-                    <AlertCircle size={20} />
-                    {t('error')}
+                    <span className="mr-1">[ERR]</span> {t('error')}
                   </motion.div>
                 )}
               </form>
-            </div>
-          </motion.div>
-
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-8"
-          >
-            <div className="terminal-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-th-hover">
-                  <MapPin className="text-th-secondary" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-th-strong">Location</h3>
-                  <p className="text-th-secondary">Ho Chi Minh City, Vietnam</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="terminal-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-th-hover">
-                  <Mail className="text-th-secondary" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-th-strong">Email</h3>
-                  <a
-                    href="mailto:dangphuocbk.93@gmail.com"
-                    className="text-th-primary underline hover:text-th-accent"
-                  >
-                    dangphuocbk.93@gmail.com
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="terminal-card p-6">
-              <h3 className="font-semibold text-th-strong mb-4">Social Links</h3>
-              <div className="flex gap-4">
-                {socialLinks.map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="p-3 bg-th-hover text-th-secondary hover:text-th-accent transition-colors"
-                    aria-label={social.label}
-                  >
-                    <social.icon size={24} />
-                  </motion.a>
-                ))}
-              </div>
             </div>
           </motion.div>
         </div>

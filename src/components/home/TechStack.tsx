@@ -4,9 +4,11 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 
 const technologies = [
-  'Java', 'Spring Boot', 'Vert.x', 'Quarkus LangChain', 'AI Agent',
+  'Java', 'Quarkus', 'Vert.x',
+  'AI Agent', 'ReAct', 'RAG', 'Multi-Agent',
+  'Claude Code SDK', 'Anthropic SDK', 'LangChain',
   'Kafka', 'RabbitMQ', 'MySQL', 'Redis', 'Cassandra',
-  'Docker', 'Kubernetes', 'ArgoCD', 'Prometheus', 'Grafana', 'Jenkins',
+  'Docker', 'Kubernetes', 'ArgoCD', 'Prometheus', 'Grafana',
 ];
 
 const container = {
@@ -29,7 +31,7 @@ export default function TechStack() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xl font-bold text-center mb-10 text-th-heading"
+          className="text-2xl font-bold text-center mb-10 text-th-heading"
         >
           {t('techStack')}
         </motion.h2>

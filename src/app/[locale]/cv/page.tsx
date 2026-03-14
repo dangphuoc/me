@@ -20,8 +20,8 @@ const personalInfo = {
   linkedin: 'linkedin.com/in/phuoc-nguyen-dang-016129159',
   github: 'github.com/dangphuoc',
   summary: {
-    vi: 'Engineering Manager với hơn 8 năm kinh nghiệm trong ngành Fintech. Chuyên xây dựng và quản lý các hệ thống thanh toán quy mô lớn, có khả năng xử lý hàng triệu giao dịch mỗi ngày. Đam mê phát triển đội ngũ và áp dụng công nghệ mới như AI Agent vào sản phẩm.',
-    en: 'Engineering Manager with 8+ years of experience in Fintech industry. Specialized in building and managing large-scale payment systems capable of handling millions of transactions daily. Passionate about team development and applying new technologies like AI Agents to products.',
+    vi: 'Engineering Manager với hơn 8 năm kinh nghiệm trong ngành Fintech, tư duy lấy khách hàng làm trung tâm. Chuyên xây dựng và quản lý các hệ thống quy mô lớn xử lý hàng triệu giao dịch mỗi ngày. Hiện đang nghiên cứu sâu về AI Agents (ReAct, RAG, Multi-Agent) để đưa AI vào giải quyết bài toán thực tế trong sản phẩm.',
+    en: 'Engineering Manager with 8+ years in Fintech, driven by a customer-centric mindset. Specialized in building and managing large-scale systems handling millions of transactions daily. Currently diving deep into AI Agents (ReAct, RAG, Multi-Agent architectures) to bring AI into production for real-world problem solving.',
   },
 };
 
@@ -36,16 +36,18 @@ const experiences = [
         'Xây dựng và quản lý hệ thống Bank Linkage kết nối 30+ ngân hàng',
         'Phát triển hệ thống Bank Transfer 247 xử lý hàng triệu giao dịch/ngày',
         'Thiết kế và triển khai hệ thống eKYC với độ chính xác 99.5%',
+        'Nghiên cứu và ứng dụng AI Agents (ReAct, RAG, Multi-Agent) vào sản phẩm',
         'Xây dựng CI/CD pipeline và monitoring tools (Prometheus, Grafana)',
-        'Quản lý team 20 thành viên (Mobile, Backend, QC)',
+        'Quản lý team 20 thành viên với tư duy customer-centric',
         'Triển khai hệ thống trên cloud on-premise với Kubernetes',
       ],
       en: [
         'Built and managed Bank Linkage system connecting 30+ banks',
-        'Developed Bank Transfer 247 system handling millions of transactions/day',
+        'Developed Bank Transfer 247 handling millions of transactions/day',
         'Designed and deployed eKYC system with 99.5% accuracy',
+        'Researching and applying AI Agents (ReAct, RAG, Multi-Agent) to products',
         'Built CI/CD pipeline and monitoring tools (Prometheus, Grafana)',
-        'Managed team of 20 members (Mobile, Backend, QC)',
+        'Managing team of 20 members with customer-centric mindset',
         'Deployed systems on cloud on-premise with Kubernetes',
       ],
     },
@@ -87,13 +89,13 @@ const experiences = [
 ];
 
 const skills = {
-  programming: ['Java', 'Spring Boot', 'Vert.x', 'Quarkus'],
-  ai: ['AI Agent', 'Quarkus LangChain', 'LLM Integration'],
+  programming: ['Java', 'Quarkus', 'Vert.x'],
+  ai: ['AI Agent', 'ReAct', 'Planning', 'Workflow', 'RAG', 'Multi-Agent', 'Sub-Agent', 'Claude Code SDK', 'Anthropic SDK', 'LangChain'],
   databases: ['MySQL', 'Oracle', 'Cassandra', 'Redis', 'PostgreSQL'],
   messaging: ['Apache Kafka', 'RabbitMQ'],
   devops: ['Docker', 'Kubernetes', 'ArgoCD', 'Jenkins', 'GitLab CI'],
   monitoring: ['Prometheus', 'Grafana', 'ELK Stack', 'Graylog'],
-  other: ['Microservices', 'Reactive Programming', 'System Design', 'Agile/Scrum'],
+  other: ['Microservices', 'Reactive Programming', 'System Design', 'Agile/Scrum', 'Customer-Centric'],
 };
 
 const education = [
