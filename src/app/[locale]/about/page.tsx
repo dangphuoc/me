@@ -192,7 +192,7 @@ export default function AboutPage() {
             {/* Backend & Infra */}
             <div className="border border-th-border bg-th-card p-5">
               <div className="text-xs text-th-dim mb-4">
-                // {locale === 'vi' ? 'backend & hạ tầng' : 'backend & infra'}
+                {'// '}{locale === 'vi' ? 'backend & hạ tầng' : 'backend & infra'}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {techSkills.map((skill) => (
@@ -209,7 +209,7 @@ export default function AboutPage() {
             {/* AI & Agent */}
             <div className="border border-th-border bg-th-card p-5">
               <div className="text-xs text-th-dim mb-4">
-                // ai & agent
+                {'// ai & agent'}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {aiSkills.map((skill) => (
@@ -226,7 +226,7 @@ export default function AboutPage() {
             {/* Leadership */}
             <div className="border border-th-border bg-th-card p-5">
               <div className="text-xs text-th-dim mb-4">
-                // {locale === 'vi' ? 'lãnh đạo' : 'leadership'}
+                {'// '}{locale === 'vi' ? 'lãnh đạo' : 'leadership'}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {leadershipSkills.map((skill) => (

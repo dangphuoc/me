@@ -198,7 +198,7 @@ export default function BlogPostClient({ post, locale, author = 'Phuoc Nguyen' }
                 <Image src={match[2]} alt={match[1]} fill className="object-cover" unoptimized />
               </div>
               {match[1] && (
-                <figcaption className="text-xs text-th-dim mt-2 italic">// {match[1]}</figcaption>
+                <figcaption className="text-xs text-th-dim mt-2 italic">{'// '}{match[1]}</figcaption>
               )}
             </figure>
           );

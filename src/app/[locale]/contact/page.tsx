@@ -87,7 +87,7 @@ export default function ContactPage() {
                 </a>
               </div>
               <div className="border-t border-th-border pt-4 mt-4">
-                <span className="text-xs text-th-dim block mb-3">// links</span>
+                <span className="text-xs text-th-dim block mb-3">{'// links'}</span>
                 <div className="space-y-2">
                   <a
                     href="https://github.com/dangphuoc"
