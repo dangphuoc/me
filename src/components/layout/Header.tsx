@@ -4,17 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 
 const navItems = [
-  { href: '/', key: 'home' },
-  { href: '/about', key: 'about' },
-  { href: '/blog', key: 'blog' },
-  // { href: '/moments', key: 'moments' }, // Temporarily hidden
-  { href: '/contact', key: 'contact' },
+  { href: '/blog', key: 'blog', cmd: '~/blog' },
+  { href: '/about', key: 'about', cmd: '~/about' },
+  { href: '/contact', key: 'contact', cmd: '~/contact' },
 ];
 
 export default function Header() {
@@ -25,60 +23,51 @@ export default function Header() {
   const locale = pathname.split('/')[1] || 'vi';
 
   const isActive = (href: string) => {
-    const fullPath = `/${locale}${href === '/' ? '' : href}`;
-    if (href === '/') {
-      return pathname === `/${locale}` || pathname === `/${locale}/`;
-    }
+    const fullPath = `/${locale}${href}`;
     return pathname.startsWith(fullPath);
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-950/80 border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-50 bg-th-page border-b border-th-border">
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-12">
           {/* Logo */}
           <Link
             href={`/${locale}`}
-            className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2 text-sm hover:opacity-80 transition-opacity"
           >
-            {'<Dev />'}
+            <span className="text-th-accent">guest@phuoc</span>
+            <span className="text-th-faint">:</span>
+            <span className="text-th-dim">~</span>
+            <span className="text-th-faint">$</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-0">
             {navItems.map((item) => (
               <Link
                 key={item.key}
-                href={`/${locale}${item.href === '/' ? '' : item.href}`}
-                className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                href={`/${locale}${item.href}`}
+                className={`px-3 py-1 text-xs transition-colors border-b-2 ${
                   isActive(item.href)
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    ? 'text-th-accent border-th-accent'
+                    : 'text-th-faint border-transparent hover:text-th-accent'
                 }`}
               >
-                {t(item.key)}
-                {isActive(item.href) && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-lg -z-10"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
+                {item.cmd}
               </Link>
             ))}
           </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+          {/* Right side */}
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-
-            {/* Mobile menu button */}
+            <LanguageSwitcher />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="md:hidden p-1.5 text-th-dim hover:text-th-accent"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
@@ -90,21 +79,22 @@ export default function Header() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden"
+              className="md:hidden overflow-hidden border-t border-th-border"
             >
-              <div className="py-4 space-y-1">
+              <div className="py-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.key}
-                    href={`/${locale}${item.href === '/' ? '' : item.href}`}
+                    href={`/${locale}${item.href}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                    className={`block px-4 py-2 text-sm transition-colors ${
                       isActive(item.href)
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ? 'text-th-accent'
+                        : 'text-th-faint hover:text-th-accent'
                     }`}
                   >
-                    {t(item.key)}
+                    <span className="text-th-accent-soft mr-2">&gt;</span>
+                    {item.cmd}
                   </Link>
                 ))}
               </div>

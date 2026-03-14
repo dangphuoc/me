@@ -3,43 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import {
-  Mail,
-  Send,
-  Github,
-  Linkedin,
-  Twitter,
-  MapPin,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react';
 
-const socialLinks = [
-  {
-    icon: Github,
-    href: 'https://github.com',
-    label: 'GitHub',
-    color: 'hover:text-gray-900 dark:hover:text-white',
-  },
-  {
-    icon: Linkedin,
-    href: 'https://linkedin.com',
-    label: 'LinkedIn',
-    color: 'hover:text-blue-600',
-  },
-  {
-    icon: Twitter,
-    href: 'https://twitter.com',
-    label: 'Twitter',
-    color: 'hover:text-blue-400',
-  },
-  {
-    icon: Mail,
-    href: 'mailto:dangphuocbk.93@gmail.com',
-    label: 'Email',
-    color: 'hover:text-red-500',
-  },
-];
+const FORMSPREE_ID = 'xkoonvob';
 
 export default function ContactPage() {
   const t = useTranslations('contact');
@@ -51,8 +16,6 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const FORMSPREE_ID = 'xkoonvob';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('loading');
@@ -60,9 +23,7 @@ export default function ContactPage() {
     try {
       const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -76,49 +37,93 @@ export default function ContactPage() {
       setStatus('error');
     }
 
-    // Reset status after 3 seconds
     setTimeout(() => setStatus('idle'), 3000);
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
-    <div className="min-h-screen gradient-bg py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="mb-10"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('title')}</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            {t('subtitle')}
-          </p>
+          <div className="text-xs text-th-dim mb-2">
+            <span className="text-th-prompt">$</span> ping phuoc@dev
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-th-heading mb-2">{t('title')}</h1>
+          <p className="text-lg text-th-secondary">{t('subtitle')}</p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Contact Info - left */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="lg:col-span-2"
           >
-            <div className="glass-card p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            <div className="text-xs text-th-dim mb-3">
+              <span className="text-th-prompt">$</span> cat contact.conf
+            </div>
+            <div className="border border-th-border bg-th-card p-5 space-y-4 text-sm">
+              <div>
+                <span className="text-th-dim">location</span>
+                <span className="text-th-faint mx-2">=</span>
+                <span className="text-th-primary">Ho Chi Minh City, Vietnam</span>
+              </div>
+              <div>
+                <span className="text-th-dim">email</span>
+                <span className="text-th-faint mx-2">=</span>
+                <a href="mailto:dangphuocbk.93@gmail.com" className="text-th-accent hover:text-th-accent-hover transition-colors">
+                  dangphuocbk.93@gmail.com
+                </a>
+              </div>
+              <div className="border-t border-th-border pt-4 mt-4">
+                <span className="text-xs text-th-dim block mb-3">// links</span>
+                <div className="space-y-2">
+                  <a
+                    href="https://github.com/dangphuoc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-th-secondary hover:text-th-accent transition-colors"
                   >
+                    <span className="text-th-accent-soft mr-2">→</span>github.com/dangphuoc
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/phuoc-nguyen-dang-016129159/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-th-secondary hover:text-th-accent transition-colors"
+                  >
+                    <span className="text-th-accent-soft mr-2">→</span>linkedin.com/in/phuoc-nguyen
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Form - right */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-3"
+          >
+            <div className="text-xs text-th-dim mb-3">
+              <span className="text-th-prompt">$</span> send --message
+            </div>
+            <div className="border border-th-border bg-th-card p-5 sm:p-8">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="name" className="block text-xs text-th-dim mb-1.5">
                     {t('name')}
                   </label>
                   <input
@@ -128,16 +133,12 @@ export default function ContactPage() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors"
                   />
                 </div>
 
-                {/* Email */}
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
+                  <label htmlFor="email" className="block text-xs text-th-dim mb-1.5">
                     {t('email')}
                   </label>
                   <input
@@ -147,16 +148,12 @@ export default function ContactPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors"
                   />
                 </div>
 
-                {/* Message */}
                 <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
+                  <label htmlFor="message" className="block text-xs text-th-dim mb-1.5">
                     {t('message')}
                   </label>
                   <textarea
@@ -166,120 +163,42 @@ export default function ContactPage() {
                     required
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                    className="w-full px-3 py-2 bg-th-page border border-th-border text-sm text-th-primary outline-none focus:border-th-accent transition-colors resize-none"
                   />
                 </div>
 
-                {/* Submit Button */}
-                <motion.button
+                <button
                   type="submit"
                   disabled={status === 'loading'}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-medium transition-colors"
+                  className="w-full py-2.5 text-sm border border-th-accent text-th-accent hover:bg-th-accent hover:text-th-strong disabled:opacity-50 transition-colors"
                 >
                   {status === 'loading' ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="animate-pulse">sending...</span>
                   ) : (
-                    <>
-                      <Send size={20} />
-                      {t('send')}
-                    </>
+                    <>$ {t('send').toLowerCase()}</>
                   )}
-                </motion.button>
+                </button>
 
-                {/* Status Messages */}
                 {status === 'success' && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-green-600 dark:text-green-400"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-th-accent"
                   >
-                    <CheckCircle size={20} />
-                    {t('success')}
+                    <span className="text-th-prompt mr-1">[OK]</span> {t('success')}
                   </motion.div>
                 )}
                 {status === 'error' && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-red-600 dark:text-red-400"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-xs text-th-secondary"
                   >
-                    <AlertCircle size={20} />
-                    {t('error')}
+                    <span className="mr-1">[ERR]</span> {t('error')}
                   </motion.div>
                 )}
               </form>
             </div>
-          </motion.div>
-
-          {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-8"
-          >
-            {/* Location */}
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                  <MapPin className="text-blue-600 dark:text-blue-400" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                    Location
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Ho Chi Minh City, Vietnam
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="glass-card p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                  <Mail className="text-purple-600 dark:text-purple-400" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                    Email
-                  </h3>
-                  <a
-                    href="mailto:dangphuocbk.93@gmail.com"
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    dangphuocbk.93@gmail.com
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="glass-card p-6">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                Social Links
-              </h3>
-              <div className="flex gap-4">
-                {socialLinks.map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-400 transition-colors ${social.color}`}
-                    aria-label={social.label}
-                  >
-                    <social.icon size={24} />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-
           </motion.div>
         </div>
       </div>

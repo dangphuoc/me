@@ -13,9 +13,13 @@
     "intro": "Passionate about building products and developing excellent engineering teams",
     "viewBlog": "View Blog",
     "aboutMe": "About Me",
+    "latestPosts": "Latest Posts",
     "featuredPosts": "Featured Posts",
     "viewAll": "View All",
-    "techStack": "Tech Stack"
+    "techStack": "Tech Stack",
+    "terminalName": "Phuoc Nguyen — Software Engineering Manager",
+    "terminalIntro": "Passionate about building large-scale systems, exploring AI Agents, developing excellent teams with a customer-centric mindset",
+    "terminalLatest": "loading post index..."
   },
   "about": {
     "title": "About Me",

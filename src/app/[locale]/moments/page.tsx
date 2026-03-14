@@ -277,7 +277,7 @@ export default function MomentsPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -285,8 +285,8 @@ export default function MomentsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('title')}</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-th-heading">{t('title')}</h1>
+          <p className="text-lg text-th-secondary max-w-2xl mx-auto">
             {t('subtitle')}
           </p>
         </motion.div>
@@ -298,15 +298,15 @@ export default function MomentsPage() {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-th-border">
             {/* Left: Year Tabs */}
             <div className="flex items-center gap-1 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
               <button
                 onClick={() => setSelectedYear(null)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
+                className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${
                   !selectedYear
-                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    ? 'bg-th-accent text-th-strong'
+                    : 'text-th-dim hover:bg-th-hover'
                 }`}
               >
                 {locale === 'vi' ? 'Tất cả' : 'All'}
@@ -315,10 +315,10 @@ export default function MomentsPage() {
                 <button
                   key={year}
                   onClick={() => setSelectedYear(selectedYear === year ? null : year)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-all ${
+                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${
                     selectedYear === year
-                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      ? 'bg-th-accent text-th-strong'
+                      : 'text-th-secondary hover:bg-th-hover'
                   }`}
                 >
                   {year}
@@ -330,7 +330,7 @@ export default function MomentsPage() {
             <div className="relative">
               <button
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-th-secondary hover:bg-th-hover transition-all"
               >
                 <Filter size={16} />
                 {sortLabels[sortBy][locale]}
@@ -343,7 +343,7 @@ export default function MomentsPage() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden z-20"
+                    className="absolute right-0 mt-2 w-40 bg-th-card shadow-lg border border-th-border overflow-hidden z-20"
                   >
                     {(['newest', 'oldest', 'popular'] as SortOption[]).map((option) => (
                       <button
@@ -354,8 +354,8 @@ export default function MomentsPage() {
                         }}
                         className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                           sortBy === option
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-medium'
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                            ? 'bg-th-hover text-th-strong font-medium'
+                            : 'text-th-secondary hover:bg-th-hover'
                         }`}
                       >
                         {sortLabels[option][locale]}
@@ -369,7 +369,7 @@ export default function MomentsPage() {
 
           {/* Tags - Subtle Pills */}
           <div className="flex items-center gap-2 pt-4 overflow-x-auto pb-2">
-            <span className="text-sm text-gray-500 dark:text-gray-500 mr-2 whitespace-nowrap">
+            <span className="text-sm text-th-dim mr-2 whitespace-nowrap">
               {locale === 'vi' ? 'Chủ đề:' : 'Topics:'}
             </span>
             {allTags.map((tag) => (
@@ -378,8 +378,8 @@ export default function MomentsPage() {
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
                 className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-all ${
                   selectedTag === tag
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-th-accent text-th-strong'
+                    : 'bg-th-hover text-th-secondary hover:bg-th-border-hover'
                 }`}
               >
                 {tagLabels[tag]?.[locale] || tag}
@@ -391,7 +391,7 @@ export default function MomentsPage() {
                   setSelectedYear(null);
                   setSelectedTag(null);
                 }}
-                className="px-3 py-1.5 text-sm text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap"
+                className="px-3 py-1.5 text-sm text-th-faint hover:text-th-accent transition-colors whitespace-nowrap"
               >
                 {locale === 'vi' ? 'Xóa lọc' : 'Clear'}
               </button>
@@ -403,7 +403,7 @@ export default function MomentsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-6 text-sm text-gray-500 dark:text-gray-500"
+          className="mb-6 text-sm text-th-dim"
         >
           {filteredMoments.length} {locale === 'vi' ? 'khoảnh khắc' : 'moments'}
         </motion.div>
@@ -423,7 +423,7 @@ export default function MomentsPage() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.03 }}
                 whileHover={{ scale: 1.02 }}
-                className="relative aspect-square group cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all"
+                className="relative aspect-square group cursor-pointer overflow-hidden shadow-sm hover:shadow-xl transition-all"
                 onClick={() => setSelectedMoment(moment.id)}
               >
                 <Image
@@ -458,7 +458,7 @@ export default function MomentsPage() {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-th-dim">
               {locale === 'vi'
                 ? 'Không tìm thấy khoảnh khắc nào'
                 : 'No moments found'}
@@ -468,7 +468,7 @@ export default function MomentsPage() {
                 setSelectedYear(null);
                 setSelectedTag(null);
               }}
-              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+              className="mt-4 text-th-primary hover:underline text-sm"
             >
               {locale === 'vi' ? 'Xóa bộ lọc' : 'Clear filters'}
             </button>
@@ -532,7 +532,7 @@ export default function MomentsPage() {
               >
                 <div className="grid md:grid-cols-5 gap-6">
                   {/* Image - 3 cols */}
-                  <div className="md:col-span-3 relative aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden">
+                  <div className="md:col-span-3 relative aspect-square md:aspect-[4/3] overflow-hidden">
                     <Image
                       src={currentMoment.image}
                       alt={currentMoment.caption[locale]}

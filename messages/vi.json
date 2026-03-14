@@ -13,9 +13,13 @@
     "intro": "Đam mê xây dựng sản phẩm và phát triển đội ngũ kỹ thuật xuất sắc",
     "viewBlog": "Xem Blog",
     "aboutMe": "Về tôi",
+    "latestPosts": "Bài viết mới nhất",
     "featuredPosts": "Bài viết nổi bật",
     "viewAll": "Xem tất cả",
-    "techStack": "Công nghệ sử dụng"
+    "techStack": "Công nghệ sử dụng",
+    "terminalName": "Phuoc Nguyen — Software Engineering Manager",
+    "terminalIntro": "Đam mê xây dựng hệ thống quy mô lớn, khám phá AI Agents, phát triển đội ngũ xuất sắc với tư duy lấy khách hàng làm trung tâm",
+    "terminalLatest": "đang tải danh sách bài viết..."
   },
   "about": {
     "title": "Về tôi",
