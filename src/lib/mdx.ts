@@ -29,29 +29,40 @@ export interface PostMeta {
 }
 
 /**
- * Get all unique post slugs (without locale suffix)
- * Files: post.vi.mdx, post.en.mdx -> returns ['post']
+ * Get all unique post slugs
+ *
+ * Supports two structures:
+ *   Folder: content/blog/post-slug/vi.mdx, en.mdx
+ *   Flat:   content/blog/post-slug.vi.mdx (legacy)
  */
 export function getPostSlugs(): string[] {
   try {
     if (!fs.existsSync(postsDirectory)) {
       return [];
     }
-    const files = fs.readdirSync(postsDirectory).filter((file) => file.endsWith('.mdx'));
 
-    // Extract unique slugs from files like 'post.vi.mdx' or 'post.en.mdx'
     const slugs = new Set<string>();
-    files.forEach((file) => {
-      // Remove .mdx extension
-      const nameWithoutExt = file.replace(/\.mdx$/, '');
-      // Check if it has locale suffix (.vi or .en)
-      const match = nameWithoutExt.match(/^(.+)\.(vi|en)$/);
-      if (match) {
-        slugs.add(match[1]); // Add slug without locale
-      } else {
-        slugs.add(nameWithoutExt); // Legacy: file without locale suffix
+    const entries = fs.readdirSync(postsDirectory, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        // Folder structure: post-slug/vi.mdx
+        const dirPath = path.join(postsDirectory, entry.name);
+        const files = fs.readdirSync(dirPath);
+        if (files.some((f) => f.endsWith('.mdx'))) {
+          slugs.add(entry.name);
+        }
+      } else if (entry.isFile() && entry.name.endsWith('.mdx')) {
+        // Flat structure: post-slug.vi.mdx
+        const nameWithoutExt = entry.name.replace(/\.mdx$/, '');
+        const match = nameWithoutExt.match(/^(.+)\.(vi|en)$/);
+        if (match) {
+          slugs.add(match[1]);
+        } else {
+          slugs.add(nameWithoutExt);
+        }
       }
-    });
+    }
 
     return Array.from(slugs);
   } catch {
@@ -61,27 +72,45 @@ export function getPostSlugs(): string[] {
 
 /**
  * Get post by slug and locale
- * Looks for: slug.locale.mdx first, then falls back to slug.mdx
+ *
+ * Resolution order:
+ *   1. content/blog/slug/locale.mdx  (folder)
+ *   2. content/blog/slug.locale.mdx  (flat)
+ *   3. content/blog/slug.mdx         (legacy)
  */
 export function getPostBySlug(slug: string, locale: string = 'vi'): Post | null {
   try {
-    // Try locale-specific file first: post.vi.mdx or post.en.mdx
-    let fullPath = path.join(postsDirectory, `${slug}.${locale}.mdx`);
+    let fullPath = '';
 
-    // Fallback to legacy format: post.mdx
-    if (!fs.existsSync(fullPath)) {
-      fullPath = path.join(postsDirectory, `${slug}.mdx`);
+    // 1. Folder structure: slug/vi.mdx
+    const folderPath = path.join(postsDirectory, slug, `${locale}.mdx`);
+    if (fs.existsSync(folderPath)) {
+      fullPath = folderPath;
     }
 
-    if (!fs.existsSync(fullPath)) {
+    // 2. Flat structure: slug.vi.mdx
+    if (!fullPath) {
+      const flatPath = path.join(postsDirectory, `${slug}.${locale}.mdx`);
+      if (fs.existsSync(flatPath)) {
+        fullPath = flatPath;
+      }
+    }
+
+    // 3. Legacy: slug.mdx
+    if (!fullPath) {
+      const legacyPath = path.join(postsDirectory, `${slug}.mdx`);
+      if (fs.existsSync(legacyPath)) {
+        fullPath = legacyPath;
+      }
+    }
+
+    if (!fullPath) {
       return null;
     }
 
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
-    // For locale-specific files, use title/excerpt directly
-    // For legacy files, use title_${locale} fallback
     const title = data.title || data[`title_${locale}`] || slug;
     const excerpt = data.excerpt || data[`excerpt_${locale}`] || '';
 
