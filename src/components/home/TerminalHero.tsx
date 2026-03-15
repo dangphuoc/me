@@ -60,14 +60,19 @@ export default function TerminalHero() {
     <section className="pt-8 pb-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto text-sm sm:text-base">
         {/* Top border */}
-        <div className="text-th-accent-soft select-none">
-          ┌─── <span className="text-th-accent">phuoc@dev</span>:<span className="text-th-dim">~</span> ───────────────────────────────────────┐
+        <div className="flex items-center text-th-accent-soft select-none overflow-hidden">
+          <span className="shrink-0">┌───</span>
+          <span className="shrink-0 mx-1">
+            <span className="text-th-accent">phuoc@dev</span>:<span className="text-th-dim">~</span>
+          </span>
+          <span className="flex-1 overflow-hidden">{'─'.repeat(80)}</span>
+          <span className="shrink-0">┐</span>
         </div>
 
         {/* Content */}
         <div className="border-x border-th-accent-soft/30 px-5 sm:px-8 py-6 min-h-[220px] bg-th-card">
           {displayedLines.map((line, i) => (
-            <div key={i} className="leading-loose">
+            <div key={i} className="leading-loose break-words">
               {line.startsWith('$') ? (
                 <span>
                   <span className="text-th-prompt">$</span>{' '}
@@ -86,8 +91,10 @@ export default function TerminalHero() {
         </div>
 
         {/* Bottom border */}
-        <div className="text-th-accent-soft select-none">
-          └──────────────────────────────────────────────────────┘
+        <div className="flex items-center text-th-accent-soft select-none overflow-hidden">
+          <span className="shrink-0">└</span>
+          <span className="flex-1 overflow-hidden">{'─'.repeat(80)}</span>
+          <span className="shrink-0">┘</span>
         </div>
       </div>
     </section>
