@@ -1,0 +1,168 @@
+---
+title: Four letters "HELP" that changed how the world writes code
+excerpt: The true story of how Git was born — not from a roadmap or funding, but from anger, betrayal, and the irony of history.
+date: 2026-03-15
+tags:
+  - Git
+  - Open Source
+  - Code Stories
+thumbnail: https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=800
+---
+
+In 2005, an Australian programmer sat in his room, opened a terminal, and typed exactly four letters: H-E-L-P.
+
+No cracking. No complex encryption. Just "HELP."
+
+And those four letters triggered a chain of events whose final result is something you use every single day — `git commit`, `git push`, `git merge`.
+
+This is the true story of how Git was created. Not from a plan. Not from funding. But from anger, betrayal, and the irony of history.
+
+## The world before Git
+
+Before we get to the drama, you need to understand what the programming world looked like before 2005.
+
+The Linux kernel — the operating system running on billions of servers, Android phones, and supercomputers today — went its **first 11 years** with absolutely no version control system.
+
+No Git. No SVN. Nothing.
+
+The workflow of thousands of developers worldwide was: write code, create a patch file, email it to the mailing list. And on the other end, Linus Torvalds — **alone** — read each one, decided which to merge, then manually applied them to his source tree.
+
+Can you imagine that? Thousands of developers sending code in. One person reads. One person decides. One person applies. Every day.
+
+Linus was Linux's version control system. He was a human doing the job of a machine.
+
+In 1998, Larry McVoy — a name that will appear frequently in today's story — posted a blunt warning on the Linux Kernel Mailing List:
+
+> "It's obvious Linus is getting overloaded. Patches are getting lost."
+
+He wasn't wrong.
+
+## BitKeeper — when open source uses closed-source software
+
+In 2002, Linus made a decision that enraged the entire open source community: he chose to use **BitKeeper** — a commercial, closed-source tool — to manage the Linux kernel.
+
+An open source community using closed-source software. Peak irony.
+
+But Linus was entirely pragmatic. He said it plainly: *"I use the best tool for the job. And at the time, BitKeeper was that tool."*
+
+BitKeeper had something no other tool had at the time: **distributed version control**. Each developer could clone the entire repository, work independently, then merge back. Linus no longer had to be the sole bottleneck.
+
+The deal from Larry McVoy, CEO of BitMover — the company behind BitKeeper — was simple: free license for the Linux community, with one condition: **you cannot use BitKeeper to research or create a competing VCS.**
+
+Seems reasonable?
+
+To the open source community, no. Absolutely not.
+
+Richard Stallman, father of the GNU Project, called it *"the spirit of the whip."* Alan Cox, one of the longest-standing kernel developers, refused to use BitKeeper. And the community started calling McVoy's license by a very candid name: **DPOL — Don't Piss Off Larry.**
+
+But Linus pressed on. For the next three years, the Linux kernel ran on BitKeeper — in tension, in suspicion, and in reluctant acceptance.
+
+Those three years would end because of four letters: HELP.
+
+## Andrew Tridgell — the person you haven't heard of
+
+To understand why four letters mattered so much, you need to know who typed them.
+
+Andrew Tridgell — or "Tridge" as the community calls him — was no stranger. He created **Samba**, the software that lets Linux communicate with Windows file systems. And he co-invented **rsync** — the file transfer algorithm the Internet still uses billions of times every day.
+
+Tridge's reputation was built on one specific skill: **reverse-engineering closed-source protocols** from Microsoft to create compatible software. The community called it heroic. The FSF celebrated him.
+
+In 2005, Tridge joined OSDL — the Open Source Development Labs — the organization funding Linux. The same organization funding Linus. Two people, same organization, same ideals.
+
+And then Tridge started looking at BitKeeper.
+
+His reasoning was entirely logical: Linux kernel code was stored in BitKeeper repositories. If McVoy ever revoked the license — something the community always feared — could developers still access their own code history?
+
+In February 2005, Tridge began researching the BitKeeper protocol.
+
+## Four letters: HELP
+
+This is the moment I want you to picture clearly.
+
+No dark server room with green screens like in the movies. No complex encryption. No security exploits.
+
+Tridge opened a terminal, connected to the BitKeeper server via telnet, and typed: **HELP**.
+
+The server politely responded. It listed the available commands: `clone`, `check`, `abort`... Like any other server when you type HELP.
+
+```bash
+$ telnet bitkeeper-server 5000
+> HELP
+clone check abort push pull...
+```
+
+That was the entirety of the "reverse engineering." Four letters, one Enter key.
+
+In April 2005, Tridge demonstrated this finding at a conference. He stood on stage, opened a terminal, and demoed: here's what the BitKeeper protocol says when you ask it. The audience typed along with him.
+
+McVoy found out. And he did exactly what he'd warned he would do.
+
+## The war erupts
+
+On April 5, 2005, Larry McVoy officially revoked the free BitKeeper license for all Linux kernel developers.
+
+One day later, Linus sent an email to the Linux Kernel Mailing List with a subject line that reads like a movie title: **"Kernel SCM saga..."**
+
+He announced: no more BitKeeper. Need to find an alternative immediately.
+
+And then Linus did something nobody expected: he turned and publicly attacked Andrew Tridgell — one of the most respected people in the community.
+
+> "Tridge didn't write a better VCS than BitKeeper. He didn't try. That wasn't his goal. He just wanted to know what the protocols and data looked like, without actually creating anything to replace the problem he caused."
+
+Jeremy Allison, Tridge's teammate on the Samba project, fired back with the most painful question of this entire saga:
+
+> "Why is doing this with BitKeeper a problem, but doing the same thing with Microsoft's SMB is not?"
+
+Nobody ever answered that question satisfactorily.
+
+## 10 days of madness
+
+April 6, 2005 — one day after BitKeeper was revoked — Linus Torvalds started coding Git.
+
+For the first time since creating Linux in 1991, he completely stopped working on the kernel to focus on something else.
+
+**April 7:** First commit. 10 files. About 1,000 lines of code. Message: *"Initial revision of 'git', the information manager from hell."* And it worked — Git became self-hosting on day one.
+
+**April 17:** *"First ever real kernel Git merge!"* — Linus announced on the mailing list.
+
+**June 16:** Git officially managed the Linux kernel 2.6.12 release.
+
+From nothing to managing one of the world's largest software projects: **10 weeks.**
+
+Linus named it "git" — British slang for "an annoying person." He explained in the README:
+
+> "GIT — depending on your mood, expand as: when it works, Global Information Tracker. When it crashes, Goddamn Idiotic Truckload of Shit."
+
+And added a very Linus line: *"I'm an egotistical bastard, and I name all my projects after myself. First Linux, now git."*
+
+## The part nobody saw coming
+
+But here's the truly wild part.
+
+July 2005 — just three months after creating Git — Linus handed over full maintainership to Junio Hamano and went back to working on the Linux kernel. Job done.
+
+**2008:** GitHub was born. A small team took the hard-to-use Git CLI and turned it into a social network for developers. Pull requests, Issues, Stars, Forks — none of these workflows existed before GitHub.
+
+**2016:** Larry McVoy open-sourced BitKeeper under the Apache 2.0 license. His stated reason is heartbreaking to read: *"Git and GitHub have taken over the market. Competing with them proved too difficult."*
+
+**2018:** Microsoft acquired GitHub for **$7.5 billion.**
+
+McVoy tried to protect his software by revoking the license. That act created his most powerful enemy. And 11 years later, he open-sourced the very thing he was protecting — defeated on his own turf, by a weapon he accidentally forged.
+
+## Lessons from four letters
+
+Today, over 95% of developers worldwide use Git. Most don't know this story.
+
+They type `git commit` not knowing that an Australian man typed HELP into a server in 2005. They use `git merge` not knowing that Linus stopped working on Linux for 10 days to write the thing they're using. They push code to GitHub not knowing it exists because a CEO tried to protect his intellectual property.
+
+This story taught me three things.
+
+**Unintended consequences are the rule, not the exception.** McVoy wanted to protect BitKeeper. His actions created Git. The attempt to control gave birth to a competitor more powerful than himself — this happens more often than you'd think in tech history.
+
+**Anger can be fuel.** Git wasn't created from a roadmap or OKRs. It was created by an extremely talented person backed into a corner with no other options. Sometimes constraints and frustration create things that planning never could.
+
+**And the question I keep coming back to: was Tridge right or wrong?** He did to BitKeeper exactly what he did to Microsoft's SMB. One time he was called a hero. Another time he was called a troublemaker. Same technique. Same person. Completely different outcomes.
+
+Perhaps there is no right or wrong in this story. Only consequences. And the consequence is that every day, tens of millions of developers around the world type the two letters `git` — not knowing what it means, not knowing where it came from.
+
+But now you know.
