@@ -1,0 +1,149 @@
+---
+title: "Vibe Coding is killing Open Source — and we're helping it happen"
+excerpt: How a 2 AM tweet became a permission slip for millions of developers, and the price open source is paying for it.
+date: 2026-03-16
+tags:
+  - Open Source
+  - AI
+  - Code Stories
+  - Vibe Coding
+thumbnail: https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800
+---
+
+His name is Daniel Stenberg.
+
+He's not a CEO. Not a billionaire. He's the sole maintainer of a library called **curl** — the thing running on 20 billion devices worldwide right now. The phone in your hand? curl. Your smart TV? curl. Every HTTP request on every device you can think of — curl.
+
+One morning in 2025, Daniel opened his laptop, looked at his GitHub inbox, and saw dozens of new bug reports. Sounds great — community contributions. But when he read them, they all shared one trait: they described bugs that **didn't exist**, referenced code paths that were **completely wrong**, and when he asked the submitters for clarification — silence.
+
+All written by AI. All vibe coding.
+
+## The 2 AM tweet
+
+In February 2025, Andrej Karpathy wrote a post at 2 AM.
+
+Karpathy isn't just anyone. He co-founded OpenAI, served as Director of AI at Tesla, and taught millions of developers worldwide how neural networks work from scratch. If there's someone who understands AI more deeply than almost everyone on Earth — it's him.
+
+And that 2 AM post said:
+
+> *"I just mass-surrender to the vibe. I forget that code exists. I just see things I want, say them, and they appear. When there are errors, I copy-paste the error message into AI and it fixes it. I don't actually understand the code."*
+
+He called it **"vibe coding."**
+
+Sounds harmless. Actually, quite appealing — a genius AI researcher telling the world that even he doesn't need to read code anymore. How did the developer community react? Like a **permission slip**. *"If Karpathy does it, so can I."*
+
+But a key detail got lost.
+
+Karpathy described vibe coding as a personal experience — for throwaway projects, quick prototypes, things you run once and forget. That clarification didn't go viral. The original tweet did.
+
+Within months, "vibe coding" became the buzzword of 2025. Not because it was a good technique — but because it **named something millions of people were already doing** and wanted permission to keep doing.
+
+Vibe coding isn't regular AI-assisted coding. It's: **AI writes, human accepts, nobody reads**. Three steps. Nobody asks why.
+
+## The backbone nobody sees
+
+Before we talk about what vibe coding is breaking, we need to understand what it's breaking.
+
+Open source is the backbone of the internet. Not metaphorically — **literally**.
+
+96.4% of the top 1 million web servers run Linux. Python, Node.js, React, PostgreSQL — the backbone of nearly every startup you've ever heard of. The npm ecosystem has 2.1 million packages and gets 16 billion downloads per week. A 2024 Harvard Business School study estimated the value of open source to the global economy: **$8.8 trillion**.
+
+But here's the critical part: **who maintains all of that?**
+
+The average Node.js project has over 800 transitive dependencies. Each one — typically maintained by one or a few people, working evenings and weekends, unpaid, no SLA, no team support.
+
+Do you know about Zloirock? He's the **sole maintainer** of core-js — a polyfill library used by 46% of all websites on the internet. In 2020, he wrote a blog post — not an announcement, not a changelog — something closer to **a letter of desperation**. Working full-time on critical infrastructure that hundreds of millions of websites depend on. Income from it? Almost nothing.
+
+Here's the most important thing to understand: open source doesn't run on code. Open source runs on **trust** — a system built over 30 years, with an implicit social contract:
+
+*If I submit code, I understand that code. If there's a bug, I can fix it. If you ask me why, I can answer.*
+
+Vibe coding breaks exactly that social contract.
+
+## When friction hits zero
+
+Look at what's happening in open source repos right now.
+
+Modern AI tools — Cursor, Claude Code, GitHub Copilot Workspace — let developers submit PRs from their IDE with one click. Friction approaches zero. The result: someone can submit **50 pull requests a day** instead of 1-2. Not because they have more ideas. Because AI generates the code, they submit, and move on.
+
+Each PR needs maintainer review. Average **20 to 60 minutes** per PR. Maintainers aren't paid. Maintainers have day jobs. Maintainers have families.
+
+Daniel Stenberg spoke openly about this. He described the AI-generated bug reports he received: they describe non-existent problems, point to wrong code paths, and when he asks the submitter to clarify — **complete silence**. Because the submitter doesn't understand the bug report they sent. AI wrote it, they copy-pasted it, submitted, and went to sleep.
+
+He started closing those issues immediately.
+
+But here's the part that made me stop and think.
+
+Not about Daniel Stenberg — he's famous, he has a voice. But about **the maintainers you've never heard of** — the people maintaining libraries you use every day, whose faces and names you don't know. They're not companies. They don't have budgets. They're receiving floods of AI PRs with one simple question in mind:
+
+*If I accept this, do I understand it well enough to maintain it later?*
+
+The answer is usually no. Because the submitter doesn't understand it, the maintainer can't ask follow-ups, and the code has no real owner — just a committer.
+
+## The ticking time bomb
+
+Consider this scenario.
+
+An AI-generated PR gets accepted into a small library. The code looks fine — syntactically correct, logic seems sound, tests pass. The maintainer doesn't have time to read it carefully because 40 other PRs are waiting. Accept.
+
+That library is used by 50,000 projects. A vulnerability sits quietly inside. Nobody knows because nobody actually understands what that code does — not the submitter, not the hurried maintainer.
+
+18 months later, someone happens to read the codebase carefully and finds it.
+
+This isn't far-fetched speculation. The security community has already raised alarms about exactly this scenario. With AI-generated code, you're not just dealing with bugs — you're dealing with **code that nobody in the chain actually understands**. When a security researcher asks *"why was this code written this way"* — there's nobody to ask. No intentionality. No documentation of the thought process.
+
+And here's the biggest irony of this entire story.
+
+## Poisoning the well you drink from
+
+AI companies — Anthropic, OpenAI, Microsoft/GitHub — are training the coding models you use daily. Trained on what? **High-quality open source code**. Decades of code written by people who understood every line, peer-reviewed, carefully maintained.
+
+That's why Claude writes good code. That's why Copilot knows patterns and idioms. They learned from the open source well.
+
+Now, vibe coding is pumping AI-generated code — code nobody understands, code with no intention — into **that very well**. GitHub's 2024 report estimated that roughly **30% of code on GitHub is AI-assisted**.
+
+The next generation of AI models will train on that data. They'll learn patterns of AI-generated code, not patterns of human craftsmanship. The code they generate will be worse. Vibe coding with worse code will produce even worse output.
+
+That loop has no natural stopping point.
+
+**Garbage in, garbage out** — but at the scale of the entire software industry.
+
+## Both sides of the story
+
+This story isn't simply "AI bad" or "maintainers need to adapt."
+
+The pro-vibe-coding side **isn't wrong** when they say: the barrier to entry for open source was too high. Intimidating. Maintainers sometimes gatekept in unhealthy ways. AI democratizes contribution — people without 10 years of experience can contribute to projects they care about.
+
+There are tedious tasks — writing documentation, generating boilerplate tests, fixing typos — that AI handles well and frees maintainers from. Used correctly, AI can be a **gift** to open source.
+
+The concerned side **also isn't wrong**: craft matters. Code is communication — with computers, with teammates, with the person maintaining it 5 years from now. If submitters don't understand the code they send, they can't fix bugs, can't answer questions, can't grow into maintainers. Open source is sustainable when contributors become maintainers. Vibe coding **breaks that pipeline**.
+
+There's a clear generational divide. Developers with under 3 years of experience using AI tools daily: **72%**. Senior developers with 10+ years: **41%**. Seniors worry about losing craft. Juniors don't have craft to lose yet.
+
+The real question isn't "who's right" — it's: **what can coexist?**
+
+## The tragedy of the commons
+
+In 1968, ecologist Garrett Hardin described a phenomenon called the **Tragedy of the Commons**.
+
+Imagine a shared pasture. Every herder has a rational incentive to graze as many cattle as possible — it's good for them individually. But when everyone does it, the pasture is destroyed. What's rational for the individual becomes irrational for the collective.
+
+Open source is that pasture. Vibe coding is the act of adding more cattle.
+
+Nobody does it with destructive intent. The person submitting a vibe-coded PR wants to contribute — that's goodwill. But when 20 million developers all do it at once, the community doesn't have the resources to process it.
+
+And unlike a physical pasture, open source **doesn't self-regenerate**. Maintainer burnout is permanent — a maintainer who quits isn't a maintainer taking a break. It's usually someone who archives the repo and never looks back.
+
+We've seen the preview. In 2016, the **left-pad** incident — one developer unpublished an npm package of 11 lines of code — broke thousands of projects worldwide. That was just the trailer. Vibe coding might be the main feature.
+
+## So what's the answer?
+
+In 2026, the debate remains unresolved. Some repos now require disclosure when AI is used. Some projects have explicitly banned AI PRs without human review. The community is finding ways to adapt.
+
+And perhaps that's the only path forward: not banning vibe coding, not ignoring maintainers — but finding **a new social contract** that fits this world.
+
+Vibe coding for personal projects? Perfectly fine. That's what Karpathy actually meant. But when you submit code to a project others depend on, you're participating in a trust system — and **trust demands accountability**.
+
+The question I'll leave you with: in a world where AI is democratizing everything, how do we preserve what needs preserving without becoming elitist? Where's the line between *"healthy barrier reduction"* and *"removing accountability"*?
+
+I don't have the answer. And I think the open source community is searching for it right now — in real time, with very high stakes.
