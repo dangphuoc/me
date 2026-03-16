@@ -10,6 +10,7 @@ import ThemeToggle from './ThemeToggle';
 
 const navItems = [
   { href: '/blog', key: 'blog', cmd: '~/blog' },
+  { href: '/stories', key: 'stories', cmd: '~/stories' },
   { href: '/about', key: 'about', cmd: '~/about' },
   { href: '/contact', key: 'contact', cmd: '~/contact' },
 ];

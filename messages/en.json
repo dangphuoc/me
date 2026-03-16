@@ -4,6 +4,7 @@
     "about": "About",
     "cv": "CV",
     "blog": "Blog",
+    "stories": "Stories",
     "moments": "Moments",
     "contact": "Contact"
   },
@@ -19,7 +20,9 @@
     "techStack": "Tech Stack",
     "terminalName": "Phuoc Nguyen — Software Engineering Manager",
     "terminalIntro": "Passionate about building large-scale systems, exploring AI Agents, developing excellent teams with a customer-centric mindset",
-    "terminalLatest": "loading post index..."
+    "terminalLatest": "loading post index...",
+    "latestStories": "Latest Stories",
+    "viewAllStories": "View All"
   },
   "about": {
     "title": "About Me",
@@ -37,6 +40,17 @@
     "noResults": "No posts found",
     "tableOfContents": "Table of Contents",
     "relatedPosts": "Related Posts",
+    "share": "Share"
+  },
+  "stories": {
+    "title": "Stories",
+    "subtitle": "Interesting stories from the tech world",
+    "readMore": "Read More",
+    "minRead": "min read",
+    "search": "Search stories...",
+    "noResults": "No stories found",
+    "tableOfContents": "Table of Contents",
+    "relatedPosts": "Related Stories",
     "share": "Share"
   },
   "moments": {

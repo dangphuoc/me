@@ -17,6 +17,8 @@ interface Post {
 
 interface BlogGridProps {
   posts: Post[];
+  basePath?: string;
+  viewAllLabel?: string;
 }
 
 const container = {
@@ -32,10 +34,13 @@ const item = {
   show: { opacity: 1, x: 0 },
 };
 
-export default function BlogGrid({ posts }: BlogGridProps) {
+export default function BlogGrid({ posts, basePath = 'blog', viewAllLabel }: BlogGridProps) {
   const t = useTranslations('home');
   const pathname = usePathname();
   const locale = (pathname.split('/')[1] || 'vi') as 'vi' | 'en';
+
+  const cmd = basePath === 'blog' ? 'ls ./posts' : `ls ./${basePath}`;
+  const viewAll = viewAllLabel || t('viewAll');
 
   return (
     <section className="py-6 px-4 sm:px-6 lg:px-8">
@@ -43,16 +48,16 @@ export default function BlogGrid({ posts }: BlogGridProps) {
         {/* Section header */}
         <div className="flex items-center justify-between mb-4 text-xs text-th-dim">
           <span>
-            <span className="text-th-prompt">$</span> ls ./posts
+            <span className="text-th-prompt">$</span> {cmd}
             <span className="text-th-faint ml-2">
               ({posts.length} {locale === 'vi' ? 'mục' : 'entries'})
             </span>
           </span>
           <Link
-            href={`/${locale}/blog`}
+            href={`/${locale}/${basePath}`}
             className="text-th-accent-soft hover:text-th-accent transition-colors"
           >
-            {t('viewAll')} →
+            {viewAll} →
           </Link>
         </div>
 
@@ -67,7 +72,7 @@ export default function BlogGrid({ posts }: BlogGridProps) {
           {posts.map((post, index) => (
             <motion.article key={post.slug} variants={item}>
               <Link
-                href={`/${locale}/blog/${post.slug}`}
+                href={`/${locale}/${basePath}/${post.slug}`}
                 className="group block px-4 py-4 hover:bg-th-hover transition-colors"
               >
                 <div className="flex items-start gap-3">

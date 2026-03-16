@@ -4,6 +4,7 @@
     "about": "Về tôi",
     "cv": "CV",
     "blog": "Blog",
+    "stories": "Chuyện kể",
     "moments": "Khoảnh khắc",
     "contact": "Liên hệ"
   },
@@ -19,7 +20,9 @@
     "techStack": "Công nghệ sử dụng",
     "terminalName": "Phuoc Nguyen — Software Engineering Manager",
     "terminalIntro": "Đam mê xây dựng hệ thống quy mô lớn, khám phá AI Agents, phát triển đội ngũ xuất sắc với tư duy lấy khách hàng làm trung tâm",
-    "terminalLatest": "đang tải danh sách bài viết..."
+    "terminalLatest": "đang tải danh sách bài viết...",
+    "latestStories": "Chuyện kể mới nhất",
+    "viewAllStories": "Xem tất cả"
   },
   "about": {
     "title": "Về tôi",
@@ -37,6 +40,17 @@
     "noResults": "Không tìm thấy bài viết nào",
     "tableOfContents": "Mục lục",
     "relatedPosts": "Bài viết liên quan",
+    "share": "Chia sẻ"
+  },
+  "stories": {
+    "title": "Chuyện kể",
+    "subtitle": "Những câu chuyện thú vị trong thế giới công nghệ",
+    "readMore": "Đọc thêm",
+    "minRead": "phút đọc",
+    "search": "Tìm kiếm câu chuyện...",
+    "noResults": "Không tìm thấy câu chuyện nào",
+    "tableOfContents": "Mục lục",
+    "relatedPosts": "Câu chuyện liên quan",
     "share": "Chia sẻ"
   },
   "moments": {
