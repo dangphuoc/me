@@ -6,152 +6,190 @@ tags: [Redis, Incident, Backend, Architecture, Pub/Sub]
 thumbnail: https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800
 ---
 
-12h00 trưa ngày 24/3/2026.
-
-Team infras đang kiểm tra Redis server và phát hiện một điều bất thường: không có connection nào đang dùng. Họ quyết định thực hiện maintenance để chuẩn hoá lại cấu hình — một việc tưởng như vô hại.
-
-Năm phút sau, màn hình monitoring bắt đầu đỏ.
+Đây là câu chuyện về một buổi trưa thứ Ba bình thường — cho đến khi nó không còn bình thường nữa.
 
 ---
 
-## Manh mối đầu tiên
+## 12h00: Một quyết định tưởng vô hại
 
-12h05, cảnh báo đầu tiên: số lượng giao dịch treo qua cổng TCB tăng đột biến.
+Buổi trưa, team infras đang rà soát hệ thống như thường lệ. Họ mở dashboard Redis và thấy điều bất thường: Redis server này không có connection nào đang hoạt động.
 
-Team vào xử lý theo quy trình chuẩn — switch sang cổng backup, bật maintenance mode để dừng nhận giao dịch mới.
+Không có connection. Nghĩa là không ai đang dùng.
 
-Nhưng không được. Cơ chế switch cổng không phản hồi. Maintenance mode không bật được.
+Trong đầu họ lúc đó chắc là: *"Cơ hội tốt để chuẩn hoá lại cấu hình, không ảnh hưởng ai."*
 
-Đây là lúc mọi người bắt đầu hiểu rằng đây không phải sự cố thông thường.
+Họ bật maintenance mode cho Redis.
 
-*"Sao switch cổng không được? Cái này không liên quan đến TCB hay ACB mà."*
+Không ai biết rằng quyết định đó sẽ kéo theo 12 tiếng hỗn loạn.
 
-10 phút để tìm ra câu trả lời: Redis Pub/Sub đã mất kết nối.
+---
+
+## 12h05: Cái gì đó không ổn
+
+Năm phút sau, màn hình monitoring bắt đầu đỏ.
+
+Giao dịch chuyển tiền qua cổng TCB — treo. Không phải một hai cái. Hàng loạt. Số đếm trên dashboard tăng từng giây.
+
+Team vào xử lý ngay. Quy trình chuẩn: switch sang cổng backup, sau đó bật maintenance mode để dừng nhận giao dịch mới trong khi điều tra.
+
+Click. Không phản hồi.
+
+Click lại. Vẫn không có gì.
+
+Bật maintenance mode. Lệnh gửi đi. Không có gì thay đổi. Hệ thống vẫn tiếp tục nhận giao dịch mới, tiếp tục treo chúng, tiếp tục tăng số đếm.
+
+*"Ủa sao switch cổng không được? Cái này không liên quan đến TCB hay ACB mà."*
+
+Đây là khoảnh khắc mà ai cũng biết: đây không phải sự cố thông thường. Thông thường, khi giao dịch treo, bạn switch cổng và điều tra sau. Lần này, cái công cụ để switch cổng cũng đã chết.
+
+Như thể bạn đang cháy nhà và vòi chữa cháy cũng không có nước.
 
 ![Server monitoring](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
 
 ---
 
-## Redis đang làm gì trong hệ thống chuyển tiền?
+## 12h05 – 12h15: Mười phút lần theo sợi chỉ
 
-Để hiểu tại sao Redis mất kết nối lại gây ra thảm họa quy mô này, cần biết Redis đang đảm nhiệm những gì.
+Không switch được cổng → vấn đề không phải ở cổng TCB/ACB.
 
-Hệ thống cashout W2B dùng Redis cho **hai việc**:
+Maintenance mode không bật được → vấn đề không phải ở business logic.
 
-**Thứ nhất — caching session**: Luồng chuyển tiền gồm 3 bước: check account → init → confirm. Thông tin phiên (agent, số tiền, tài khoản đích) được lưu tạm trong Redis để 3 bước này biết về nhau.
+Hai cơ chế không liên quan đến nhau, nhưng cùng chết một lúc. Nghĩa là chúng phải có chung một điểm phụ thuộc nào đó.
 
-**Thứ hai — Pub/Sub làm message bus**: Đây là phần quan trọng hơn và cũng là nguồn gốc của sự cố.
+Team bắt đầu lần ngược lại code.
 
-Khi đối tác TCB hoặc ACB gửi notify kết quả giao dịch về, luồng xử lý như sau:
+Cơ chế commit giao dịch: đối tác notify → API nhận → **publish lên Redis Pub/Sub channel** → subscriber lắng nghe → commit vào DB.
 
-```
-Đối tác notify → API nhận → Publish event lên Redis channel
-    → Subscriber lắng nghe → Commit giao dịch vào DB
-```
+Cơ chế bảo trì: admin gửi lệnh → **publish lên Redis Pub/Sub channel** → các service subscribe → reload config.
 
-Nếu Redis Pub/Sub đứt, event không đến được subscriber → giao dịch không được commit → người nhận đã có tiền nhưng người chuyển vẫn thấy "đang xử lý."
+Cả hai đều đi qua Redis Pub/Sub.
 
-Còn cơ chế bảo trì và switch cổng thì sao? Nó cũng dùng cùng Redis Pub/Sub:
+Và Redis Pub/Sub vừa bị tắt.
 
-```
-Admin publish config update → Redis channel → Services subscribe → Reload config
-```
-
-Khi Redis đứt, cả hai đường đều tắc. **Vừa không xử lý được giao dịch tồn đọng, vừa không tắt được van nhận giao dịch mới.**
+Câu trả lời rõ ràng đến mức đau. **Không phải hai thứ chết. Chỉ một thứ chết, nhưng nó nằm ở đáy của mọi thứ.**
 
 ---
 
-## Pub/Sub — con dao hai lưỡi
+## Redis Pub/Sub: Chiếc Bộ Đàm Không Ghi Âm
 
-Redis Pub/Sub là một công cụ đơn giản và nhanh. Nhưng nó có một đặc tính quan trọng thường bị bỏ qua: **fire-and-forget**.
+Để hiểu tại sao điều này tệ đến vậy, cần hiểu Redis Pub/Sub thực ra là gì.
 
-Nghĩa là: nếu không có subscriber nào đang lắng nghe lúc message được publish, message đó **biến mất vĩnh viễn**. Không có retry. Không có replay. Không có dead letter queue.
+Hãy tưởng tượng bộ đàm. Bạn nói vào máy, ai đang cầm bộ đàm và đang bật thì nghe được. Ai không cầm, ai đang tắt máy — không nghe được gì. Và quan trọng hơn: **không có gì được ghi lại**. Message phát ra là biến mất, không có cách nào nghe lại.
 
-So sánh với Kafka: message trong Kafka được ghi xuống disk, có offset, consumer có thể đọc lại từ bất kỳ điểm nào trong lịch sử. Kafka là hệ thống có **durability** — message tồn tại dù consumer có offline tạm thời.
+Redis Pub/Sub hoạt động y hệt vậy. Publisher gửi message vào channel. Subscriber đang lắng nghe thì nhận được. Subscriber offline, subscriber mất kết nối, subscriber chưa kịp connect — message đó **mất vĩnh viễn**. Không retry. Không replay. Không dead letter queue.
 
-Redis Pub/Sub thì không. Nó hoạt động tốt cho những thứ không quan trọng nếu mất: cache invalidation, live notification, real-time dashboard. Nhưng không phải cho **commit giao dịch tài chính**.
+Kỹ thuật gọi đặc tính này là **fire-and-forget**.
 
-Đây là bài học kỹ thuật đắt giá nhất của ngày hôm đó.
+Nó hoàn toàn phù hợp cho những thứ ephemeral: cache invalidation signal, live dashboard update, real-time notification. Những thứ mà mất một cái cũng không sao, vì cái tiếp theo sẽ đến ngay sau.
 
----
+Nhưng commit giao dịch tài chính không phải loại đó. Mỗi notify từ đối tác TCB/ACB là một lần duy nhất. Nếu subscriber không nghe được lúc đó — cơ hội commit giao dịch đó đã mất.
 
-## Five Whys: đào sâu đến gốc rễ
+So sánh với Kafka: message được ghi xuống disk, có offset đánh dấu vị trí, consumer có thể reconnect sau và đọc lại từ chỗ bị ngắt. Kafka có **durability** — như một chiếc máy ghi âm không bao giờ xóa băng. Redis Pub/Sub thì không.
 
-**Tại sao giao dịch bị treo?**
-→ Vì Redis Pub/Sub mất kết nối, event notify từ đối tác không được publish, subscriber commit không nhận được.
-
-**Tại sao Redis mất kết nối?**
-→ Vì team infras thực hiện maintenance Redis để chuẩn hoá cấu hình khi thấy không có connection.
-
-**Tại sao team infras làm mà không báo trước?**
-→ Vì chưa có quy trình change management bắt buộc phải thông báo các team phụ thuộc trước khi thay đổi shared infrastructure.
-
-**Tại sao cơ chế bảo trì/switch cổng cũng không hoạt động?**
-→ Vì control plane (bảo trì/switch cổng) và data plane (commit giao dịch) đều phụ thuộc vào **cùng một** Redis Pub/Sub instance.
-
-**Tại sao lại thiết kế như vậy?**
-→ Vì khi ban đầu xây dựng, Redis Pub/Sub là giải pháp nhanh, đơn giản, và không ai đặt câu hỏi: *"Nếu Redis đứt, chúng ta có còn control được hệ thống không?"*
-
-Câu hỏi đó lẽ ra phải được hỏi từ sớm hơn rất nhiều.
-
-![Architecture diagram concept](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+Đây là sự không tương thích căn bản giữa công cụ và bài toán. Và nó đã nằm trong production, âm thầm chờ đợi, từ ngày hệ thống được xây.
 
 ---
 
-## Điều tệ nhất không phải là hệ thống đứng
+## Cái bản thiết kế không ai hỏi
 
-Sự cố kéo dài 45 phút cho giao dịch mới (12h00–12h45). Nhưng hậu quả kéo dài đến tận nửa đêm.
+Lần theo tiếp, team nhìn ra toàn bộ bức tranh.
 
-Từ 13h00 đến 18h00: phối hợp với đối tác TCB/ACB để notify lại ~22.000 giao dịch tồn đọng — từng giao dịch, một bởi một. Đây là công việc thủ công nặng nề nhất trong ngày.
+Hệ thống cashout có hai tầng:
 
-Từ 18h00 đến 24h00: kế toán đối soát các giao dịch còn lại mà đối tác không thể notify lại tự động.
+**Data plane** — xử lý giao dịch: nhận notify từ đối tác → publish Redis → subscriber commit vào DB.
 
-Người nhận đã có tiền trong tài khoản. Người chuyển vẫn thấy trạng thái treo. Hai bên của một giao dịch nhìn thấy hai thực tại khác nhau — đây là loại bug khó chịu nhất vì nó gây mất niềm tin vào hệ thống nhiều hơn là mất tiền thực.
+**Control plane** — điều khiển hệ thống: admin publish config → Redis → services reload → switch cổng/bảo trì.
 
-CS ticket tăng vọt. Điện thoại không ngừng reo. Và team không có công cụ nào để giải thích với khách hàng đang lo lắng một cách nhanh chóng.
+Hai tầng này phụ thuộc vào **cùng một** Redis Pub/Sub instance.
 
----
+Trong lý thuyết hệ thống, đây là **Single Point of Failure** cổ điển nhất: một component mà khi nó chết, toàn bộ hệ thống mất khả năng tự phục hồi. Nguy hiểm hơn ở đây là: nó không chỉ làm data plane chết — nó làm control plane chết theo. Bạn không còn tay để cứu chữa.
 
-## Incident này đã từng xảy ra trước đây
+Đây là bài toán tệ hơn cả "xe hỏng giữa đường." Đây là "xe hỏng giữa đường, và bộ đàm gọi cứu hộ cũng hỏng theo."
 
-Đây không phải lần đầu.
+Ai đã thiết kế như vậy? Không ai. Đúng hơn là: không ai đặt câu hỏi đủ sớm.
 
-Tháng 9/2025, một incident tương tự đã xảy ra: Kafka mất kết nối dẫn đến drop sync giao dịch VA. Cùng pattern: message broker là Single Point of Failure, thiếu fallback, thiếu monitoring cho infrastructure dependency.
+Khi hệ thống được xây, Redis Pub/Sub là giải pháp nhanh, đơn giản, và hoạt động tốt trong môi trường dev. Không ai dừng lại để hỏi: *"Nếu Redis đứt, chúng ta có còn control được hệ thống không?"*
 
-Sáu tháng sau, cùng pattern, khác hệ thống.
-
-Bài học của lần trước chưa được áp dụng đủ rộng.
+![Architecture](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
 
 ---
 
-## Fix đúng cần làm là gì?
+## 12h20 – 12h45: Tìm lại khả năng kiểm soát
 
-Sau incident, team xác định ba nhóm hành động:
+12h20, team liên hệ team infras: *"Redis đang bị gì vậy? Cần khôi phục ngay."*
 
-**[P0] Chuyển luồng commit giao dịch từ Redis Pub/Sub sang Kafka.** Kafka có message durability, consumer có thể replay, không mất message dù subscriber tạm offline. Đây là thứ dữ liệu tài chính cần.
+Team infras mới hiểu ra chuyện gì đang xảy ra. Họ bắt đầu rollback.
 
-**[P0] Bổ sung DB fallback cho Redis cache.** Write-through strategy: DB là source of truth, Redis chỉ là cache. Khi Redis đứt, hệ thống fallback xuống DB thay vì gãy hoàn toàn.
+12h30, Redis được khôi phục. Pub/Sub reconnect. Subscriber bắt đầu lắng nghe lại.
 
-**[P1] Polling mechanism cho cơ chế bảo trì.** Thay vì control plane phụ thuộc hoàn toàn vào Pub/Sub, các service sẽ poll config từ DB mỗi 30 giây. Ngay cả khi Redis đứt, sau tối đa 30 giây hệ thống vẫn nhận được config mới.
+Nhưng những giao dịch đã treo từ 12h05 đến 12h30 — 25 phút notify từ đối tác mà không có subscriber nào nhận — những message đó đã mất. Redis Pub/Sub không giữ lại. Không có gì để replay.
 
-Nguyên tắc chung: **control plane không được chết cùng data plane**. Khi data plane có sự cố, bạn vẫn phải có khả năng điều khiển hệ thống.
-
----
-
-## Câu hỏi kiến trúc nên hỏi từ sớm
-
-Nhìn lại, có một câu hỏi mà nếu được đặt ra khi thiết kế ban đầu, có thể đã tránh được sự cố này:
-
-> *"Nếu component X đứt, chúng ta có còn bảo trì được hệ thống không?"*
-
-Câu hỏi đó tách biệt hai thứ cần được tách biệt: **khả năng xử lý nghiệp vụ** và **khả năng kiểm soát hệ thống**. Khi sự cố xảy ra, điều bạn cần nhất là khả năng can thiệp — dừng nhận request mới, switch traffic, drain queue. Nếu cả hai chết cùng nhau, bạn đứng nhìn mà không làm được gì.
-
-Ngoài ra: thay đổi shared infrastructure mà không có change management process là rủi ro hệ thống. Redis, Kafka, database — bất kỳ component nào mà nhiều team phụ thuộc đều cần có quy trình thông báo trước khi thay đổi, dù thay đổi đó có vẻ nhỏ.
-
-Một cái lệnh maintenance tưởng vô hại lúc 12h00 đã làm 22.000 giao dịch bị treo và một đội kỹ toán thức đến nửa đêm.
+Tổng cộng: ~22.000 giao dịch cần được xử lý thủ công.
 
 ---
 
-*Single Point of Failure không tự quảng cáo. Nó nằm im, chờ đúng thời điểm.*
+## 13h00 – 24h00: Cái giá thật sự
 
-*Và khi nó bộc phát, thường là lúc bạn bận nhất.*
+Đây là phần ít được nói đến nhất trong incident report, nhưng lại nặng nề nhất.
+
+Từ 13h đến 18h, team phối hợp với đối tác TCB và ACB để **notify lại từng giao dịch**. Đây không phải chạy một script tự động. Đây là liên lạc thủ công, xác nhận từng batch, theo dõi từng đợt commit. Năm tiếng.
+
+Người nhận đã có tiền trong tài khoản từ hồi trưa. Người chuyển vẫn mở app lên thấy "giao dịch đang xử lý." Họ gọi điện, họ chat, họ lo lắng. CS ticket tăng không ngừng. Điện thoại team không lúc nào im.
+
+Và điều không ai nói ra nhưng ai cũng hiểu: khách hàng không phân biệt được "hệ thống đang fix" với "hệ thống không đáng tin." Mỗi giao dịch treo là một lần người dùng tự hỏi có nên dùng lại không.
+
+Từ 18h đến 24h, đội kế toán xử lý phần còn lại — những giao dịch mà đối tác không thể notify lại tự động, phải đối soát thủ công từng dòng.
+
+Nửa đêm. Sự cố kết thúc. Tổng thiệt hại thực tế: không mất tiền. Nhưng mất 12 tiếng, mất niềm tin, và mất một đêm của rất nhiều người.
+
+---
+
+## Déjà Vu
+
+Tháng 9/2025, đã có một incident gần giống như vậy.
+
+Kafka mất kết nối. Giao dịch VA bị drop sync. Cùng pattern: message broker là Single Point of Failure, thiếu fallback, không có monitoring đủ sớm để phát hiện.
+
+Report được viết. Lessons learned được ghi lại. Action items được assign.
+
+Sáu tháng sau, ngày 24/3/2026, cùng pattern — chỉ khác tên broker và tên feature.
+
+*Bài học chưa được áp dụng đủ rộng.*
+
+Câu đó trong incident report nghe bình thường. Nhưng nó là câu nặng nhất.
+
+---
+
+## Ba thứ cần sửa, theo đúng thứ tự
+
+Ưu tiên đầu tiên và không thể trì hoãn: chuyển luồng commit giao dịch từ Redis Pub/Sub sang Kafka. Kafka có durability, có offset, consumer mất kết nối rồi reconnect vẫn đọc lại được từ chỗ bị ngắt. Đó là yêu cầu tối thiểu cho bất cứ thứ gì liên quan đến tiền.
+
+Song song với đó, Redis cache cần có DB fallback theo write-through strategy — DB là source of truth, Redis chỉ là lớp cache nhanh phía trên. Khi Redis chết, hệ thống chậm hơn, nhưng không gãy.
+
+Và quan trọng không kém: control plane không được phụ thuộc vào Pub/Sub nữa. Thay vào đó, các service tự poll config từ DB mỗi 30 giây. Không cần Redis push, không cần Pub/Sub hoạt động. Khi Redis chết, control plane vẫn sống — bạn vẫn còn tay để xử lý.
+
+Nguyên tắc đằng sau cả ba thứ đó chỉ là một câu: **control plane phải độc lập với data plane**. Khi data plane gặp sự cố, bạn cần giữ được khả năng ra lệnh cho hệ thống. Nếu không, bạn chỉ là khán giả.
+
+---
+
+## Câu hỏi đáng giá nhất trong buổi thiết kế
+
+Nhìn lại incident này, có một câu hỏi mà nếu ai đó đặt ra từ đầu, mọi thứ đã khác:
+
+> *"Nếu component này đứt, chúng ta có còn tắt hệ thống được không?"*
+
+Không phải "hệ thống có tiếp tục chạy không." Mà là "chúng ta có còn **kiểm soát** được không."
+
+Đây là câu hỏi phân biệt một kiến trúc resilient với một kiến trúc brittle. Resilient không có nghĩa là không bao giờ hỏng. Resilient nghĩa là khi hỏng, bạn vẫn còn đủ công cụ để kiểm soát tình huống.
+
+Và một điều nữa: **shared infrastructure cần change management**. Redis, Kafka, database dùng chung — khi thay đổi bất kỳ thứ nào trong số đó, cần thông báo cho tất cả team phụ thuộc trước. Không phải vì nghi ngờ nhau. Mà vì không ai có thể biết hết mọi dependency trong một hệ thống đủ lớn.
+
+Một lệnh maintenance ngắn lúc 12h00, tưởng vô hại, bởi một team không biết có ai đang dùng Redis đó.
+
+22.000 giao dịch. 12 tiếng. Một đêm của đội kế toán.
+
+---
+
+*Single Point of Failure không tự quảng cáo. Nó không có màu đỏ trên diagram. Không có warning khi deploy.*
+
+*Nó chỉ ngồi đó, kiên nhẫn, đợi đúng cái ngày ai đó quyết định maintenance lúc 12 giờ trưa.*
