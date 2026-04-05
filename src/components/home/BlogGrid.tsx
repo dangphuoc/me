@@ -55,7 +55,7 @@ export default function BlogGrid({ posts, basePath = 'blog', viewAllLabel }: Blo
           </span>
           <Link
             href={`/${locale}/${basePath}`}
-            className="text-th-accent-soft hover:text-th-accent transition-colors"
+            className="text-th-accent hover:text-th-accent-hover transition-colors"
           >
             {viewAll} →
           </Link>
