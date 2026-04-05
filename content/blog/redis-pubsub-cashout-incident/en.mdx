@@ -1,0 +1,157 @@
+---
+title: "When the System Went Down, the Emergency Switch Didn't Work Either"
+excerpt: "At 12:05 PM, the money transfer system started freezing transactions in bulk. The strange part: it wasn't a TCB problem, wasn't an ACB problem — we couldn't even switch channels to fix it. This is the story of a Single Point of Failure that hid for 9 months."
+date: 2026-03-24
+tags: [Redis, Incident, Backend, Architecture, Pub/Sub]
+thumbnail: https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800
+---
+
+12:00 PM, March 24, 2026.
+
+The infras team was inspecting a Redis server and noticed something odd: no active connections. They decided to perform maintenance to standardize the configuration — a seemingly harmless operation.
+
+Five minutes later, the monitoring dashboard started turning red.
+
+---
+
+## The First Clue
+
+12:05 PM. First alert: the number of pending transactions through the TCB channel spiked sharply.
+
+The team followed standard procedure — switch to the backup channel, enable maintenance mode to stop accepting new transactions.
+
+But nothing worked. The channel switch didn't respond. Maintenance mode wouldn't turn on.
+
+That's when everyone started to realize this wasn't a normal incident.
+
+*"Why can't we switch channels? This has nothing to do with TCB or ACB."*
+
+It took 10 minutes to find the answer: Redis Pub/Sub had lost its connection.
+
+![Server monitoring](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800)
+
+---
+
+## What Was Redis Doing in the Payment System?
+
+To understand why a Redis disconnection caused a disaster of this scale, you need to know what Redis was responsible for.
+
+The cashout platform used Redis for **two things**:
+
+**First — session caching**: The money transfer flow has 3 steps: check account → init → confirm. Session data (agent, amount, destination account) is temporarily stored in Redis so these 3 steps share the same context.
+
+**Second — Pub/Sub as message bus**: This is the more critical part — and the source of the incident.
+
+When a partner (TCB or ACB) sends a notification about a transaction result, the processing flow looks like this:
+
+```
+Partner notify → API receives → Publish event to Redis channel
+    → Subscriber listens → Commits transaction to DB
+```
+
+If Redis Pub/Sub goes down, the event never reaches the subscriber → transaction never gets committed → the recipient already has the money but the sender still sees "processing."
+
+And the maintenance/channel-switch mechanism? It also uses the same Redis Pub/Sub:
+
+```
+Admin publishes config update → Redis channel → Services subscribe → Reload config
+```
+
+When Redis goes down, both paths are blocked. **You can't process the backlog of stuck transactions, and you can't turn off the valve accepting new ones.**
+
+---
+
+## Pub/Sub — A Double-Edged Sword
+
+Redis Pub/Sub is simple and fast. But it has one important characteristic that's often overlooked: **fire-and-forget**.
+
+Meaning: if no subscriber is listening when a message is published, that message **disappears forever**. No retry. No replay. No dead letter queue.
+
+Compare that to Kafka: messages in Kafka are written to disk with offsets, and consumers can re-read from any point in history. Kafka provides **durability** — messages persist even if the consumer is temporarily offline.
+
+Redis Pub/Sub does not. It works fine for things that don't matter if lost: cache invalidation, live notifications, real-time dashboards. But not for **committing financial transactions**.
+
+That was the most expensive technical lesson of the day.
+
+---
+
+## Five Whys: Digging to the Root
+
+**Why did transactions get stuck?**
+→ Redis Pub/Sub lost connection. Partner notify events couldn't be published. The commit subscriber never received them.
+
+**Why did Redis lose connection?**
+→ The infras team performed maintenance on Redis to standardize the configuration after seeing no active connections.
+
+**Why did infras do this without coordinating with the service team?**
+→ No change management process required notifying dependent teams before modifying shared infrastructure.
+
+**Why did the maintenance/channel-switch mechanism also fail?**
+→ Because the control plane (maintenance/channel switching) and the data plane (transaction commit) both depended on the **same** Redis Pub/Sub instance.
+
+**Why was it designed that way?**
+→ When first built, Redis Pub/Sub was a fast, simple solution. Nobody asked: *"If Redis goes down, do we still have control of the system?"*
+
+That question should have been asked much earlier.
+
+![Architecture diagram concept](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+---
+
+## The Worst Part Wasn't the Downtime
+
+The incident affected new transactions for 45 minutes (12:00–12:45 PM). But the consequences lasted until midnight.
+
+From 1:00 PM to 6:00 PM: coordinating with TCB/ACB partners to re-notify approximately 22,000 backlogged transactions — one by one, manually. This was the heaviest manual work of the day.
+
+From 6:00 PM to midnight: the accounting team reconciled remaining transactions that partners couldn't automatically re-notify.
+
+Recipients already had money in their accounts. Senders still saw "pending." Two sides of the same transaction were looking at two different realities — this is the most frustrating class of bug because it erodes trust in the system far more than an actual money loss.
+
+CS tickets surged. Phones rang non-stop. And the team had no fast way to explain the situation to worried customers.
+
+---
+
+## This Had Happened Before
+
+This wasn't the first time.
+
+In September 2025, a similar incident occurred: Kafka disconnected and caused VA transaction sync to drop. Same pattern: message broker as Single Point of Failure, no fallback mechanism, no monitoring for infrastructure dependencies.
+
+Six months later, same pattern, different system.
+
+The lessons from the previous incident hadn't been applied broadly enough.
+
+---
+
+## What Needs to Be Fixed
+
+After the incident, the team identified three action groups:
+
+**[P0] Migrate transaction commit flow from Redis Pub/Sub to Kafka.** Kafka has message durability, consumers can replay, no messages are lost even if the subscriber is temporarily offline. That's what financial data requires.
+
+**[P0] Add DB fallback for Redis cache.** Write-through strategy: DB is the source of truth, Redis is just a cache. When Redis goes down, the system falls back to DB instead of failing completely.
+
+**[P1] Polling mechanism for the maintenance control plane.** Instead of the control plane depending entirely on Pub/Sub, services should poll config from DB every 30 seconds. Even if Redis is down, within at most 30 seconds the system will receive the new config.
+
+The underlying principle: **the control plane must not die with the data plane**. When the data plane has an incident, you still need to be able to control the system.
+
+---
+
+## The Architecture Question to Ask Early
+
+Looking back, there's one question that — if asked during initial design — might have prevented this incident:
+
+> *"If component X goes down, can we still operate and maintain the system?"*
+
+That question separates two things that need to be separated: **the ability to process business logic** and **the ability to control the system**. When an incident happens, what you need most is the ability to intervene — stop accepting new requests, switch traffic, drain the queue. If both die together, you're left standing there, watching.
+
+Beyond that: changing shared infrastructure without a change management process is a systemic risk. Redis, Kafka, databases — any component that multiple teams depend on needs a notification process before changes, even if the change seems minor.
+
+One maintenance command that seemed harmless at noon left 22,000 transactions stuck and an accounting team working until midnight.
+
+---
+
+*Single Points of Failure don't announce themselves. They sit quietly, waiting for the right moment.*
+
+*And when they surface, it's usually when you're the most busy.*
