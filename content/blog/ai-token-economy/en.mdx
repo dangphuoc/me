@@ -1,0 +1,202 @@
+---
+title: "Tokens Are Money: When AI Eats Your Budget and the Lesson of Hidden Costs"
+excerpt: "The Google Chat thread exploded over Claude burning double the tokens. The entire world is dealing with the same thing. This isn't just a bug — it's a signal of a bigger problem every developer needs to understand."
+date: 2026-04-05
+tags: [AI, Cost, Developer, Claude, LLM, Opinion]
+thumbnail: https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800
+---
+
+10 AM. I was mid-code-review when Google Chat buzzed.
+
+Not a production alert. Not a blocker. A thread about... money.
+
+More specifically: why Claude was burning through the company budget faster than anyone expected.
+
+Tien kicked it off: *"Token usage has been double lately. Something's off."*
+
+I explained: *"The CLAUDE.md file imports too many agents, so it loads everything → burns tokens."*
+
+Long chimed in: *"Still feels aggressive on my end. Haven't noticed it drop."*
+
+Then Xuan dropped a number:
+
+*"45K tokens is about 9% of quota for a single /create-mr skill call."*
+
+Hieu wasn't buying it: *"9% for create-mr? Come on."*
+
+But the number was real. And that was just one call.
+
+![Money and technology](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800)
+
+---
+
+## The Problem the Whole World Is Facing
+
+At the same time, on the other side of the world, an article appeared on Substack with the headline: *"Something Is Wrong With Claude's Token Limits."*
+
+The content: users reporting that typing *"Hello Claude"* triggered a four-hour cooldown. Someone said a single "hello" consumed 13% of their daily quota. Not running complex jobs — just a greeting.
+
+Anthropic acknowledged they were investigating. Called it "top priority." Pushed fixes for Claude Code. But the complaints kept coming.
+
+The most expensive quote from a user: *"Token usage without any sense of transparency just makes zero sense. At least tell us what's going on instead of silently gaslighting us."*
+
+The problem wasn't just a bug. The problem was **users don't know what they're consuming, how much, or why**.
+
+---
+
+## What Are Tokens, and Why Do They Matter So Much?
+
+If you're not clear on this, think of tokens like this: every word in your AI conversation — your question, the AI's answer, the system prompt context, conversation history — all of it costs tokens.
+
+And every token has a price.
+
+With Claude Sonnet, currently around $3/1M input tokens and $15/1M output tokens. With Claude Opus, far more expensive: $15 input, $75 output.
+
+A normal conversation: a few thousand tokens. Negligible.
+
+But **Claude Code** — the tool our team uses to write code, review PRs, create MRs — is different. It doesn't just send your question. It sends:
+
+- The full system prompt (including CLAUDE.md, all instructions)
+- The entire session context
+- Output from all tool calls (file reads, bash outputs, search results)
+- Conversation history
+
+Every time you tell Claude to read a 500-line file → those 500 lines get added to context. Read 5 files → 2,500 lines in memory. Then AI responds, adding more. Then you ask again, old context still there.
+
+**Token usage grows exponentially, not linearly.**
+
+![Data visualization](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+---
+
+## Why Agentic Workflows "Eat" So Much More
+
+This is the part our team understood too late.
+
+When you use Claude Code for a complex task — like `/create-mr` — it's not a single API call. It's **a chain of calls**:
+
+1. AI reads requirement → calls tool to read files
+2. Files read → results added to context
+3. AI plans next step → calls next tool
+4. Tool output added to context
+5. AI writes code → code added to context
+6. AI verifies → reads more files → context grows again
+7. AI creates MR → calls git tools → output added
+
+Each step carries the context of all previous steps. By step 7, the API call is carrying almost the entire journey.
+
+A single `/create-mr` isn't 1 API call. It's 10–20 API calls, each carrying an ever-inflating context.
+
+**That's why 9% quota for one MR isn't absurd — it's basic agentic AI logic.**
+
+---
+
+## Like Mobile Data in the Limited-Plan Era
+
+Someone put it well: *"Like the old days of mobile data, where you had to watch every byte and didn't dare stream video."*
+
+Exactly. And I'd add: back then, people didn't understand why data ran out so fast — background music streaming, app auto-updates, location tracking. Things running silently that you couldn't see.
+
+Claude Code is the same. The `/create-mr` skill loads multiple sub-agents. Each agent has its own instructions. CLAUDE.md imports multiple files. All of it stacks into token count before you type a single word.
+
+**Hidden costs.**
+
+And just like mobile data: when you hit the limit, you don't know why. You just know it's gone.
+
+---
+
+## OpenAI "Weaponized" Free
+
+Right in the middle of the Claude token drama, OpenAI made an interesting move: they **completely removed usage limits** from Codex — their AI coding tool.
+
+No limits. Use freely.
+
+The implicit message was clear: *"Anthropic is throttling developers, we're not."*
+
+This is a familiar playbook: use free to grab market share, then monetize later. But it creates enormous competitive pressure on Anthropic.
+
+The question is: is free sustainable? Inference costs are real. GPUs are real. Electricity is real. A complex AI request consumes as much energy as thousands of Google searches. Who pays for that?
+
+**Answer: for now, OpenAI pays, from venture capital, to burn the competition.**
+
+Long term, the entire AI industry has to find a sustainable model. And developers will have to learn to live with real costs — sooner or later.
+
+![Competition](https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800)
+
+---
+
+## The Mindset Problem for Developers
+
+This is the part I find most concerning.
+
+When companies push AI adoption — distribute tools, encourage usage, measure productivity — end users (developers) typically don't see the bill. They only see: *"Great tool, use it more."*
+
+But AI costs aren't linear with value created.
+
+A developer using Claude Code 8 hours a day, running every task through AI, not filtering what truly needs it → might burn 5x more tokens than someone who's deliberate.
+
+Output? Not necessarily 5x better.
+
+I call this **"AI Junk Food"**: high consumption, productive-feeling, but mostly empty calories. Ask AI to do things you could do yourself in 2 minutes. Copy-paste answers without reading. Regenerate instead of thinking.
+
+**Knowing how to use AI doesn't mean using as much AI as possible.** Like knowing how to use Google doesn't mean Googling everything.
+
+---
+
+## Questions Developers Should Start Asking
+
+As AI becomes a daily tool, developers need to develop something new: **cost intuition**.
+
+**Is this task worth using AI for?**
+
+Writing boilerplate CRUD? Yes. Generating test cases? Yes. Having AI explain a 1,000-line legacy file you urgently need to understand? Yes.
+
+But debugging a typo? Looking at it yourself is faster. Formatting code? Prettier handles it. Asking AI something you already know the answer to? Waste.
+
+**Does this context actually need to be here?**
+
+Many developers habit-paste their entire codebase into context "just to be safe." But AI doesn't need to read the whole project to answer a question about one function. Trim context = fewer tokens = lower cost = faster response.
+
+**What tool fits this task?**
+
+Claude Opus for architectural discussions, complex analysis. Haiku for quick lookups, simple boilerplate. Using Opus for everything is like driving a truck to the grocery store.
+
+![Thinking developer](https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800)
+
+---
+
+## The Future: AI as Utility, Not Magic
+
+I'm convinced of one thing: **AI will become a utility like electricity, water, and internet.**
+
+Meaning: it has a price. It has a bill. There are tiers. Costs vary with usage. Sometimes services get cut when bills go unpaid.
+
+And just like electricity: you don't turn off the lights to save money and sit in the dark — you learn to use electricity efficiently. LED bulbs instead of incandescent. Turning off things you don't need.
+
+The next generation of developers will need to know:
+- Estimate token cost of workflows they design
+- Know when to cache responses, when to re-call
+- Know which prompts are expensive, which are efficient
+- Know when to use AI, when to use conventional tools
+
+Not to become AI accountants — but because **people who understand cost make better decisions**.
+
+---
+
+## The Ending
+
+After the Slack thread about tokens, our team did a few things:
+
+Deleted `.claude/commands/` — 20 files, 1,794 duplicate lines being loaded into every session.
+
+Optimized CLAUDE.md — removed heavy `@import` statements that weren't necessary.
+
+Result: ~30–40% reduction in tokens per session.
+
+Not because anyone demanded it. But because once you **understand** what's happening, you naturally want to do it right.
+
+That's the lesson I want to pass on: AI will be part of everyday life — but like every powerful tool, it demands you understand the mechanics underneath, not just stare at the output.
+
+Tokens aren't just numbers. Tokens are money. Money is a resource. Resources need to be used with intention.
+
+*Being good at using AI = doing more with less, not using more and hoping for more.*

@@ -1,0 +1,202 @@
+---
+title: "Token Là Tiền: Khi AI Ngốn Ngân Sách Và Bài Học Về Chi Phí Vô Hình"
+excerpt: "Nhóm Slack nổi lên vì Claude ngốn token gấp đôi. Cả thế giới đang đau đầu vì chuyện tương tự. Đây không chỉ là bug — đây là dấu hiệu của một bài toán lớn hơn mà mọi developer cần hiểu."
+date: 2026-04-05
+tags: [AI, Cost, Developer, Claude, LLM, Opinion]
+thumbnail: https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800
+---
+
+10 giờ sáng. Tôi đang review code thì Google Chat rung.
+
+Không phải alert production. Không phải bug blocker. Mà là một cái thread về... tiền.
+
+Cụ thể hơn: tại sao Claude đang ăn tiền của công ty nhanh hơn mọi người nghĩ.
+
+Tiến mở đầu: *"Bữa giờ double token, kỳ vậy."*
+
+Tôi giải thích: *"File CLAUDE.md import quá nhiều agent, nên nó load hết → tốn token."*
+
+Long thêm vào: *"E thấy vẫn cắn ác á anh. Chưa thấy giảm."*
+
+Rồi Xuân gửi lên một con số:
+
+*"45K token là khoảng 9% quota cho 1 lần gọi skill /create-mr."*
+
+Hiếu không tin: *"create-mr mà 9%? Xạo vừa thôi."*
+
+Nhưng con số là thật. Và đó mới chỉ là một lần gọi.
+
+![Money and technology](https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800)
+
+---
+
+## Câu chuyện cả thế giới đang gặp
+
+Cùng lúc đó, bên kia đại dương, một bài viết xuất hiện trên Substack với tiêu đề: *"Something Is Wrong With Claude's Token Limits."*
+
+Nội dung: người dùng báo cáo rằng chỉ gõ *"Hello Claude"* đã trigger cooldown 4 tiếng. Có người nói một câu hello tiêu thụ 13% quota ngày. Không phải họ chạy job phức tạp — chỉ là một câu chào bình thường.
+
+Anthropic thừa nhận đang điều tra. Họ nói đây là "top priority." Họ push fix cho Claude Code. Nhưng vấn đề vẫn còn đó.
+
+Và câu than thở đắt giá nhất từ một user: *"Token usage without any sense of transparency just makes zero sense. At least tell us what's going on instead of silently gaslighting us."*
+
+Vấn đề không chỉ là bug. Vấn đề là **người dùng không biết mình đang tiêu gì, bao nhiêu, và tại sao**.
+
+---
+
+## Token là gì, và tại sao nó quan trọng đến vậy?
+
+Nếu bạn chưa hiểu rõ, hãy nghĩ token như thế này: mỗi từ trong cuộc hội thoại với AI — câu hỏi của bạn, câu trả lời của AI, context system prompt, history hội thoại — tất cả đều tốn token.
+
+Và mỗi token đều có giá.
+
+Với Claude Sonnet, hiện tại khoảng $3/1M input token và $15/1M output token. Với Claude Opus, đắt hơn nhiều: $15 input, $75 output.
+
+Một cuộc hội thoại bình thường: vài nghìn token. Không đáng kể.
+
+Nhưng **Claude Code** — cái tool mà team mình đang dùng để viết code, review PR, create MR — nó khác. Nó không chỉ gửi câu hỏi của bạn. Nó gửi:
+
+- System prompt đầy đủ (bao gồm CLAUDE.md, tất cả instruction)
+- Toàn bộ context của session
+- Output của tất cả tool calls (file reads, bash outputs, search results)
+- History của conversation
+
+Mỗi lần bạn bảo Claude đọc một file 500 dòng → 500 dòng đó cộng vào context. Đọc 5 file → 2500 dòng trong memory. Rồi AI trả lời, cũng thêm vào. Rồi bạn hỏi tiếp, context cũ vẫn ở đó.
+
+**Token tăng exponentially, không tuyến tính.**
+
+![Data visualization](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800)
+
+---
+
+## Tại sao agentic workflow "ngốn" hơn nhiều
+
+Đây là phần mà team mình hiểu muộn.
+
+Khi bạn dùng Claude Code để làm một task phức tạp — ví dụ `/create-mr` — nó không phải một lần call API. Nó là **một chuỗi call**:
+
+1. AI đọc requirement → gọi tool đọc file
+2. File đọc xong → kết quả thêm vào context
+3. AI plan tiếp → gọi tool tiếp
+4. Tool output thêm vào context
+5. AI viết code → code thêm vào context
+6. AI verify → đọc thêm file → context lại tăng
+7. AI tạo MR → gọi git tools → output thêm vào
+
+Mỗi bước đều có context của tất cả bước trước. Bước 7 gửi lên API gần như toàn bộ cuộc hành trình.
+
+Một `/create-mr` không phải là 1 API call. Nó là 10-20 API calls, mỗi call mang theo context ngày càng phình to.
+
+**Đó là tại sao 9% quota cho một MR không phải chuyện vô lý — nó là logic cơ bản của agentic AI.**
+
+---
+
+## So sánh với điện thoại thời data giới hạn
+
+Có người ví von hay: *"Giống như hồi xưa đi điện thoại phải để ý data, không dám xem video."*
+
+Đúng. Và tôi thêm vào: hồi đó người ta cũng không hiểu tại sao data hết nhanh — stream nhạc background, auto-update app, location tracking. Những thứ chạy ngầm mà bạn không nhìn thấy.
+
+Claude Code cũng vậy. Skill `/create-mr` load nhiều agent con. Mỗi agent có instruction riêng. CLAUDE.md import nhiều file. Tất cả cộng vào token trước khi bạn gõ nửa chữ.
+
+**Chi phí vô hình.**
+
+Và cũng giống như data điện thoại: khi bạn hết, bạn không biết tại sao, bạn chỉ biết là hết.
+
+---
+
+## OpenAI đã "vũ khí hóa" miễn phí
+
+Giữa lúc drama token của Claude, OpenAI làm một nước cờ thú vị: họ **xóa hoàn toàn usage limit** cho Codex — AI coding tool của họ.
+
+Không giới hạn. Dùng thoải mái.
+
+Thông điệp ngầm rõ ràng: *"Anthropic đang bóp cổ developer, còn chúng tôi thì không."*
+
+Đây là chiến thuật quen: dùng miễn phí để chiếm market share, sau đó monetize. Nhưng nó làm tăng áp lực cạnh tranh lên Anthropic khổng lồ.
+
+Vấn đề là: miễn phí có bền vững không? Inference cost thật. GPU thật. Điện thật. Một request AI phức tạp tiêu tốn năng lượng tương đương hàng nghìn Google search. Ai trả tiền khoản đó?
+
+**Câu trả lời là: tạm thời là OpenAI trả, từ tiền venture capital, để đốt đường đối thủ.**
+
+Dài hạn, cả ngành AI phải tìm ra mô hình bền vững. Và developers sẽ phải học cách sống với chi phí thật — dù sớm hay muộn.
+
+![Competition](https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800)
+
+---
+
+## Bài toán nhận thức cho developer
+
+Đây là phần tôi thấy đáng lo nhất.
+
+Khi công ty bắt đầu đẩy mạnh AI adoption — phát tool, khuyến khích dùng, đo productivity — người dùng cuối (developer) thường không thấy bill. Họ chỉ thấy: *"Tool ngon, dùng nhiều hơn."*
+
+Nhưng chi phí AI không tuyến tính với giá trị tạo ra.
+
+Một developer dùng Claude Code 8 tiếng/ngày, chạy mọi task qua AI, không filter những gì thật sự cần → có thể tốn token gấp 5 lần người làm có chủ đích.
+
+Và output? Chưa chắc tốt hơn 5 lần.
+
+Tôi gọi đây là **"AI Junk Food"**: tiêu thụ nhiều, cảm giác productive, nhưng phần lớn là empty calories. Ask AI làm những thứ bạn có thể tự làm trong 2 phút. Copy-paste câu trả lời mà không đọc. Regenerate thay vì suy nghĩ.
+
+**Biết dùng AI không có nghĩa là dùng nhiều AI nhất có thể.** Giống như biết dùng Google không có nghĩa là Google mọi thứ.
+
+---
+
+## Những câu hỏi developer nên bắt đầu hỏi
+
+Khi AI trở thành công cụ hàng ngày, developer cần develop một thứ mới: **cost intuition**.
+
+**Task này có xứng đáng dùng AI không?**
+
+Viết boilerplate CRUD? Có. Generate test case? Có. Hỏi AI giải thích một file 1000 dòng legacy mà bạn cần hiểu gấp? Có.
+
+Nhưng debug lỗi typo? Tự nhìn nhanh hơn. Format code? Prettier làm được. Hỏi AI câu hỏi mà bạn biết câu trả lời rồi? Waste.
+
+**Context có cần thiết không?**
+
+Nhiều developer có thói quen paste toàn bộ codebase vào context "cho chắc." Nhưng AI không cần đọc hết project để trả lời câu hỏi về một function. Trim context = giảm token = giảm chi phí = response nhanh hơn.
+
+**Tool nào phù hợp với task này?**
+
+Claude Opus cho architectural discussion, phân tích phức tạp. Haiku cho lookup nhanh, boilerplate đơn giản. Dùng Opus cho mọi thứ là như lấy xe tải đi chợ.
+
+![Thinking developer](https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800)
+
+---
+
+## Tương lai: AI là utility, không phải magic
+
+Tôi tin chắc một điều: **AI sẽ trở thành utility như điện, nước, internet.**
+
+Nghĩa là: có giá. Có bill. Có lúc cut vì không trả. Có tier pricing. Có chi phí biến đổi theo usage.
+
+Và cũng như điện: bạn không tắt điện để tiết kiệm mà ngồi tối — bạn học cách dùng điện hiệu quả. Bóng đèn LED thay vì bóng đèn sợi đốt. Tắt những thứ không cần.
+
+Developer thế hệ tới sẽ cần biết:
+- Estimate token cost của workflow mình design
+- Biết khi nào cache response, khi nào call lại
+- Biết prompt nào tốn token, prompt nào efficient
+- Biết khi nào nên dùng AI, khi nào dùng tool thông thường
+
+Không phải để làm AI accountant — mà vì **người hiểu cost là người ra quyết định tốt hơn**.
+
+---
+
+## Câu chuyện kết
+
+Sau cái thread Slack về token, team mình làm vài thứ:
+
+Xóa `.claude/commands/` — 20 files, 1794 dòng duplicate đang được load vào mọi session.
+
+Optimize CLAUDE.md — bỏ các `@import` nặng không cần thiết.
+
+Kết quả: giảm ~30-40% token per session.
+
+Không phải vì ai bắt. Mà vì một khi bạn **hiểu** cái gì đang xảy ra, bạn tự nhiên muốn làm đúng hơn.
+
+Đó là bài học tôi muốn truyền đi: AI sẽ là một phần cuộc sống — nhưng như mọi công cụ mạnh mẽ, nó đòi hỏi bạn hiểu cơ chế bên dưới, không chỉ nhìn vào kết quả.
+
+Token không chỉ là số. Token là tiền. Tiền là nguồn lực. Nguồn lực cần được dùng có chủ đích.
+
+*Biết dùng AI giỏi = biết dùng ít mà ra nhiều, không phải dùng nhiều mà hi vọng ra nhiều.*
